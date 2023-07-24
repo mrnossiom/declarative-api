@@ -1,0 +1,62 @@
+{
+	name Wiro's API
+	version 1.0.0
+
+	urls [
+	https://paradigm.lighton.ai/api/v1
+	https://paradigm-preprod.lighton.ai/api/v1
+	https://paradigm-dev.lighton.ai/api/v1
+	]
+}
+
+scope dashboard !flatten {
+	GET {
+		401 {
+			body {
+				error
+			}
+		}
+	}
+
+	scope metrics {
+		path / {
+			GET {
+				200 {
+					body {
+						metrics
+					}
+				}
+			}
+		}
+
+		path users {
+			GET {
+				200 {
+					body {
+						user
+					}
+				}
+
+				404 {
+					body {
+					}
+				}
+			}
+		}
+	}
+}
+
+scope builder
+
+models builder {
+	model error {
+		code int
+		message string
+	}
+
+	model user {
+		name string 'desc' 'example'
+		email string
+		password string
+	}
+}
