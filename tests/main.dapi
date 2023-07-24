@@ -1,0 +1,65 @@
+#! Je suis un commentaire de documentation (des métadonnées)
+{
+	name Wiro's API
+	version 1.0.0
+
+	urls [
+	https://paradigm.lighton.ai/api/v1
+	https://paradigm-preprod.lighton.ai/api/v1
+	https://paradigm-dev.lighton.ai/api/v1
+	]
+}
+
+# IDEA: import the `builder.dapi` file
+scope builder;
+
+scope dashboard {
+	path dashboard {
+		headers {
+			Authorization string "The API Key of the User" @prefix: "Api-Key"
+			X-Model string "The Model of the User"
+		}
+
+		path metrics {
+			path {user-id} {
+				{
+					user-id int "User ID: The ID of the User we want to query"
+				}
+
+				GET {
+					params {
+						#! Je suis un commentaire de documentation (d'une paire clé, valeur)
+						data string "Query date" @format: date
+					}
+
+					200 {
+						body {
+							metrics
+						}
+					}
+				}
+			}
+
+			path /users {
+				GET {
+					200 {
+						body {
+							user
+						}
+					}
+
+					404 {
+						body {
+						}
+					}
+				}
+			}
+		}
+	}
+
+	model metrics {
+		name string "The name of the metric"
+		email string
+		password string
+	}
+}

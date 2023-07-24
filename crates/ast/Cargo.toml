@@ -1,10 +1,8 @@
 [package]
-name = "lexer"
+name = "ast"
 version = "0.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-unic-emoji-char = "0.9.0"
-unicode-xid = "0.2.4"

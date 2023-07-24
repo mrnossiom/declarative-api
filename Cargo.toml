@@ -1,2 +1,7 @@
 [workspace]
 members = ["crates/*"]
+
+[workspace.dependencies]
+ast = { path = "crates/ast" }
+lexer = { path = "crates/lexer" }
+docgen = { path = "crates/docgen" }
