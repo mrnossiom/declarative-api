@@ -54,24 +54,26 @@ impl Parse for ast::types::Response {
 			.scopes
 			.get_mut(&parser_variables.scope_path)
 			.expect("tried adding an endpoint to a non-existant scope");
-		current_scope
+		let method_responses = &mut current_scope
 			.endpoints
 			.get_mut(&endpoint_path)
 			.expect("tried adding a method to a non-existant endpoint")
 			.methods
 			.get_mut(&parser_variables.current_method)
 			.expect("tried adding a response to a non-existant endpoint")
-			.responses
-			.insert(
-				self.status_code,
-				types::Response {
-					headers: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(
-						&self.headers,
-					),
-					body: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(&self.body),
-					comment: self.comment.clone(),
-				},
-			);
+			.responses;
+		assert!(
+			!method_responses.contains_key(&self.status_code),
+			"a response was defined twice"
+		);
+		method_responses.insert(
+			self.status_code,
+			types::Response {
+				headers: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(&self.headers),
+				body: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(&self.body),
+				comment: self.comment.clone(),
+			},
+		);
 	}
 }
 
@@ -98,22 +100,27 @@ impl Parse for ast::types::Method {
 				.endpoints
 				.insert(endpoint_path.clone(), types::Endpoint::default());
 		}
-		current_scope
+		let endpoint_methods = &mut current_scope
 			.endpoints
 			.get_mut(&endpoint_path)
 			.expect("tried adding a method to a non-existant endpoint")
-			.methods
-			.insert(
-				self.method.to_string(),
-				types::Method {
-					responses: BTreeMap::new(),
-					comment: self.comment.clone(),
-					headers: new_parser_variables.headers.clone(),
-					parameters: new_parser_variables.parameters.clone(),
-					query_params: new_parser_variables.query_params.clone(),
-				},
-			);
-		new_parser_variables.current_method = self.method.to_string();
+			.methods;
+		let method_string = self.method.to_string();
+		assert!(
+			!endpoint_methods.contains_key(&method_string),
+			"a method was defined twice"
+		);
+		endpoint_methods.insert(
+			method_string.clone(),
+			types::Method {
+				responses: BTreeMap::new(),
+				comment: self.comment.clone(),
+				headers: new_parser_variables.headers.clone(),
+				parameters: new_parser_variables.parameters.clone(),
+				query_params: new_parser_variables.query_params.clone(),
+			},
+		);
+		new_parser_variables.current_method = method_string;
 		parse_children(
 			&self.responses,
 			&new_parser_variables,
