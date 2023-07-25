@@ -3,5 +3,6 @@ members = ["crates/*"]
 
 [workspace.dependencies]
 ast = { path = "crates/ast" }
+ast-parser = { path = "crates/ast-parser" }
 lexer = { path = "crates/lexer" }
 docgen = { path = "crates/docgen" }
