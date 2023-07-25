@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 #[derive(Debug)]
 pub struct Version {
 	pub major: u32,
