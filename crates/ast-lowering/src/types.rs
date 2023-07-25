@@ -55,10 +55,10 @@ pub struct KeyValuePairValue {
 impl KeyValuePairValue {
 	pub fn from_ast_key_value_pair_ref(
 		key_value_pair: &ast::types::KeyValuePair,
-	) -> (String, KeyValuePairValue) {
+	) -> (String, Self) {
 		(
 			key_value_pair.key.clone(),
-			KeyValuePairValue {
+			Self {
 				type_: Type::from_ast_type(key_value_pair.type_.clone()),
 				description: key_value_pair.description.clone(),
 				parameters: key_value_pair.parameters.clone(),
@@ -86,7 +86,7 @@ pub struct Response {
 	pub comment: Option<String>,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct Scope {
 	pub child_scopes: HashSet<String>,
 	pub models: HashSet<Model>,
@@ -94,32 +94,11 @@ pub struct Scope {
 	pub comment: Option<String>,
 }
 
-impl Scope {
-	pub fn new() -> Scope {
-		Scope {
-			child_scopes: HashSet::new(),
-			models: HashSet::new(),
-			methods: HashSet::new(),
-			comment: None,
-		}
-	}
-}
-
-#[derive(Debug, PartialEq, Clone, Eq, Hash)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash, Default)]
 pub struct Model {
 	pub name: String,
 	pub model_body: BTreeMap<String, KeyValuePairValue>,
 	pub comment: Option<String>,
-}
-
-impl Model {
-	pub fn new() -> Model {
-		Model {
-			name: "".into(),
-			model_body: BTreeMap::new(),
-			comment: None,
-		}
-	}
 }
 
 #[derive(Debug, PartialEq, Clone, Hash, Eq)]
@@ -133,15 +112,15 @@ pub enum Type {
 }
 
 impl Type {
-	pub fn from_ast_type(input: ast::types::Type) -> Type {
+	pub fn from_ast_type(input: ast::types::Type) -> Self {
 		match input {
-			ast::types::Type::Int => Type::Int,
-			ast::types::Type::String => Type::String,
-			ast::types::Type::Model(model_name) => Type::Model(model_name),
-			ast::types::Type::Object(object) => Type::Object(Box::new((
+			ast::types::Type::Int => Self::Int,
+			ast::types::Type::String => Self::String,
+			ast::types::Type::Model(model_name) => Self::Model(model_name),
+			ast::types::Type::Object(object) => Self::Object(Box::new((
 				object.key,
 				KeyValuePairValue {
-					type_: Type::from_ast_type(object.type_),
+					type_: Self::from_ast_type(object.type_),
 					description: object.description,
 					parameters: object.parameters,
 					comment: object.comment,
@@ -166,13 +145,13 @@ pub struct IntermediateRepresentation {
 	pub models: BTreeMap<ScopePath, Model>,
 }
 
-impl IntermediateRepresentation {
-	pub fn new() -> IntermediateRepresentation {
+impl Default for IntermediateRepresentation {
+	fn default() -> Self {
 		let mut scopes_map = BTreeMap::new();
-		scopes_map.insert(vec![], Scope::new());
-		IntermediateRepresentation {
+		scopes_map.insert(vec![], Scope::default());
+		Self {
 			metadata: ApiMetadata {
-				name: "".into(),
+				name: String::new(),
 				version: Version {
 					major: 0,
 					minor: 0,
@@ -198,8 +177,8 @@ pub struct ParserVariables {
 }
 
 impl Default for ParserVariables {
-	fn default() -> ParserVariables {
-		ParserVariables {
+	fn default() -> Self {
+		Self {
 			scope_path: ScopePath::new(),
 			endpoint_path: Path::new("/").into(),
 			headers: BTreeMap::new(),

@@ -1,3 +1,10 @@
+#![warn(
+	clippy::unwrap_used,
+	clippy::nursery,
+	clippy::pedantic,
+	rustdoc::broken_intra_doc_links
+)]
+
 use std::collections::BTreeSet;
 
 mod types;
@@ -16,8 +23,12 @@ impl Parse for ast::types::ApiMetadata {
 		_: types::ParserVariables,
 		intermediate_representation: &mut types::IntermediateRepresentation,
 	) {
-		intermediate_representation.metadata.name = self.name.clone().unwrap(); // Panic if this field is not set.
-		let version = self.version.as_ref().unwrap(); // Panic if this field is not set.
+		intermediate_representation.metadata.name =
+			self.name.clone().expect("please provide an API name"); // Panic if this field is not set.
+		let version = self
+			.version
+			.as_ref()
+			.expect("please provide an API version"); // Panic if this field is not set.
 		intermediate_representation.metadata.version = types::Version {
 			major: version.major,
 			minor: version.minor,
@@ -36,11 +47,11 @@ impl Parse for ast::types::Method {
 	) {
 		let mut new_parser_variables = parser_variables;
 		update_headers(&self.headers, &mut new_parser_variables);
-		update_parameters(&self.headers, &mut new_parser_variables);
+		update_query(&self.query, &mut new_parser_variables);
 		intermediate_representation
 			.scopes
 			.get_mut(&new_parser_variables.scope_path)
-			.unwrap()
+			.expect("tried adding a method to a non-existant scope")
 			.methods
 			.insert(types::Method {
 				name: self.name.clone(),
@@ -98,7 +109,7 @@ impl Parse for ast::types::Scope {
 		intermediate_representation
 			.scopes
 			.get_mut(&parser_variables.scope_path)
-			.unwrap()
+			.expect("tried adding a child scope to a non-existant scope")
 			.child_scopes
 			.insert(self.name.clone());
 		let mut new_parser_variables = parser_variables;
@@ -107,9 +118,10 @@ impl Parse for ast::types::Scope {
 			.scopes
 			.contains_key(&new_parser_variables.scope_path))
 		{
-			intermediate_representation
-				.scopes
-				.insert(new_parser_variables.scope_path.clone(), types::Scope::new());
+			intermediate_representation.scopes.insert(
+				new_parser_variables.scope_path.clone(),
+				types::Scope::default(),
+			);
 		}
 		update_parser_variables(
 			&self.headers,
@@ -163,7 +175,7 @@ impl Parse for ast::types::Api {
 }
 
 fn parse_children<T: Parse>(
-	children: &Vec<T>,
+	children: &[T],
 	parser_variables: &types::ParserVariables,
 	intermediate_representation: &mut types::IntermediateRepresentation,
 ) {
@@ -173,9 +185,9 @@ fn parse_children<T: Parse>(
 }
 
 fn update_parser_variables(
-	headers: &Vec<ast::types::KeyValuePair>,
-	parameters: &Vec<ast::types::KeyValuePair>,
-	query_params: &Vec<ast::types::KeyValuePair>,
+	headers: &[ast::types::KeyValuePair],
+	parameters: &[ast::types::KeyValuePair],
+	query_params: &[ast::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
 	update_headers(headers, parser_variables);
@@ -184,7 +196,7 @@ fn update_parser_variables(
 }
 
 fn update_headers(
-	headers: &Vec<ast::types::KeyValuePair>,
+	headers: &[ast::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
 	for header in headers.iter() {
@@ -194,7 +206,7 @@ fn update_headers(
 }
 
 fn update_parameters(
-	parameters: &Vec<ast::types::KeyValuePair>,
+	parameters: &[ast::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
 	for parameter in parameters.iter() {
@@ -204,7 +216,7 @@ fn update_parameters(
 }
 
 fn update_query(
-	query_params: &Vec<ast::types::KeyValuePair>,
+	query_params: &[ast::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
 	for query_param in query_params.iter() {
@@ -255,6 +267,7 @@ mod tests {
 	}
 
 	#[test]
+	#[allow(clippy::too_many_lines)]
 	fn test_3() {
 		let input_ast = ast::types::Api {
 			metadata: ast::types::ApiMetadata {
@@ -276,7 +289,9 @@ mod tests {
 						child_models: vec![],
 						child_paths: vec![],
 						methods: vec![ast::types::Method {
-							name: http::Method::from_str("GET").unwrap(),
+							name: http::Method::from_str("GET").expect(
+								"a method used for testing the ast-lowering crate doesn't exist",
+							),
 							responses: vec![],
 							headers: vec![],
 							query: vec![],
@@ -357,7 +372,7 @@ mod tests {
 			scopes: expected_scopes_hashmap,
 			models: expected_models_hashmap,
 		};
-		let mut parsed_intermediate_representation = types::IntermediateRepresentation::new();
+		let mut parsed_intermediate_representation = types::IntermediateRepresentation::default();
 		input_ast.parse(
 			types::ParserVariables::default(),
 			&mut parsed_intermediate_representation,
