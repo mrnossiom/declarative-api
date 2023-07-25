@@ -21,13 +21,13 @@ scope dashboard {
 		}
 
 		path metrics {
-			path {user-id} {
+			path {user_id} {
 				{
-					user-id int "User ID: The ID of the User we want to query"
+					user_id int "User ID: The ID of the User we want to query"
 				}
 
 				GET {
-					params {
+					query {
 						#! Je suis un commentaire de documentation (d'une paire clé, valeur)
 						data string "Query date" @format: date
 					}

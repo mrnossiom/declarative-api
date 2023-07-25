@@ -52,18 +52,30 @@ pub struct KeyValuePairValue {
 	pub comment: Option<String>,
 }
 
+impl KeyValuePairValue {
+	pub fn from_ast_key_value_pair_ref(
+		key_value_pair: &ast::types::KeyValuePair,
+	) -> (String, KeyValuePairValue) {
+		(
+			key_value_pair.key.clone(),
+			KeyValuePairValue {
+				type_: Type::from_ast_type(key_value_pair.type_.clone()),
+				description: key_value_pair.description.clone(),
+				parameters: key_value_pair.parameters.clone(),
+				comment: key_value_pair.comment.clone(),
+			},
+		)
+	}
+}
+
 #[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub struct Method {
 	pub name: http::Method,
-	pub responses: BTreeSet<Response>,
-	pub comment: Option<String>,
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct EndpointPath {
-	pub methods: Vec<Method>,
+	pub method_path: Box<Path>,
 	pub parameters: BTreeMap<String, KeyValuePairValue>,
-	pub metadata: BTreeMap<String, KeyValuePairValue>,
+	pub headers: BTreeMap<String, KeyValuePairValue>,
+	pub query_params: BTreeMap<String, KeyValuePairValue>,
+	pub responses: BTreeSet<Response>,
 	pub comment: Option<String>,
 }
 
@@ -71,7 +83,6 @@ pub struct EndpointPath {
 pub struct Response {
 	pub status_code: u32,
 	pub body: BTreeMap<String, KeyValuePairValue>,
-	pub headers: BTreeMap<String, KeyValuePairValue>,
 	pub comment: Option<String>,
 }
 
@@ -121,6 +132,25 @@ pub enum Type {
 	Object(Box<(String, KeyValuePairValue)>),
 }
 
+impl Type {
+	pub fn from_ast_type(input: ast::types::Type) -> Type {
+		match input {
+			ast::types::Type::Int => Type::Int,
+			ast::types::Type::String => Type::String,
+			ast::types::Type::Model(model_name) => Type::Model(model_name),
+			ast::types::Type::Object(object) => Type::Object(Box::new((
+				object.key,
+				KeyValuePairValue {
+					type_: Type::from_ast_type(object.type_),
+					description: object.description,
+					parameters: object.parameters,
+					comment: object.comment,
+				},
+			))),
+		}
+	}
+}
+
 #[derive(Debug, PartialEq)]
 pub struct ApiMetadata {
 	pub name: String,
@@ -163,16 +193,18 @@ pub struct ParserVariables {
 	pub endpoint_path: Box<Path>,
 	pub headers: BTreeMap<String, KeyValuePairValue>,
 	pub parameters: BTreeMap<String, KeyValuePairValue>,
+	pub query_params: BTreeMap<String, KeyValuePairValue>,
 	pub comment: Option<String>,
 }
 
-impl ParserVariables {
-	pub fn new() -> ParserVariables {
+impl Default for ParserVariables {
+	fn default() -> ParserVariables {
 		ParserVariables {
 			scope_path: ScopePath::new(),
 			endpoint_path: Path::new("/").into(),
 			headers: BTreeMap::new(),
 			parameters: BTreeMap::new(),
+			query_params: BTreeMap::new(),
 			comment: None,
 		}
 	}

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 #[derive(Debug)]
 pub struct Version {
@@ -28,7 +28,7 @@ pub struct Method {
 	pub name: http::Method,
 	pub responses: Vec<Response>,
 	pub headers: Vec<KeyValuePair>,
-	pub parameters: Vec<KeyValuePair>,
+	pub query: Vec<KeyValuePair>,
 	pub comment: Option<String>,
 }
 
@@ -40,16 +40,17 @@ pub struct Path {
 	pub methods: Vec<Method>,
 	pub headers: Vec<KeyValuePair>,
 	pub parameters: Vec<KeyValuePair>,
+	pub query: Vec<KeyValuePair>,
 	pub metadata: Vec<KeyValuePair>,
 	pub comment: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct KeyValuePair {
 	pub key: String,
 	pub type_: Type,
 	pub description: String,
-	pub parameters: HashMap<String, String>,
+	pub parameters: BTreeMap<String, String>,
 	pub comment: Option<String>,
 }
 
@@ -60,6 +61,9 @@ pub struct Scope {
 	pub child_models: Vec<Model>,
 	pub child_paths: Vec<Path>,
 	pub methods: Vec<Method>,
+	pub headers: Vec<KeyValuePair>,
+	pub parameters: Vec<KeyValuePair>,
+	pub query: Vec<KeyValuePair>,
 	pub comment: Option<String>,
 }
 
@@ -81,7 +85,7 @@ pub struct Api {
 	pub data: ApiData,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Type {
 	Int,
 

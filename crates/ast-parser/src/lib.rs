@@ -1,11 +1,4 @@
-#![allow(unused)]
-use std::{
-	collections::{BTreeSet, HashMap},
-	vec,
-};
-
-use ast::types::Api;
-use types::{IntermediateRepresentation, Method};
+use std::collections::BTreeSet;
 
 mod types;
 
@@ -20,7 +13,7 @@ pub trait Parse {
 impl Parse for ast::types::ApiMetadata {
 	fn parse(
 		&self,
-		parser_variables: types::ParserVariables,
+		_: types::ParserVariables,
 		intermediate_representation: &mut types::IntermediateRepresentation,
 	) {
 		intermediate_representation.metadata.name = self.name.clone().unwrap(); // Panic if this field is not set.
@@ -41,15 +34,22 @@ impl Parse for ast::types::Method {
 		parser_variables: types::ParserVariables,
 		intermediate_representation: &mut types::IntermediateRepresentation,
 	) {
+		let mut new_parser_variables = parser_variables;
+		update_headers(&self.headers, &mut new_parser_variables);
+		update_parameters(&self.headers, &mut new_parser_variables);
 		intermediate_representation
 			.scopes
-			.get_mut(&parser_variables.scope_path)
+			.get_mut(&new_parser_variables.scope_path)
 			.unwrap()
 			.methods
 			.insert(types::Method {
 				name: self.name.clone(),
+				method_path: new_parser_variables.endpoint_path,
 				responses: BTreeSet::new(),
 				comment: self.comment.clone(),
+				headers: new_parser_variables.headers,
+				parameters: new_parser_variables.parameters,
+				query_params: new_parser_variables.query_params,
 			});
 	}
 }
@@ -61,16 +61,31 @@ impl Parse for ast::types::Path {
 		intermediate_representation: &mut types::IntermediateRepresentation,
 	) {
 		let mut new_parser_variables = parser_variables;
-		new_parser_variables.endpoint_path.join(self.name.clone());
-		for child_scope in self.child_scopes.iter() {
-			child_scope.parse(new_parser_variables.clone(), intermediate_representation);
-		}
-		for child_path in self.child_paths.iter() {
-			child_path.parse(new_parser_variables.clone(), intermediate_representation);
-		}
-		for method in self.methods.iter() {
-			method.parse(new_parser_variables.clone(), intermediate_representation);
-		}
+		new_parser_variables.endpoint_path = new_parser_variables
+			.endpoint_path
+			.join(self.name.clone())
+			.into();
+		update_parser_variables(
+			&self.headers,
+			&self.parameters,
+			&self.query,
+			&mut new_parser_variables,
+		);
+		parse_children(
+			&self.child_scopes,
+			&new_parser_variables,
+			intermediate_representation,
+		);
+		parse_children(
+			&self.child_paths,
+			&new_parser_variables,
+			intermediate_representation,
+		);
+		parse_children(
+			&self.methods,
+			&new_parser_variables,
+			intermediate_representation,
+		);
 	}
 }
 
@@ -96,15 +111,27 @@ impl Parse for ast::types::Scope {
 				.scopes
 				.insert(new_parser_variables.scope_path.clone(), types::Scope::new());
 		}
-		for child_scope in self.child_scopes.iter() {
-			child_scope.parse(new_parser_variables.clone(), intermediate_representation);
-		}
-		for child_path in self.child_paths.iter() {
-			child_path.parse(new_parser_variables.clone(), intermediate_representation);
-		}
-		for method in self.methods.iter() {
-			method.parse(new_parser_variables.clone(), intermediate_representation);
-		}
+		update_parser_variables(
+			&self.headers,
+			&self.parameters,
+			&self.query,
+			&mut new_parser_variables,
+		);
+		parse_children(
+			&self.child_scopes,
+			&new_parser_variables,
+			intermediate_representation,
+		);
+		parse_children(
+			&self.child_paths,
+			&new_parser_variables,
+			intermediate_representation,
+		);
+		parse_children(
+			&self.methods,
+			&new_parser_variables,
+			intermediate_representation,
+		);
 	}
 }
 
@@ -114,9 +141,11 @@ impl Parse for ast::types::ApiData {
 		parser_variables: types::ParserVariables,
 		intermediate_representation: &mut types::IntermediateRepresentation,
 	) {
-		for child_scope in self.child_scopes.iter() {
-			child_scope.parse(parser_variables.clone(), intermediate_representation);
-		}
+		parse_children(
+			&self.child_scopes,
+			&parser_variables,
+			intermediate_representation,
+		);
 	}
 }
 
@@ -133,14 +162,64 @@ impl Parse for ast::types::Api {
 	}
 }
 
+fn parse_children<T: Parse>(
+	children: &Vec<T>,
+	parser_variables: &types::ParserVariables,
+	intermediate_representation: &mut types::IntermediateRepresentation,
+) {
+	for child in children.iter() {
+		child.parse(parser_variables.clone(), intermediate_representation);
+	}
+}
+
+fn update_parser_variables(
+	headers: &Vec<ast::types::KeyValuePair>,
+	parameters: &Vec<ast::types::KeyValuePair>,
+	query_params: &Vec<ast::types::KeyValuePair>,
+	parser_variables: &mut types::ParserVariables,
+) {
+	update_headers(headers, parser_variables);
+	update_parameters(parameters, parser_variables);
+	update_query(query_params, parser_variables);
+}
+
+fn update_headers(
+	headers: &Vec<ast::types::KeyValuePair>,
+	parser_variables: &mut types::ParserVariables,
+) {
+	for header in headers.iter() {
+		let (key, value) = types::KeyValuePairValue::from_ast_key_value_pair_ref(header);
+		parser_variables.headers.insert(key, value);
+	}
+}
+
+fn update_parameters(
+	parameters: &Vec<ast::types::KeyValuePair>,
+	parser_variables: &mut types::ParserVariables,
+) {
+	for parameter in parameters.iter() {
+		let (key, value) = types::KeyValuePairValue::from_ast_key_value_pair_ref(parameter);
+		parser_variables.parameters.insert(key, value);
+	}
+}
+
+fn update_query(
+	query_params: &Vec<ast::types::KeyValuePair>,
+	parser_variables: &mut types::ParserVariables,
+) {
+	for query_param in query_params.iter() {
+		let (key, value) = types::KeyValuePairValue::from_ast_key_value_pair_ref(query_param);
+		parser_variables.query_params.insert(key, value);
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use std::{
-		collections::{BTreeMap, HashMap, HashSet},
+		collections::{BTreeMap, HashSet},
+		path::Path,
 		str::FromStr,
 	};
-
-	use ast::types::Version;
 
 	use super::*;
 
@@ -200,14 +279,20 @@ mod tests {
 							name: http::Method::from_str("GET").unwrap(),
 							responses: vec![],
 							headers: vec![],
-							parameters: vec![],
+							query: vec![],
 							comment: None,
 						}],
+						parameters: vec![],
+						headers: vec![],
+						query: vec![],
 						comment: None,
 					}],
 					child_models: vec![],
 					child_paths: vec![],
 					methods: vec![],
+					parameters: vec![],
+					headers: vec![],
+					query: vec![],
 					comment: None,
 				}],
 			},
@@ -219,6 +304,10 @@ mod tests {
 			name: http::Method::GET,
 			responses: BTreeSet::new(),
 			comment: None,
+			parameters: BTreeMap::new(),
+			query_params: BTreeMap::new(),
+			headers: BTreeMap::new(),
+			method_path: Path::new("/").into(),
 		});
 		let mut expected_child_scopes_in_root_scope_hashset = HashSet::new();
 		expected_child_scopes_in_root_scope_hashset.insert("dashboard".into());
@@ -253,7 +342,7 @@ mod tests {
 				comment: None,
 			},
 		);
-		let mut expected_models_hashmap = BTreeMap::new();
+		let expected_models_hashmap = BTreeMap::new();
 		let expected_intermediate_representation = types::IntermediateRepresentation {
 			metadata: types::ApiMetadata {
 				name: "Wiro's API".into(),
@@ -270,11 +359,11 @@ mod tests {
 		};
 		let mut parsed_intermediate_representation = types::IntermediateRepresentation::new();
 		input_ast.parse(
-			types::ParserVariables::new(),
+			types::ParserVariables::default(),
 			&mut parsed_intermediate_representation,
 		);
-		// println!("{:#?}", expected_intermediate_representation);
-		// println!("{:#?}", parsed_intermediate_representation);
+		//dbg!(&expected_intermediate_representation);
+		//dbg!(&parsed_intermediate_representation);
 		assert!(expected_intermediate_representation == parsed_intermediate_representation);
 	}
 }
