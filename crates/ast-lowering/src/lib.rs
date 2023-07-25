@@ -357,13 +357,15 @@ mod tests {
 							child_paths: vec![],
 							comment: None,
 							methods: vec![],
-							headers: vec![ast::types::KeyValuePair {
-								key: "Authorization".into(),
-								type_: ast::types::Type::String,
-								description: "The authorization key.".into(),
-								parameters: vec![],
-								comment: None,
-							}],
+							headers: vec![
+								ast::types::KeyValuePair {
+									key: "Authorization".into(),
+									type_: ast::types::Type::String,
+									description: "The authorization key.".into(),
+									parameters: vec![],
+									comment: None,
+								}
+							],
 							metadata: vec![],
 							parameters: vec![],
 							query: vec![],

@@ -72,9 +72,13 @@ impl KeyValuePairValue {
 		let mut btreemap = BTreeMap::new();
 		for field in key_value_pair_vec {
 			let param_btreemap = Self::parse_parameters(&field.parameters);
+			assert!(
+				!btreemap.contains_key(&field.key),
+				"a key-value pair has the same key defined multiple times"
+			);
 			btreemap.insert(
 				field.key.clone(),
-				KeyValuePairValue {
+				Self {
 					type_: Type::from_ast_type(field.type_.clone()),
 					description: field.description.clone(),
 					parameters: param_btreemap,
