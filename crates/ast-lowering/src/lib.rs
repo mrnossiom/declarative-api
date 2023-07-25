@@ -263,30 +263,30 @@ fn update_headers(
 	headers: &[ast::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
-	for header in headers.iter() {
-		let (key, value) = types::KeyValuePairValue::from_ast_key_value_pair_ref(header);
-		parser_variables.headers.insert(key, value);
-	}
+	types::KeyValuePairValue::merge(
+		&mut parser_variables.headers,
+		&types::KeyValuePairValue::map_from_ast_key_value_pair_vec(headers),
+	);
 }
 
 fn update_parameters(
 	parameters: &[ast::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
-	for parameter in parameters.iter() {
-		let (key, value) = types::KeyValuePairValue::from_ast_key_value_pair_ref(parameter);
-		parser_variables.parameters.insert(key, value);
-	}
+	types::KeyValuePairValue::merge(
+		&mut parser_variables.parameters.clone(),
+		&types::KeyValuePairValue::map_from_ast_key_value_pair_vec(parameters),
+	);
 }
 
 fn update_query(
 	query_params: &[ast::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
-	for query_param in query_params.iter() {
-		let (key, value) = types::KeyValuePairValue::from_ast_key_value_pair_ref(query_param);
-		parser_variables.query_params.insert(key, value);
-	}
+	types::KeyValuePairValue::merge(
+		&mut parser_variables.query_params.clone(),
+		&types::KeyValuePairValue::map_from_ast_key_value_pair_vec(query_params),
+	);
 }
 
 #[cfg(test)]
@@ -357,7 +357,13 @@ mod tests {
 							child_paths: vec![],
 							comment: None,
 							methods: vec![],
-							headers: vec![],
+							headers: vec![ast::types::KeyValuePair {
+								key: "Authorization".into(),
+								type_: ast::types::Type::String,
+								description: "The authorization key.".into(),
+								parameters: vec![],
+								comment: None,
+							}],
 							metadata: vec![],
 							parameters: vec![],
 							query: vec![],
@@ -368,7 +374,7 @@ mod tests {
 								child_paths: vec![],
 								methods: vec![ast::types::Method {
 									method: http::Method::from_str("GET").expect(
-												"a method used for testing the ast-lowering crate doesn't exist ",
+												"a method used for testing the ast-lowering crate doesn't exist",
 											),
 											responses: vec![
 												ast::types::Response{
@@ -382,19 +388,19 @@ mod tests {
 																	key:"message".into(),
 																	type_:ast::types::Type::String,
 																	description:"The status message itself".into(),
-																	parameters:BTreeMap::new(),
+																	parameters:vec![],
 																	comment: None,
 																},ast::types::KeyValuePair{
 																	key:"code".into(),
 																	type_:ast::types::Type::Int,
 																	description:"The status code".into(),
-																	parameters:BTreeMap::new(),
+																	parameters:vec![],
 																	comment: None,
 																}
 															]
 														),
 														description:"A status message container".into(),
-														parameters:BTreeMap::new(),
+														parameters:vec![],
 														comment: None,
 													}],
 													comment: None
@@ -467,7 +473,15 @@ mod tests {
 				comment: None,
 				parameters: BTreeMap::new(),
 				query_params: BTreeMap::new(),
-				headers: BTreeMap::new(),
+				headers: BTreeMap::from([(
+					"Authorization".into(),
+					types::KeyValuePairValue {
+						type_: types::Type::String,
+						description: "The authorization key.".into(),
+						parameters: BTreeMap::new(),
+						comment: None,
+					},
+				)]),
 			},
 		);
 		let expected_scopes_btreemap = BTreeMap::from([
@@ -524,8 +538,8 @@ mod tests {
 			types::ParserVariables::default(),
 			&mut parsed_intermediate_representation,
 		);
-		//dbg!(&expected_intermediate_representation);
-		//dbg!(&parsed_intermediate_representation);
+		// dbg!(&expected_intermediate_representation);
+		// dbg!(&parsed_intermediate_representation);
 		assert!(expected_intermediate_representation == parsed_intermediate_representation);
 	}
 }

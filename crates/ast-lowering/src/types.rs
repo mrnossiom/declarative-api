@@ -48,7 +48,7 @@ pub type ScopePath = Vec<String>;
 pub struct KeyValuePairValue {
 	pub type_: Type,
 	pub description: String,
-	pub parameters: BTreeMap<String, String>,
+	pub parameters: KeyValuePairValueParameters,
 	pub comment: Option<String>,
 }
 
@@ -61,7 +61,7 @@ impl KeyValuePairValue {
 			Self {
 				type_: Type::from_ast_type(key_value_pair.type_.clone()),
 				description: key_value_pair.description.clone(),
-				parameters: key_value_pair.parameters.clone(),
+				parameters: Self::parse_parameters(&key_value_pair.parameters),
 				comment: key_value_pair.comment.clone(),
 			},
 		)
@@ -69,12 +69,39 @@ impl KeyValuePairValue {
 	pub fn map_from_ast_key_value_pair_vec(
 		key_value_pair_vec: &[ast::types::KeyValuePair],
 	) -> BTreeMap<String, Self> {
-		let mut b_tree_map = BTreeMap::new();
-		for key_value_pair in key_value_pair_vec.iter() {
-			let (key, value) = Self::from_ast_key_value_pair_ref(key_value_pair);
-			b_tree_map.insert(key, value);
+		let mut btreemap = BTreeMap::new();
+		for field in key_value_pair_vec {
+			let param_btreemap = Self::parse_parameters(&field.parameters);
+			btreemap.insert(
+				field.key.clone(),
+				KeyValuePairValue {
+					type_: Type::from_ast_type(field.type_.clone()),
+					description: field.description.clone(),
+					parameters: param_btreemap,
+					comment: field.comment.clone(),
+				},
+			);
 		}
-		b_tree_map
+		btreemap
+	}
+	// This merges the b BTreeMap into the a BTreeMap. In case of the same keys being defined in both BTreeMap, b's values has priority.
+	pub fn merge(a: &mut BTreeMap<String, Self>, b: &BTreeMap<String, Self>) {
+		for (key, value) in b {
+			a.insert(key.clone(), value.clone());
+		}
+	}
+	pub fn parse_parameters(
+		parameters: &[ast::types::KeyValuePairParameter],
+	) -> BTreeMap<String, String> {
+		let mut param_btreemap = BTreeMap::new();
+		for parameter in parameters {
+			assert!(
+				!param_btreemap.contains_key(&parameter.0.clone()),
+				"a key-value pair has the same parameter defined multiple times"
+			);
+			param_btreemap.insert(parameter.0.clone(), parameter.1.clone());
+		}
+		param_btreemap
 	}
 }
 
@@ -114,6 +141,8 @@ pub struct Model {
 	pub comment: Option<String>,
 }
 
+pub type KeyValuePairValueParameters = BTreeMap<String, String>;
+
 #[derive(Debug, PartialEq, Clone, Hash, Eq)]
 pub enum Type {
 	Int,
@@ -132,19 +161,7 @@ impl Type {
 			ast::types::Type::String => Self::String,
 			ast::types::Type::Model(model_name) => Self::Model(model_name),
 			ast::types::Type::Object(fields) => {
-				let mut btreemap = BTreeMap::new();
-				for field in &fields {
-					btreemap.insert(
-						field.key.clone(),
-						KeyValuePairValue {
-							type_: Self::from_ast_type(field.type_.clone()),
-							description: field.description.clone(),
-							parameters: field.parameters.clone(),
-							comment: field.comment.clone(),
-						},
-					);
-				}
-				Self::Object(btreemap)
+				Self::Object(KeyValuePairValue::map_from_ast_key_value_pair_vec(&fields))
 			}
 			ast::types::Type::List(list_obj) => {
 				let mut out_list_obj = vec![];

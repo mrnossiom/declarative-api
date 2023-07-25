@@ -45,12 +45,14 @@ pub struct Path {
 	pub comment: Option<String>,
 }
 
+pub type KeyValuePairParameter = (String, String);
+
 #[derive(Debug, Clone)]
 pub struct KeyValuePair {
 	pub key: String,
 	pub type_: Type,
 	pub description: String,
-	pub parameters: BTreeMap<String, String>,
+	pub parameters: Vec<KeyValuePairParameter>,
 	pub comment: Option<String>,
 }
 
