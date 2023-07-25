@@ -25,6 +25,7 @@ pub struct Response {
 
 #[derive(Debug)]
 pub struct Method {
+	pub name: http::Method,
 	pub responses: Vec<Response>,
 	pub headers: Vec<KeyValuePair>,
 	pub parameters: Vec<KeyValuePair>,
@@ -33,6 +34,7 @@ pub struct Method {
 
 #[derive(Debug)]
 pub struct Path {
+	pub name: String,
 	pub child_scopes: Vec<Scope>,
 	pub child_paths: Vec<Path>,
 	pub methods: Vec<Method>,
@@ -53,6 +55,7 @@ pub struct KeyValuePair {
 
 #[derive(Debug)]
 pub struct Scope {
+	pub name: String,
 	pub child_scopes: Vec<Scope>,
 	pub child_models: Vec<Model>,
 	pub child_paths: Vec<Path>,

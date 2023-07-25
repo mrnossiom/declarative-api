@@ -1,9 +1,11 @@
-use std::{cmp::Ordering, collections::HashMap, fmt, vec};
-
-#[derive(Debug, Eq, Hash, PartialEq)]
-pub struct ScopePath {
-	path: Vec<String>,
-}
+use std::{
+	cmp::Ordering,
+	collections::{BTreeMap, BTreeSet, HashSet},
+	fmt,
+	hash::Hash,
+	path::Path,
+	vec,
+};
 
 #[derive(Debug)]
 pub struct Version {
@@ -40,56 +42,76 @@ impl PartialEq for Version {
 	}
 }
 
-#[derive(Debug, PartialEq)]
+pub type ScopePath = Vec<String>;
+
+#[derive(Debug, PartialEq, Clone, Hash, Eq)]
 pub struct KeyValuePairValue {
 	pub type_: Type,
 	pub description: String,
-	pub parameters: HashMap<String, String>,
-	pub comment: String,
+	pub parameters: BTreeMap<String, String>,
+	pub comment: Option<String>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub struct Method {
-	pub responses: Vec<Response>,
-	pub headers: HashMap<String, KeyValuePairValue>,
-	pub parameters: HashMap<String, KeyValuePairValue>,
-	pub comment: String,
+	pub name: http::Method,
+	pub responses: BTreeSet<Response>,
+	pub comment: Option<String>,
 }
 
-#[derive(Debug, PartialEq)]
-pub struct Path {
+#[derive(Debug, PartialEq, Clone)]
+pub struct EndpointPath {
 	pub methods: Vec<Method>,
-	pub headers: HashMap<String, KeyValuePairValue>,
-	pub parameters: HashMap<String, KeyValuePairValue>,
-	pub metadata: HashMap<String, KeyValuePairValue>,
-	pub comment: String,
+	pub parameters: BTreeMap<String, KeyValuePairValue>,
+	pub metadata: BTreeMap<String, KeyValuePairValue>,
+	pub comment: Option<String>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Hash, Eq)]
 pub struct Response {
 	pub status_code: u32,
-	pub body: HashMap<String, KeyValuePairValue>,
-	pub headers: HashMap<String, KeyValuePairValue>,
-	pub comment: String,
+	pub body: BTreeMap<String, KeyValuePairValue>,
+	pub headers: BTreeMap<String, KeyValuePairValue>,
+	pub comment: Option<String>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Scope {
-	pub child_scopes: Vec<Scope>,
-	pub child_models: Vec<Model>,
-	pub child_paths: Vec<Path>,
-	pub methods: Vec<Method>,
-	pub comment: String,
+	pub child_scopes: HashSet<String>,
+	pub models: HashSet<Model>,
+	pub methods: HashSet<Method>,
+	pub comment: Option<String>,
 }
 
-#[derive(Debug, PartialEq)]
+impl Scope {
+	pub fn new() -> Scope {
+		Scope {
+			child_scopes: HashSet::new(),
+			models: HashSet::new(),
+			methods: HashSet::new(),
+			comment: None,
+		}
+	}
+}
+
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub struct Model {
 	pub name: String,
-	pub model_body: HashMap<String, KeyValuePairValue>,
-	pub comment: String,
+	pub model_body: BTreeMap<String, KeyValuePairValue>,
+	pub comment: Option<String>,
 }
 
-#[derive(Debug, PartialEq)]
+impl Model {
+	pub fn new() -> Model {
+		Model {
+			name: "".into(),
+			model_body: BTreeMap::new(),
+			comment: None,
+		}
+	}
+}
+
+#[derive(Debug, PartialEq, Clone, Hash, Eq)]
 pub enum Type {
 	Int,
 
@@ -101,8 +123,8 @@ pub enum Type {
 
 #[derive(Debug, PartialEq)]
 pub struct ApiMetadata {
-	pub name: Option<String>,
-	pub version: Option<Version>,
+	pub name: String,
+	pub version: Version,
 	pub urls: Vec<String>,
 	pub comment: Option<String>,
 }
@@ -110,40 +132,48 @@ pub struct ApiMetadata {
 #[derive(Debug, PartialEq)]
 pub struct IntermediateRepresentation {
 	pub metadata: ApiMetadata,
-	pub scopes: HashMap<ScopePath, Scope>,
+	pub scopes: BTreeMap<ScopePath, Scope>,
+	pub models: BTreeMap<ScopePath, Model>,
 }
 
 impl IntermediateRepresentation {
 	pub fn new() -> IntermediateRepresentation {
+		let mut scopes_map = BTreeMap::new();
+		scopes_map.insert(vec![], Scope::new());
 		IntermediateRepresentation {
 			metadata: ApiMetadata {
-				name: None,
-				version: None,
+				name: "".into(),
+				version: Version {
+					major: 0,
+					minor: 0,
+					patch: 0,
+				},
 				urls: vec![],
 				comment: None,
 			},
-			scopes: HashMap::new(),
+			scopes: scopes_map,
+			models: BTreeMap::new(),
 		}
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ParserVariables {
 	pub scope_path: ScopePath,
-	pub endpoint_path: String,
-	pub headers: HashMap<String, KeyValuePairValue>,
-	pub parameters: HashMap<String, KeyValuePairValue>,
-	pub comment: String,
+	pub endpoint_path: Box<Path>,
+	pub headers: BTreeMap<String, KeyValuePairValue>,
+	pub parameters: BTreeMap<String, KeyValuePairValue>,
+	pub comment: Option<String>,
 }
 
 impl ParserVariables {
 	pub fn new() -> ParserVariables {
 		ParserVariables {
-			scope_path: ScopePath { path: vec![] },
-			endpoint_path: "".into(),
-			headers: HashMap::new(),
-			parameters: HashMap::new(),
-			comment: "".into(),
+			scope_path: ScopePath::new(),
+			endpoint_path: Path::new("/").into(),
+			headers: BTreeMap::new(),
+			parameters: BTreeMap::new(),
+			comment: None,
 		}
 	}
 }
