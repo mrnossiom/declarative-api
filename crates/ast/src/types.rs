@@ -25,7 +25,7 @@ pub struct Response {
 
 #[derive(Debug)]
 pub struct Method {
-	pub name: http::Method,
+	pub method: http::Method,
 	pub responses: Vec<Response>,
 	pub headers: Vec<KeyValuePair>,
 	pub query: Vec<KeyValuePair>,
@@ -92,5 +92,6 @@ pub enum Type {
 	String,
 
 	Model(String),
-	Object(Box<KeyValuePair>),
+	Object(Vec<KeyValuePair>),
+	List(Vec<Type>),
 }

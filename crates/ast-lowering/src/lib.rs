@@ -5,7 +5,7 @@
 	rustdoc::broken_intra_doc_links
 )]
 
-use std::collections::BTreeSet;
+use std::collections::BTreeMap;
 
 mod types;
 
@@ -39,6 +39,42 @@ impl Parse for ast::types::ApiMetadata {
 	}
 }
 
+impl Parse for ast::types::Response {
+	fn parse(
+		&self,
+		parser_variables: types::ParserVariables,
+		intermediate_representation: &mut types::IntermediateRepresentation,
+	) {
+		let endpoint_path = parser_variables
+			.endpoint_path
+			.to_str()
+			.expect("failed to generate endpoint path")
+			.to_string();
+		let current_scope: &mut types::Scope = intermediate_representation
+			.scopes
+			.get_mut(&parser_variables.scope_path)
+			.expect("tried adding an endpoint to a non-existant scope");
+		current_scope
+			.endpoints
+			.get_mut(&endpoint_path)
+			.expect("tried adding a method to a non-existant endpoint")
+			.methods
+			.get_mut(&parser_variables.current_method)
+			.expect("tried adding a response to a non-existant endpoint")
+			.responses
+			.insert(
+				self.status_code,
+				types::Response {
+					headers: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(
+						&self.headers,
+					),
+					body: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(&self.body),
+					comment: self.comment.clone(),
+				},
+			);
+	}
+}
+
 impl Parse for ast::types::Method {
 	fn parse(
 		&self,
@@ -56,7 +92,7 @@ impl Parse for ast::types::Method {
 		let current_scope = intermediate_representation
 			.scopes
 			.get_mut(&new_parser_variables.scope_path)
-			.expect("tried adding a method to a non-existant scope");
+			.expect("tried adding an endpoint to a non-existant scope");
 		if !(current_scope.endpoints.contains_key(&endpoint_path)) {
 			current_scope
 				.endpoints
@@ -67,19 +103,22 @@ impl Parse for ast::types::Method {
 			.get_mut(&endpoint_path)
 			.expect("tried adding a method to a non-existant endpoint")
 			.methods
-			.insert(types::Method {
-				name: self.name.clone(),
-				responses: BTreeSet::new(),
-				comment: self.comment.clone(),
-				headers: new_parser_variables.headers,
-				parameters: new_parser_variables.parameters,
-				query_params: new_parser_variables.query_params,
-			});
-		/*parse_children(
+			.insert(
+				self.method.to_string(),
+				types::Method {
+					responses: BTreeMap::new(),
+					comment: self.comment.clone(),
+					headers: new_parser_variables.headers.clone(),
+					parameters: new_parser_variables.parameters.clone(),
+					query_params: new_parser_variables.query_params.clone(),
+				},
+			);
+		new_parser_variables.current_method = self.method.to_string();
+		parse_children(
 			&self.responses,
 			&new_parser_variables,
 			intermediate_representation,
-		)*/
+		);
 	}
 }
 
@@ -248,6 +287,7 @@ mod tests {
 	use std::{
 		collections::{BTreeMap, HashMap, HashSet},
 		str::FromStr,
+		vec,
 	};
 
 	use super::*;
@@ -320,10 +360,39 @@ mod tests {
 								child_models: vec![],
 								child_paths: vec![],
 								methods: vec![ast::types::Method {
-											name: http::Method::from_str("GET").expect(
-												"a method used for testing the ast-lowering crate doesn't exist",
+									method: http::Method::from_str("GET").expect(
+												"a method used for testing the ast-lowering crate doesn't exist ",
 											),
-											responses: vec![],
+											responses: vec![
+												ast::types::Response{
+													headers: vec![],
+													status_code: 200,
+													body:vec![ast::types::KeyValuePair{
+														key:"status".into(),
+														type_:ast::types::Type::Object(
+															vec![
+																ast::types::KeyValuePair{
+																	key:"message".into(),
+																	type_:ast::types::Type::String,
+																	description:"The status message itself".into(),
+																	parameters:BTreeMap::new(),
+																	comment: None,
+																},ast::types::KeyValuePair{
+																	key:"code".into(),
+																	type_:ast::types::Type::Int,
+																	description:"The status code".into(),
+																	parameters:BTreeMap::new(),
+																	comment: None,
+																}
+															]
+														),
+														description:"A status message container".into(),
+														parameters:BTreeMap::new(),
+														comment: None,
+													}],
+													comment: None
+												}
+											],
 											headers: vec![],
 											query: vec![],
 											comment: None,
@@ -349,53 +418,86 @@ mod tests {
 				}],
 			},
 		};
-		let mut expected_child_scopes_hashset = HashSet::new();
-		expected_child_scopes_hashset.insert("metrics".into());
-		let mut expected_methods_hashset = types::Endpoint::default();
-		expected_methods_hashset.methods.insert(types::Method {
-			name: http::Method::GET,
-			responses: BTreeSet::new(),
-			comment: None,
-			parameters: BTreeMap::new(),
-			query_params: BTreeMap::new(),
-			headers: BTreeMap::new(),
-		});
-		let mut expected_child_scopes_in_root_scope_hashset = HashSet::new();
-		expected_child_scopes_in_root_scope_hashset.insert("dashboard".into());
-		let mut expected_scopes_hashmap = BTreeMap::new();
-		// Root scope
-		expected_scopes_hashmap.insert(
-			vec![],
-			types::Scope {
-				child_scopes: expected_child_scopes_in_root_scope_hashset,
-				models: HashSet::new(),
-				endpoints: HashMap::new(),
+		let mut expected_endpoint_object = types::Endpoint::default();
+		expected_endpoint_object.methods.insert(
+			http::Method::GET.to_string(),
+			types::Method {
+				responses: BTreeMap::from([(
+					200,
+					types::Response {
+						body: BTreeMap::from([(
+							"status".into(),
+							types::KeyValuePairValue {
+								type_: types::Type::Object(BTreeMap::from([
+									(
+										"code".into(),
+										types::KeyValuePairValue {
+											type_: types::Type::Int,
+											description: "The status code".into(),
+											parameters: BTreeMap::new(),
+											comment: None,
+										},
+									),
+									(
+										"message".into(),
+										types::KeyValuePairValue {
+											type_: types::Type::String,
+											description: "The status message itself".into(),
+											parameters: BTreeMap::new(),
+											comment: None,
+										},
+									),
+								])),
+								description: "A status message container".into(),
+								parameters: BTreeMap::new(),
+								comment: None,
+							},
+						)]),
+						headers: BTreeMap::new(),
+						comment: None,
+					},
+				)]),
 				comment: None,
+				parameters: BTreeMap::new(),
+				query_params: BTreeMap::new(),
+				headers: BTreeMap::new(),
 			},
 		);
-		// Level 1 scope
-		expected_scopes_hashmap.insert(
-			vec!["dashboard".into()],
-			types::Scope {
-				child_scopes: expected_child_scopes_hashset,
-				models: HashSet::new(),
-				endpoints: HashMap::new(),
-				comment: None,
-			},
-		);
-		let mut expected_endpoints_hashmap = HashMap::new();
-		expected_endpoints_hashmap.insert("/dashboard/metrics".into(), expected_methods_hashset);
-		// Level 2 scope
-		expected_scopes_hashmap.insert(
-			vec!["dashboard".into(), "metrics".into()],
-			types::Scope {
-				child_scopes: HashSet::new(),
-				models: HashSet::new(),
-				endpoints: expected_endpoints_hashmap,
-				comment: None,
-			},
-		);
-		let expected_models_hashmap = BTreeMap::new();
+		let expected_scopes_btreemap = BTreeMap::from([
+			// Root scope
+			(
+				vec![],
+				types::Scope {
+					child_scopes: HashSet::from(["dashboard".into()]),
+					models: HashSet::new(),
+					endpoints: HashMap::new(),
+					comment: None,
+				},
+			),
+			// Level 1 scope
+			(
+				vec!["dashboard".into()],
+				types::Scope {
+					child_scopes: HashSet::from(["metrics".into()]),
+					models: HashSet::new(),
+					endpoints: HashMap::new(),
+					comment: None,
+				},
+			),
+			// Level 2 scope
+			(
+				vec!["dashboard".into(), "metrics".into()],
+				types::Scope {
+					child_scopes: HashSet::new(),
+					models: HashSet::new(),
+					endpoints: HashMap::from([(
+						"/dashboard/metrics".into(),
+						expected_endpoint_object,
+					)]),
+					comment: None,
+				},
+			),
+		]);
 		let expected_intermediate_representation = types::IntermediateRepresentation {
 			metadata: types::ApiMetadata {
 				name: "Wiro's API".into(),
@@ -407,16 +509,16 @@ mod tests {
 				urls: vec![],
 				comment: Some("Je suis un commentaire de documentation (des métadonnées)".into()),
 			},
-			scopes: expected_scopes_hashmap,
-			models: expected_models_hashmap,
+			scopes: expected_scopes_btreemap,
+			models: BTreeMap::new(),
 		};
 		let mut parsed_intermediate_representation = types::IntermediateRepresentation::default();
 		input_ast.parse(
 			types::ParserVariables::default(),
 			&mut parsed_intermediate_representation,
 		);
-		// dbg!(&expected_intermediate_representation);
-		// dbg!(&parsed_intermediate_representation);
+		//dbg!(&expected_intermediate_representation);
+		//dbg!(&parsed_intermediate_representation);
 		assert!(expected_intermediate_representation == parsed_intermediate_representation);
 	}
 }

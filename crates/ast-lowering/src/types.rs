@@ -1,6 +1,6 @@
 use std::{
 	cmp::Ordering,
-	collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+	collections::{BTreeMap, HashMap, HashSet},
 	fmt,
 	hash::Hash,
 	path::Path,
@@ -66,40 +66,37 @@ impl KeyValuePairValue {
 			},
 		)
 	}
+	pub fn map_from_ast_key_value_pair_vec(
+		key_value_pair_vec: &[ast::types::KeyValuePair],
+	) -> BTreeMap<String, Self> {
+		let mut b_tree_map = BTreeMap::new();
+		for key_value_pair in key_value_pair_vec.iter() {
+			let (key, value) = Self::from_ast_key_value_pair_ref(key_value_pair);
+			b_tree_map.insert(key, value);
+		}
+		b_tree_map
+	}
 }
 
 #[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub struct Method {
-	pub name: http::Method,
 	pub parameters: BTreeMap<String, KeyValuePairValue>,
 	pub headers: BTreeMap<String, KeyValuePairValue>,
 	pub query_params: BTreeMap<String, KeyValuePairValue>,
-	pub responses: BTreeSet<Response>,
+	pub responses: BTreeMap<u32, Response>,
 	pub comment: Option<String>,
-}
-
-impl Ord for Method {
-	fn cmp(&self, other: &Self) -> Ordering {
-		self.name.to_string().cmp(&other.name.to_string())
-	}
-}
-
-impl PartialOrd for Method {
-	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-		Some(self.name.to_string().cmp(&other.name.to_string()))
-	}
 }
 
 #[derive(Debug, PartialEq, Clone, Hash, Eq)]
 pub struct Response {
-	pub status_code: u32,
 	pub body: BTreeMap<String, KeyValuePairValue>,
+	pub headers: BTreeMap<String, KeyValuePairValue>,
 	pub comment: Option<String>,
 }
 
 #[derive(Debug, PartialEq, Clone, Eq, Hash, Default)]
 pub struct Endpoint {
-	pub methods: BTreeSet<Method>,
+	pub methods: BTreeMap<String, Method>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
@@ -124,7 +121,8 @@ pub enum Type {
 	String,
 
 	Model(String),
-	Object(Box<(String, KeyValuePairValue)>),
+	Object(BTreeMap<String, KeyValuePairValue>),
+	List(Vec<Type>),
 }
 
 impl Type {
@@ -133,15 +131,28 @@ impl Type {
 			ast::types::Type::Int => Self::Int,
 			ast::types::Type::String => Self::String,
 			ast::types::Type::Model(model_name) => Self::Model(model_name),
-			ast::types::Type::Object(object) => Self::Object(Box::new((
-				object.key,
-				KeyValuePairValue {
-					type_: Self::from_ast_type(object.type_),
-					description: object.description,
-					parameters: object.parameters,
-					comment: object.comment,
-				},
-			))),
+			ast::types::Type::Object(fields) => {
+				let mut btreemap = BTreeMap::new();
+				for field in &fields {
+					btreemap.insert(
+						field.key.clone(),
+						KeyValuePairValue {
+							type_: Self::from_ast_type(field.type_.clone()),
+							description: field.description.clone(),
+							parameters: field.parameters.clone(),
+							comment: field.comment.clone(),
+						},
+					);
+				}
+				Self::Object(btreemap)
+			}
+			ast::types::Type::List(list_obj) => {
+				let mut out_list_obj = vec![];
+				for obj in &list_obj {
+					out_list_obj.push(Self::from_ast_type(obj.clone()));
+				}
+				Self::List(out_list_obj)
+			}
 		}
 	}
 }
@@ -184,6 +195,7 @@ impl Default for IntermediateRepresentation {
 
 #[derive(Debug, Clone)]
 pub struct ParserVariables {
+	pub current_method: String,
 	pub scope_path: ScopePath,
 	pub endpoint_path: Box<Path>,
 	pub headers: BTreeMap<String, KeyValuePairValue>,
@@ -195,6 +207,7 @@ pub struct ParserVariables {
 impl Default for ParserVariables {
 	fn default() -> Self {
 		Self {
+			current_method: String::new(),
 			scope_path: ScopePath::new(),
 			endpoint_path: Path::new("/").into(),
 			headers: BTreeMap::new(),
