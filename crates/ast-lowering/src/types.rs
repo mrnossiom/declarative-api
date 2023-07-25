@@ -1,6 +1,6 @@
 use std::{
 	cmp::Ordering,
-	collections::{BTreeMap, BTreeSet, HashSet},
+	collections::{BTreeMap, BTreeSet, HashMap, HashSet},
 	fmt,
 	hash::Hash,
 	path::Path,
@@ -71,12 +71,23 @@ impl KeyValuePairValue {
 #[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub struct Method {
 	pub name: http::Method,
-	pub method_path: Box<Path>,
 	pub parameters: BTreeMap<String, KeyValuePairValue>,
 	pub headers: BTreeMap<String, KeyValuePairValue>,
 	pub query_params: BTreeMap<String, KeyValuePairValue>,
 	pub responses: BTreeSet<Response>,
 	pub comment: Option<String>,
+}
+
+impl Ord for Method {
+	fn cmp(&self, other: &Self) -> Ordering {
+		self.name.to_string().cmp(&other.name.to_string())
+	}
+}
+
+impl PartialOrd for Method {
+	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+		Some(self.name.to_string().cmp(&other.name.to_string()))
+	}
 }
 
 #[derive(Debug, PartialEq, Clone, Hash, Eq)]
@@ -86,11 +97,16 @@ pub struct Response {
 	pub comment: Option<String>,
 }
 
+#[derive(Debug, PartialEq, Clone, Eq, Hash, Default)]
+pub struct Endpoint {
+	pub methods: BTreeSet<Method>,
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct Scope {
 	pub child_scopes: HashSet<String>,
 	pub models: HashSet<Model>,
-	pub methods: HashSet<Method>,
+	pub endpoints: HashMap<String, Endpoint>,
 	pub comment: Option<String>,
 }
 

@@ -48,20 +48,38 @@ impl Parse for ast::types::Method {
 		let mut new_parser_variables = parser_variables;
 		update_headers(&self.headers, &mut new_parser_variables);
 		update_query(&self.query, &mut new_parser_variables);
-		intermediate_representation
+		let endpoint_path = new_parser_variables
+			.endpoint_path
+			.to_str()
+			.expect("failed to generate endpoint path")
+			.to_string();
+		let current_scope = intermediate_representation
 			.scopes
 			.get_mut(&new_parser_variables.scope_path)
-			.expect("tried adding a method to a non-existant scope")
+			.expect("tried adding a method to a non-existant scope");
+		if !(current_scope.endpoints.contains_key(&endpoint_path)) {
+			current_scope
+				.endpoints
+				.insert(endpoint_path.clone(), types::Endpoint::default());
+		}
+		current_scope
+			.endpoints
+			.get_mut(&endpoint_path)
+			.expect("tried adding a method to a non-existant endpoint")
 			.methods
 			.insert(types::Method {
 				name: self.name.clone(),
-				method_path: new_parser_variables.endpoint_path,
 				responses: BTreeSet::new(),
 				comment: self.comment.clone(),
 				headers: new_parser_variables.headers,
 				parameters: new_parser_variables.parameters,
 				query_params: new_parser_variables.query_params,
 			});
+		/*parse_children(
+			&self.responses,
+			&new_parser_variables,
+			intermediate_representation,
+		)*/
 	}
 }
 
@@ -228,8 +246,7 @@ fn update_query(
 #[cfg(test)]
 mod tests {
 	use std::{
-		collections::{BTreeMap, HashSet},
-		path::Path,
+		collections::{BTreeMap, HashMap, HashSet},
 		str::FromStr,
 	};
 
@@ -283,27 +300,47 @@ mod tests {
 			data: ast::types::ApiData {
 				child_scopes: vec![ast::types::Scope {
 					name: "dashboard".into(),
-					child_scopes: vec![ast::types::Scope {
-						name: "metrics".into(),
+					child_scopes: vec![],
+					child_models: vec![],
+					child_paths: vec![ast::types::Path {
+						name: "dashboard".into(),
 						child_scopes: vec![],
-						child_models: vec![],
-						child_paths: vec![],
-						methods: vec![ast::types::Method {
-							name: http::Method::from_str("GET").expect(
-								"a method used for testing the ast-lowering crate doesn't exist",
-							),
-							responses: vec![],
-							headers: vec![],
-							query: vec![],
+						child_paths: vec![ast::types::Path {
+							name: "metrics".into(),
+							child_paths: vec![],
 							comment: None,
+							methods: vec![],
+							headers: vec![],
+							metadata: vec![],
+							parameters: vec![],
+							query: vec![],
+							child_scopes: vec![ast::types::Scope {
+								name: "metrics".into(),
+								child_scopes: vec![],
+								child_models: vec![],
+								child_paths: vec![],
+								methods: vec![ast::types::Method {
+											name: http::Method::from_str("GET").expect(
+												"a method used for testing the ast-lowering crate doesn't exist",
+											),
+											responses: vec![],
+											headers: vec![],
+											query: vec![],
+											comment: None,
+										}],
+								parameters: vec![],
+								headers: vec![],
+								query: vec![],
+								comment: None,
+							}],
 						}],
-						parameters: vec![],
+						methods: vec![],
 						headers: vec![],
+						parameters: vec![],
 						query: vec![],
+						metadata: vec![],
 						comment: None,
 					}],
-					child_models: vec![],
-					child_paths: vec![],
 					methods: vec![],
 					parameters: vec![],
 					headers: vec![],
@@ -314,15 +351,14 @@ mod tests {
 		};
 		let mut expected_child_scopes_hashset = HashSet::new();
 		expected_child_scopes_hashset.insert("metrics".into());
-		let mut expected_methods_hashset = HashSet::new();
-		expected_methods_hashset.insert(types::Method {
+		let mut expected_methods_hashset = types::Endpoint::default();
+		expected_methods_hashset.methods.insert(types::Method {
 			name: http::Method::GET,
 			responses: BTreeSet::new(),
 			comment: None,
 			parameters: BTreeMap::new(),
 			query_params: BTreeMap::new(),
 			headers: BTreeMap::new(),
-			method_path: Path::new("/").into(),
 		});
 		let mut expected_child_scopes_in_root_scope_hashset = HashSet::new();
 		expected_child_scopes_in_root_scope_hashset.insert("dashboard".into());
@@ -333,7 +369,7 @@ mod tests {
 			types::Scope {
 				child_scopes: expected_child_scopes_in_root_scope_hashset,
 				models: HashSet::new(),
-				methods: HashSet::new(),
+				endpoints: HashMap::new(),
 				comment: None,
 			},
 		);
@@ -343,17 +379,19 @@ mod tests {
 			types::Scope {
 				child_scopes: expected_child_scopes_hashset,
 				models: HashSet::new(),
-				methods: HashSet::new(),
+				endpoints: HashMap::new(),
 				comment: None,
 			},
 		);
+		let mut expected_endpoints_hashmap = HashMap::new();
+		expected_endpoints_hashmap.insert("/dashboard/metrics".into(), expected_methods_hashset);
 		// Level 2 scope
 		expected_scopes_hashmap.insert(
 			vec!["dashboard".into(), "metrics".into()],
 			types::Scope {
 				child_scopes: HashSet::new(),
 				models: HashSet::new(),
-				methods: expected_methods_hashset,
+				endpoints: expected_endpoints_hashmap,
 				comment: None,
 			},
 		);
@@ -377,8 +415,8 @@ mod tests {
 			types::ParserVariables::default(),
 			&mut parsed_intermediate_representation,
 		);
-		//dbg!(&expected_intermediate_representation);
-		//dbg!(&parsed_intermediate_representation);
+		// dbg!(&expected_intermediate_representation);
+		// dbg!(&parsed_intermediate_representation);
 		assert!(expected_intermediate_representation == parsed_intermediate_representation);
 	}
 }
