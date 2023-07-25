@@ -7,7 +7,7 @@ use std::{
 	vec,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Version {
 	pub major: u32,
 	pub minor: u32,
@@ -40,6 +40,14 @@ impl PartialEq for Version {
 	fn eq(&self, other: &Self) -> bool {
 		self.major == other.major && self.minor == other.minor && self.patch == other.patch
 	}
+}
+
+pub trait ResolveModels {
+	fn resolve_models(
+		&mut self,
+		scope: &ScopePath,
+		intermediate_representation: IntermediateRepresentation,
+	);
 }
 
 pub type ScopePath = Vec<String>;
@@ -109,6 +117,44 @@ impl KeyValuePairValue {
 	}
 }
 
+impl ResolveModels for BTreeMap<String, KeyValuePairValue> {
+	fn resolve_models(
+		&mut self,
+		scope: &ScopePath,
+		intermediate_representation: IntermediateRepresentation,
+	) {
+		for value in self.values_mut() {
+			match &mut value.type_ {
+				Type::Model(model_name) => {
+					let mut found = false;
+					let mut current_scope = scope.clone();
+					while !found {
+						found = intermediate_representation
+							.scopes
+							.get(&current_scope)
+							.expect("missing scope")
+							.models
+							.contains_key(model_name);
+						if !found {
+							assert!(
+								!current_scope.is_empty(),
+								"unknown reference to model \"{model_name}\""
+							);
+							current_scope.truncate(current_scope.len() - 1);
+						}
+					}
+					current_scope.push(model_name.clone());
+					value.type_ = Type::ResolvedModel(current_scope);
+				}
+				Type::Object(child_object) => {
+					child_object.resolve_models(scope, intermediate_representation.clone());
+				}
+				_ => (),
+			};
+		}
+	}
+}
+
 #[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub struct Method {
 	pub parameters: BTreeMap<String, KeyValuePairValue>,
@@ -133,14 +179,13 @@ pub struct Endpoint {
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct Scope {
 	pub child_scopes: HashSet<String>,
-	pub models: HashSet<Model>,
+	pub models: BTreeMap<String, Model>,
 	pub endpoints: HashMap<String, Endpoint>,
 	pub comment: Option<String>,
 }
 
 #[derive(Debug, PartialEq, Clone, Eq, Hash, Default)]
 pub struct Model {
-	pub name: String,
 	pub model_body: BTreeMap<String, KeyValuePairValue>,
 	pub comment: Option<String>,
 }
@@ -154,6 +199,7 @@ pub enum Type {
 	String,
 
 	Model(String),
+	ResolvedModel(ScopePath),
 	Object(BTreeMap<String, KeyValuePairValue>),
 	List(Vec<Type>),
 }
@@ -178,7 +224,7 @@ impl Type {
 	}
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ApiMetadata {
 	pub name: String,
 	pub version: Version,
@@ -186,11 +232,11 @@ pub struct ApiMetadata {
 	pub comment: Option<String>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct IntermediateRepresentation {
 	pub metadata: ApiMetadata,
 	pub scopes: BTreeMap<ScopePath, Scope>,
-	pub models: BTreeMap<ScopePath, Model>,
+	pub models: BTreeMap<String, Model>,
 }
 
 impl Default for IntermediateRepresentation {
