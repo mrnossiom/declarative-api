@@ -1,10 +1,12 @@
 use std::{
 	cmp::Ordering,
 	collections::{BTreeMap, HashMap, HashSet},
-	fmt,
+	fmt::{self, Display},
 	hash::Hash,
 	path::Path,
 };
+
+use crate::{prefix_if_not_null, quote_if_not_empty};
 
 #[derive(Debug, Clone)]
 pub struct Version {
@@ -226,6 +228,43 @@ impl Type {
 				Self::List(out_list_obj)
 			}
 		}
+	}
+}
+
+impl Display for Type {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			Self::Int => write!(f, "int"),
+			Self::String => write!(f, "string"),
+			Self::ResolvedModel(_model_name) => write!(f, "model"),
+			Self::Model(_model_name) => write!(f, "model"),
+			Self::Object(fields) => {
+				let mut v = vec![];
+				for (key, value) in fields {
+					v.push(format!("        {key}: {value}"));
+				}
+				write!(f, "{{\n{}\n    }}", v.join(",\n"))
+			}
+			Self::List(list_obj) => {
+				let mut v = vec![];
+				for object in list_obj {
+					v.push(format!("        {object}"));
+				}
+				write!(f, "[\n{}\n    ]", v.join(",\n"))
+			}
+		}
+	}
+}
+
+impl Display for KeyValuePairValue {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(
+			f,
+			"{} {}{}",
+			self.type_,
+			quote_if_not_empty(&self.description),
+			prefix_if_not_null(&self.comment),
+		)
 	}
 }
 

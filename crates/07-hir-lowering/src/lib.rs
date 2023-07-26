@@ -342,5 +342,20 @@ fn update_query(
 	);
 }
 
+#[must_use]
+pub fn quote_if_not_empty(input: &String) -> String {
+	if input.clone() == String::new() {
+		return String::new();
+	}
+	format!("\"{input}\"")
+}
+
+#[must_use]
+pub fn prefix_if_not_null(input: &Option<String>) -> String {
+	input
+		.as_ref()
+		.map_or_else(String::new, |string| format!(" # {string}"))
+}
+
 #[cfg(test)]
 mod tests;

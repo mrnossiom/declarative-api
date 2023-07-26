@@ -1,6 +1,10 @@
 mod types;
 
-use std::{collections::HashMap, fs, path::Path};
+use std::{
+	collections::{BTreeMap, HashMap},
+	fs,
+	path::Path,
+};
 
 pub trait GenerateFilelist {
 	fn markdown(&self, output_files: &mut HashMap<Box<Path>, String>);
@@ -26,15 +30,46 @@ impl Generate for hir_lowering::types::ApiMetadata {
 	}
 }
 
+impl Generate for hir_lowering::types::Response {
+	fn markdown(&self) -> String {
+		format!(
+			"{}\n##### Headers\n```\n{}\n```\n##### Body\n```\n{}\n```",
+			format_optional(&self.comment),
+			self.headers.markdown(),
+			self.body.markdown(),
+		)
+	}
+}
+
+impl Generate for hir_lowering::types::Method {
+	fn markdown(&self) -> String {
+		format!(
+			"{}\n##### Query parameters\n```\n{}\n```\n##### Headers\n```\n{}\n```\n### Responses\n\n{}",
+			format_optional(&self.comment),
+			self.query_params.markdown(),
+			self.headers.markdown(),
+			self.responses.markdown(),
+		)
+	}
+}
+
+impl Generate for hir_lowering::types::Endpoint {
+	fn markdown(&self) -> String {
+		self.methods.markdown()
+	}
+}
+
 impl Generate for hir_lowering::types::Scope {
 	fn markdown(&self) -> String {
 		format!(
-			"## Child scopes\n{}\n",
+			"{}\n# Child scopes\n{}\n\n# Endpoints\n{}\n",
+			format_optional(&self.comment),
 			Vec::from_iter(self.child_scopes.clone())
 				.iter()
 				.map(|x| format!("[{}]({})", x, vec![x.clone()].get_markdown_file_name()))
 				.collect::<Vec<String>>()
-				.format_as_list()
+				.format_as_list(),
+			self.endpoints.markdown()
 		)
 	}
 }
@@ -55,7 +90,7 @@ impl GenerateFilelist for hir_lowering::types::IntermediateRepresentation {
 		for (scope_path, scope) in &self.scopes {
 			if scope_path != &hir_lowering::types::ScopePath::new() {
 				let parent_file_link = match scope_path.len() {
-					1 => "## Index\n[Index](../index)".into(),
+					1 => "## Index\n[index](../index.md)".into(),
 					_ => {
 						let parent_file = scope_path
 							.split_last()
@@ -83,6 +118,52 @@ impl GenerateFilelist for hir_lowering::types::IntermediateRepresentation {
 				);
 			}
 		}
+	}
+}
+
+impl<T: Generate> Generate for HashMap<String, T> {
+	fn markdown(&self) -> String {
+		let mut v = vec![];
+		for (key, value) in self {
+			v.push(format!("## {key}\n{}", value.markdown()));
+		}
+		v.join("\n\n")
+	}
+}
+
+impl<T: Generate> Generate for BTreeMap<String, T> {
+	fn markdown(&self) -> String {
+		let mut v = vec![];
+		for (key, value) in self {
+			v.push(format!("### {key}\n{}", value.markdown()));
+		}
+		v.join("\n\n")
+	}
+}
+
+impl<T: Generate> Generate for BTreeMap<u32, T> {
+	fn markdown(&self) -> String {
+		let mut v = vec![];
+		for (key, value) in self {
+			v.push(format!("#### {key}\n{}", value.markdown()));
+		}
+		v.join("\n\n")
+	}
+}
+
+impl Generate for BTreeMap<String, hir_lowering::types::KeyValuePairValue> {
+	fn markdown(&self) -> String {
+		let mut v = vec![];
+		for (key, value) in self {
+			v.push(format!(
+				"    {}: {} {}{}",
+				key,
+				value.type_,
+				hir_lowering::quote_if_not_empty(&value.description),
+				hir_lowering::prefix_if_not_null(&value.comment),
+			));
+		}
+		format!("{{\n{}\n}}", v.join("\n"))
 	}
 }
 
