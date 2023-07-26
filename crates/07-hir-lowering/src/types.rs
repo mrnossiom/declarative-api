@@ -243,7 +243,7 @@ impl Display for Type {
 				for (key, value) in fields {
 					v.push(format!("        {key}: {value}"));
 				}
-				write!(f, "{{\n{}\n    }}", v.join(",\n"))
+				write!(f, "{{\n{}\n{}}}", v.join(",\n"), crate::INDENT)
 			}
 			Self::List(list_obj) => {
 				let mut v = vec![];

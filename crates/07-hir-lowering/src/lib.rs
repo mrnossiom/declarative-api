@@ -12,6 +12,7 @@ use types::ResolveModels;
 pub mod types;
 pub mod utils;
 
+pub static INDENT: &str = "    ";
 pub trait Parse {
 	fn parse(
 		&self,
