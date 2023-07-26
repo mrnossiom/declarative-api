@@ -4,7 +4,6 @@ use std::{
 	fmt,
 	hash::Hash,
 	path::Path,
-	vec,
 };
 
 #[derive(Debug, Clone)]

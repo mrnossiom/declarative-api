@@ -1,10 +1,8 @@
-#![allow(unused)]
-
 mod cursor;
 
 use cursor::Cursor;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Token {
 	pub kind: TokenKind,
 	pub length: u32,
@@ -58,6 +56,40 @@ pub enum TokenKind {
 	OpenBracket,
 	/// "]"
 	CloseBracket,
+	/// "@"
+	At,
+	/// "~"
+	Tilde,
+	/// "?"
+	Question,
+	/// ":"
+	Colon,
+	/// "$"
+	Dollar,
+	/// "="
+	Eq,
+	/// "!"
+	Bang,
+	/// "<"
+	Lt,
+	/// ">"
+	Gt,
+	/// "-"
+	Minus,
+	/// "&"
+	And,
+	/// "|"
+	Or,
+	/// "+"
+	Plus,
+	/// "*"
+	Star,
+	/// "/"
+	Slash,
+	/// "^"
+	Caret,
+	/// "%"
+	Percent,
 
 	/// Unknown token, not expected by the lexer, e.g. "№"
 	Unknown,
@@ -74,6 +106,7 @@ pub enum LiteralKind {
 	Str { terminated: bool },
 }
 
+use LiteralKind::*;
 use TokenKind::*;
 
 impl<'a> Cursor<'a> {
@@ -102,6 +135,31 @@ impl<'a> Cursor<'a> {
 			'}' => CloseBrace,
 			'[' => OpenBracket,
 			']' => CloseBracket,
+			'@' => At,
+			'~' => Tilde,
+			'?' => Question,
+			':' => Colon,
+			'$' => Dollar,
+			'=' => Eq,
+			'!' => Bang,
+			'<' => Lt,
+			'>' => Gt,
+			'-' => Minus,
+			'&' => And,
+			'|' => Or,
+			'+' => Plus,
+			'*' => Star,
+			'^' => Caret,
+			'%' => Percent,
+
+			// String literal.
+			'"' => {
+				let terminated = self.double_quoted_string();
+				let suffix_start = self.pos_within_token();
+
+				let kind = Str { terminated };
+				Literal { kind, suffix_start }
+			}
 
 			_ => Unknown,
 		};
@@ -143,6 +201,26 @@ impl<'a> Cursor<'a> {
 		});
 
 		InvalidIdent
+	}
+
+	/// Eats double-quoted string and returns true
+	/// if string is terminated.
+	fn double_quoted_string(&mut self) -> bool {
+		debug_assert!(self.prev() == '"');
+		while let Some(c) = self.bump() {
+			match c {
+				'"' => {
+					return true;
+				}
+				'\\' if self.first() == '\\' || self.first() == '"' => {
+					// Bump again to skip escaped character.
+					self.bump();
+				}
+				_ => (),
+			}
+		}
+		// End of file reached.
+		false
 	}
 }
 
@@ -223,13 +301,26 @@ mod tests {
 	#[test]
 	fn parse_example_dapi_file() {
 		let content = include_str!("../../../tests/main.dapi");
+		let tokens: Vec<_> = tokenize(content).collect();
+		dbg!(tokens);
+	}
 
-		let mut cursor = Cursor::new(content);
+	#[test]
+	fn parse_attr_style() {
+		let content = "@format: date";
+		let mut tokens = tokenize(content);
 
-		let vec: Vec<_> = tokenize(content)
-			.inspect(|token| {
-				println!("{:?}", token);
-			})
-			.collect();
+		macro_rules! next_token {
+			($tk:expr) => {
+				assert_eq!(tokens.next(), Some($tk));
+			};
+		}
+
+		next_token!(Token::new(At, 1));
+		next_token!(Token::new(Ident, 6));
+		next_token!(Token::new(Colon, 1));
+		next_token!(Token::new(Whitespace, 1));
+		next_token!(Token::new(Ident, 4));
+		assert_eq!(tokens.next(), None);
 	}
 }

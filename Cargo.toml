@@ -1,8 +1,13 @@
 [workspace]
 members = ["crates/*"]
+resolver = "2"
 
 [workspace.dependencies]
-ast = { path = "crates/ast" }
-ast-lowering = { path = "crates/ast-lowering" }
-lexer = { path = "crates/lexer" }
-docgen = { path = "crates/docgen" }
+driver = { path = "crates/00-driver" }
+lexer = { path = "crates/01-lexer" }
+parser = { path = "crates/02-parser" }
+ast = { path = "crates/03-ast" }
+passes = { path = "crates/04-passes" }
+ast-lowering = { path = "crates/05-ast-lowering" }
+hir = { path = "crates/06-hir" }
+docgen = { path = "crates/07-docgen" }

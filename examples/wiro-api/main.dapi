@@ -1,22 +1,31 @@
-#! Je suis un commentaire de documentation (des métadonnées)
-{
-	name Wiro's API
-	version 1.0.0
+##! This Api is a test for the documentation generator of the api
+##! This is a second line of comment
+##! This is a third line of comment
+
+meta {
+	name "Wiro's API"
+	description "This is the API of Wiro"
+	version "1.0.0"
 
 	urls [
-	https://paradigm.lighton.ai/api/v1
-	https://paradigm-preprod.lighton.ai/api/v1
-	https://paradigm-dev.lighton.ai/api/v1
+	"https://paradigm.lighton.ai/api/v1"
+	"https://paradigm-preprod.lighton.ai/api/v1"
+	"https://paradigm-dev.lighton.ai/api/v1"
 	]
 }
 
-# IDEA: import the `builder.dapi` file
+## Imports the `builder.dapi` file
 scope builder;
 
 scope dashboard {
 	path dashboard {
 		headers {
-			Authorization string "The API Key of the User" @prefix: "Api-Key"
+			## # Safety
+			## This is a comment
+			## This is a second line of comment
+			Authorization long_string "The API Key of the User of the User" @prefix: Api-Key
+			# ^ ident     ^ type      ^ sugar for description attr          ^ prefix attr
+
 			X-Model string "The Model of the User"
 		}
 
@@ -40,7 +49,7 @@ scope dashboard {
 				}
 			}
 
-			path /users {
+			path users {
 				GET {
 					200 {
 						body {
@@ -61,5 +70,8 @@ scope dashboard {
 		name string "The name of the metric"
 		email string
 		password string
+	}
+
+	path hello {
 	}
 }
