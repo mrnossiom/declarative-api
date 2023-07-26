@@ -61,13 +61,13 @@ pub struct KeyValuePairValue {
 
 impl KeyValuePairValue {
 	#[must_use]
-	pub fn from_ast_key_value_pair_ref(
-		key_value_pair: &ast::types::KeyValuePair,
+	pub fn from_hir_key_value_pair_ref(
+		key_value_pair: &hir::types::KeyValuePair,
 	) -> (String, Self) {
 		(
 			key_value_pair.key.clone(),
 			Self {
-				type_: Type::from_ast_type(key_value_pair.type_.clone()),
+				type_: Type::from_hir_type(key_value_pair.type_.clone()),
 				description: key_value_pair.description.clone(),
 				parameters: Self::parse_parameters(&key_value_pair.parameters),
 				comment: key_value_pair.comment.clone(),
@@ -76,8 +76,8 @@ impl KeyValuePairValue {
 	}
 	#[must_use]
 	#[allow(clippy::missing_panics_doc)]
-	pub fn map_from_ast_key_value_pair_vec(
-		key_value_pair_vec: &[ast::types::KeyValuePair],
+	pub fn map_from_hir_key_value_pair_vec(
+		key_value_pair_vec: &[hir::types::KeyValuePair],
 	) -> BTreeMap<String, Self> {
 		let mut btreemap = BTreeMap::new();
 		for field in key_value_pair_vec {
@@ -89,7 +89,7 @@ impl KeyValuePairValue {
 			btreemap.insert(
 				field.key.clone(),
 				Self {
-					type_: Type::from_ast_type(field.type_.clone()),
+					type_: Type::from_hir_type(field.type_.clone()),
 					description: field.description.clone(),
 					parameters: param_btreemap,
 					comment: field.comment.clone(),
@@ -107,7 +107,7 @@ impl KeyValuePairValue {
 	#[must_use]
 	#[allow(clippy::missing_panics_doc)]
 	pub fn parse_parameters(
-		parameters: &[ast::types::KeyValuePairParameter],
+		parameters: &[hir::types::KeyValuePairParameter],
 	) -> BTreeMap<String, String> {
 		let mut param_btreemap = BTreeMap::new();
 		for parameter in parameters {
@@ -210,18 +210,18 @@ pub enum Type {
 
 impl Type {
 	#[must_use]
-	pub fn from_ast_type(input: ast::types::Type) -> Self {
+	pub fn from_hir_type(input: hir::types::Type) -> Self {
 		match input {
-			ast::types::Type::Int => Self::Int,
-			ast::types::Type::String => Self::String,
-			ast::types::Type::Model(model_name) => Self::Model(model_name),
-			ast::types::Type::Object(fields) => {
-				Self::Object(KeyValuePairValue::map_from_ast_key_value_pair_vec(&fields))
+			hir::types::Type::Int => Self::Int,
+			hir::types::Type::String => Self::String,
+			hir::types::Type::Model(model_name) => Self::Model(model_name),
+			hir::types::Type::Object(fields) => {
+				Self::Object(KeyValuePairValue::map_from_hir_key_value_pair_vec(&fields))
 			}
-			ast::types::Type::List(list_obj) => {
+			hir::types::Type::List(list_obj) => {
 				let mut out_list_obj = vec![];
 				for obj in &list_obj {
-					out_list_obj.push(Self::from_ast_type(obj.clone()));
+					out_list_obj.push(Self::from_hir_type(obj.clone()));
 				}
 				Self::List(out_list_obj)
 			}

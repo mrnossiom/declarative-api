@@ -20,7 +20,7 @@ pub trait Parse {
 	);
 }
 
-impl Parse for ast::types::ApiMetadata {
+impl Parse for hir::types::ApiMetadata {
 	fn parse(
 		&self,
 		_: types::ParserVariables,
@@ -42,7 +42,7 @@ impl Parse for ast::types::ApiMetadata {
 	}
 }
 
-impl Parse for ast::types::Response {
+impl Parse for hir::types::Response {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
@@ -72,15 +72,15 @@ impl Parse for ast::types::Response {
 		method_responses.insert(
 			self.status_code,
 			types::Response {
-				headers: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(&self.headers),
-				body: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(&self.body),
+				headers: types::KeyValuePairValue::map_from_hir_key_value_pair_vec(&self.headers),
+				body: types::KeyValuePairValue::map_from_hir_key_value_pair_vec(&self.body),
 				comment: self.comment.clone(),
 			},
 		);
 	}
 }
 
-impl Parse for ast::types::Method {
+impl Parse for hir::types::Method {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
@@ -132,7 +132,7 @@ impl Parse for ast::types::Method {
 	}
 }
 
-impl Parse for ast::types::Path {
+impl Parse for hir::types::Path {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
@@ -167,7 +167,7 @@ impl Parse for ast::types::Path {
 	}
 }
 
-impl Parse for ast::types::Model {
+impl Parse for hir::types::Model {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
@@ -186,7 +186,7 @@ impl Parse for ast::types::Model {
 		scope_model_map_ref.insert(
 			self.name.clone(),
 			types::Model {
-				model_body: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(
+				model_body: types::KeyValuePairValue::map_from_hir_key_value_pair_vec(
 					&self.model_body,
 				),
 				comment: self.comment.clone(),
@@ -195,7 +195,7 @@ impl Parse for ast::types::Model {
 	}
 }
 
-impl Parse for ast::types::Scope {
+impl Parse for hir::types::Scope {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
@@ -247,7 +247,7 @@ impl Parse for ast::types::Scope {
 	}
 }
 
-impl Parse for ast::types::ApiData {
+impl Parse for hir::types::ApiData {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
@@ -261,7 +261,7 @@ impl Parse for ast::types::ApiData {
 	}
 }
 
-impl Parse for ast::types::Api {
+impl Parse for hir::types::Api {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
@@ -302,9 +302,9 @@ fn parse_children<T: Parse>(
 }
 
 fn update_parser_variables(
-	headers: &[ast::types::KeyValuePair],
-	parameters: &[ast::types::KeyValuePair],
-	query_params: &[ast::types::KeyValuePair],
+	headers: &[hir::types::KeyValuePair],
+	parameters: &[hir::types::KeyValuePair],
+	query_params: &[hir::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
 	update_headers(headers, parser_variables);
@@ -313,32 +313,32 @@ fn update_parser_variables(
 }
 
 fn update_headers(
-	headers: &[ast::types::KeyValuePair],
+	headers: &[hir::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
 	types::KeyValuePairValue::merge(
 		&mut parser_variables.headers,
-		&types::KeyValuePairValue::map_from_ast_key_value_pair_vec(headers),
+		&types::KeyValuePairValue::map_from_hir_key_value_pair_vec(headers),
 	);
 }
 
 fn update_parameters(
-	parameters: &[ast::types::KeyValuePair],
+	parameters: &[hir::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
 	types::KeyValuePairValue::merge(
 		&mut parser_variables.parameters.clone(),
-		&types::KeyValuePairValue::map_from_ast_key_value_pair_vec(parameters),
+		&types::KeyValuePairValue::map_from_hir_key_value_pair_vec(parameters),
 	);
 }
 
 fn update_query(
-	query_params: &[ast::types::KeyValuePair],
+	query_params: &[hir::types::KeyValuePair],
 	parser_variables: &mut types::ParserVariables,
 ) {
 	types::KeyValuePairValue::merge(
 		&mut parser_variables.query_params.clone(),
-		&types::KeyValuePairValue::map_from_ast_key_value_pair_vec(query_params),
+		&types::KeyValuePairValue::map_from_hir_key_value_pair_vec(query_params),
 	);
 }
 

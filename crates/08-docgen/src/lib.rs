@@ -14,7 +14,7 @@ pub trait WriteFiles {
 	fn write(&self, root_path: &Path);
 }
 
-impl Generate for ast_lowering::types::ApiMetadata {
+impl Generate for hir_lowering::types::ApiMetadata {
 	fn markdown(&self) -> String {
 		format!(
 			"# {} (v{})\n## URLs\n{}\n{}\n",
@@ -26,7 +26,7 @@ impl Generate for ast_lowering::types::ApiMetadata {
 	}
 }
 
-impl Generate for ast_lowering::types::Scope {
+impl Generate for hir_lowering::types::Scope {
 	fn markdown(&self) -> String {
 		format!(
 			"## Child scopes\n{}\n",
@@ -39,7 +39,7 @@ impl Generate for ast_lowering::types::Scope {
 	}
 }
 
-impl GenerateFilelist for ast_lowering::types::IntermediateRepresentation {
+impl GenerateFilelist for hir_lowering::types::IntermediateRepresentation {
 	fn markdown(&self, output_files: &mut HashMap<Box<Path>, String>) {
 		output_files.insert(
 			Path::new("index.md").into(),
@@ -47,13 +47,13 @@ impl GenerateFilelist for ast_lowering::types::IntermediateRepresentation {
 				"{}\n{}",
 				self.metadata.markdown(),
 				self.scopes
-					.get(&ast_lowering::types::ScopePath::new())
+					.get(&hir_lowering::types::ScopePath::new())
 					.expect("couldn't find root scope")
 					.markdown()
 			),
 		);
 		for (scope_path, scope) in &self.scopes {
-			if scope_path != &ast_lowering::types::ScopePath::new() {
+			if scope_path != &hir_lowering::types::ScopePath::new() {
 				let parent_file_link = match scope_path.len() {
 					1 => "## Index\n[Index](../index)".into(),
 					_ => {
@@ -131,7 +131,7 @@ trait Naming {
 	fn get_markdown_file_name(&self) -> String;
 }
 
-impl Naming for ast_lowering::types::ScopePath {
+impl Naming for hir_lowering::types::ScopePath {
 	fn get_name(&self) -> String {
 		self.join(".")
 	}

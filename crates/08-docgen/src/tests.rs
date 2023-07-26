@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use super::*;
-use ast_lowering::utils;
+use hir_lowering::utils;
 
 #[test]
 fn test_1() {
