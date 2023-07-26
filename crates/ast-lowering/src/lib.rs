@@ -9,7 +9,8 @@ use std::collections::BTreeMap;
 
 use types::ResolveModels;
 
-mod types;
+pub mod types;
+pub mod utils;
 
 pub trait Parse {
 	fn parse(
@@ -172,25 +173,25 @@ impl Parse for ast::types::Model {
 		parser_variables: types::ParserVariables,
 		intermediate_representation: &mut types::IntermediateRepresentation,
 	) {
-		assert!(
-			!intermediate_representation.models.contains_key(&self.name),
-			"defining \"{:#?}\" multiple times",
-			self.name.clone()
-		);
-		intermediate_representation
+		let scope_model_map_ref = &mut intermediate_representation
 			.scopes
 			.get_mut(&parser_variables.scope_path)
 			.expect("tried adding a model to a non-existant scope")
-			.models
-			.insert(
-				self.name.clone(),
-				types::Model {
-					model_body: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(
-						&self.model_body,
-					),
-					comment: self.comment.clone(),
-				},
-			);
+			.models;
+		assert!(
+			!scope_model_map_ref.contains_key(&self.name),
+			"defining \"{:#?}\" multiple times",
+			self.name.clone()
+		);
+		scope_model_map_ref.insert(
+			self.name.clone(),
+			types::Model {
+				model_body: types::KeyValuePairValue::map_from_ast_key_value_pair_vec(
+					&self.model_body,
+				),
+				comment: self.comment.clone(),
+			},
+		);
 	}
 }
 

@@ -61,6 +61,7 @@ pub struct KeyValuePairValue {
 }
 
 impl KeyValuePairValue {
+	#[must_use]
 	pub fn from_ast_key_value_pair_ref(
 		key_value_pair: &ast::types::KeyValuePair,
 	) -> (String, Self) {
@@ -74,6 +75,8 @@ impl KeyValuePairValue {
 			},
 		)
 	}
+	#[must_use]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn map_from_ast_key_value_pair_vec(
 		key_value_pair_vec: &[ast::types::KeyValuePair],
 	) -> BTreeMap<String, Self> {
@@ -102,6 +105,8 @@ impl KeyValuePairValue {
 			a.insert(key.clone(), value.clone());
 		}
 	}
+	#[must_use]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn parse_parameters(
 		parameters: &[ast::types::KeyValuePairParameter],
 	) -> BTreeMap<String, String> {
@@ -205,6 +210,7 @@ pub enum Type {
 }
 
 impl Type {
+	#[must_use]
 	pub fn from_ast_type(input: ast::types::Type) -> Self {
 		match input {
 			ast::types::Type::Int => Self::Int,
@@ -236,7 +242,6 @@ pub struct ApiMetadata {
 pub struct IntermediateRepresentation {
 	pub metadata: ApiMetadata,
 	pub scopes: BTreeMap<ScopePath, Scope>,
-	pub models: BTreeMap<String, Model>,
 }
 
 impl Default for IntermediateRepresentation {
@@ -255,7 +260,6 @@ impl Default for IntermediateRepresentation {
 				comment: None,
 			},
 			scopes: scopes_map,
-			models: BTreeMap::new(),
 		}
 	}
 }
