@@ -1,8 +1,8 @@
-use ast::types::{Api, ApiMetadata};
-
-use self::error::PResult;
+use ast::ast::{Api, Attribute, Item, Symbol};
 
 mod error;
+
+use error::PResult;
 
 struct Parser {}
 
@@ -16,10 +16,15 @@ impl Parser {
 			items.push(item);
 		}
 
-		Ok(Api { metadata, data })
+		Ok(Api {
+			attrs,
+			items,
+			span: (),
+			id: (),
+		})
 	}
 
-	fn parse_metadata(&mut self) -> PResult<ApiMetadata> {
+	fn parse_metadata(&mut self) -> PResult<Vec<Attribute>> {
 		todo!()
 	}
 
@@ -46,6 +51,4 @@ impl Parser {
 			false
 		}
 	}
-
-	
 }

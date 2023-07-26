@@ -10,4 +10,5 @@ ast = { path = "crates/03-ast" }
 passes = { path = "crates/04-passes" }
 ast-lowering = { path = "crates/05-ast-lowering" }
 hir = { path = "crates/06-hir" }
-docgen = { path = "crates/07-docgen" }
+hir-lowering = { path = "crates/07-hir-lowering" }
+docgen = { path = "crates/08-docgen" }

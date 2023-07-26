@@ -1,8 +1,7 @@
-use super::*;
+use crate::ast::*;
 
-#[test]
-fn can_construct_full_file() {
-	let _api = Api {
+pub fn dummy_api() -> Api {
+	Api {
 		attrs: vec![
 			Attribute {
 				ident: Ident {
@@ -209,5 +208,5 @@ fn can_construct_full_file() {
 		],
 		span: SpanData { start: 0, end: 0 },
 		id: NodeId(0),
-	};
+	}
 }

@@ -300,7 +300,7 @@ mod tests {
 
 	#[test]
 	fn parse_example_dapi_file() {
-		let content = include_str!("../../../tests/main.dapi");
+		let content = include_str!("../../../examples/wiro-api/main.dapi");
 		let tokens: Vec<_> = tokenize(content).collect();
 		dbg!(tokens);
 	}
