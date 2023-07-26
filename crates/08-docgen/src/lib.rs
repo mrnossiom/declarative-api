@@ -199,7 +199,7 @@ trait FormatAsList {
 impl FormatAsList for &Vec<String> {
 	fn format_as_list(&self) -> String {
 		if !self.is_empty() {
-			return format!(" - {}", self.join("\n - "));
+			return format!("- {}", self.join("\n- "));
 		}
 		String::new()
 	}
