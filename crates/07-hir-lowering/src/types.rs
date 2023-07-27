@@ -184,7 +184,7 @@ pub struct Endpoint {
 
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct Scope {
-	pub child_scopes: HashSet<String>,
+	pub scopes: HashSet<String>,
 	pub models: BTreeMap<String, Model>,
 	pub endpoints: HashMap<String, Endpoint>,
 	pub comment: Option<String>,

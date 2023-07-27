@@ -155,8 +155,7 @@ pub fn dummy_api() -> Api {
 														symbol: Symbol("description".into()),
 														span: SpanData { start: 0, end: 0 },
 													},
-													value: "The API Key of the User of the User"
-														.into(),
+													value: "The API Key of the User".into(),
 													span: SpanData { start: 0, end: 0 },
 												},
 												Attribute {

@@ -77,7 +77,7 @@ pub fn gen_test_ir() -> types::IntermediateRepresentation {
 		(
 			vec![],
 			types::Scope {
-				child_scopes: HashSet::from(["dashboard".into()]),
+				scopes: HashSet::from(["dashboard".into()]),
 				models: BTreeMap::new(),
 				endpoints: HashMap::new(),
 				comment: None,
@@ -87,7 +87,7 @@ pub fn gen_test_ir() -> types::IntermediateRepresentation {
 		(
 			vec!["dashboard".into()],
 			types::Scope {
-				child_scopes: HashSet::from(["metrics".into()]),
+				scopes: HashSet::from(["metrics".into()]),
 				models: BTreeMap::from([(
 					"metrics".into(),
 					types::Model {
@@ -131,7 +131,7 @@ pub fn gen_test_ir() -> types::IntermediateRepresentation {
 		(
 			vec!["dashboard".into(), "metrics".into()],
 			types::Scope {
-				child_scopes: HashSet::new(),
+				scopes: HashSet::new(),
 				models: BTreeMap::new(),
 				endpoints: HashMap::from([("/dashboard/metrics".into(), expected_endpoint_object)]),
 				comment: None,

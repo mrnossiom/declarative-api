@@ -59,10 +59,10 @@ fn test_3() {
 			comment: Some("Je suis un commentaire de documentation (des métadonnées)".into()),
 		},
 		data: hir::types::ApiData {
-			child_scopes: vec![hir::types::Scope {
+			scopes: vec![hir::types::Scope {
 				name: "dashboard".into(),
-				child_scopes: vec![],
-				child_models: vec![hir::types::Model{
+				scopes: vec![],
+				models: vec![hir::types::Model{
 					name:"metrics".into(),
 					model_body: vec![hir::types::KeyValuePair{
 						key:"name".into(),
@@ -86,12 +86,12 @@ fn test_3() {
 					],
 				comment:None,
 				}],
-				child_paths: vec![hir::types::Path {
+				paths: vec![hir::types::Path {
 					name: "dashboard".into(),
-					child_scopes: vec![],
-					child_paths: vec![hir::types::Path {
+					scopes: vec![],
+					paths: vec![hir::types::Path {
 						name: "metrics".into(),
-						child_paths: vec![],
+						paths: vec![],
 						comment: None,
 						methods: vec![],
 						headers: vec![hir::types::KeyValuePair {
@@ -104,11 +104,11 @@ fn test_3() {
 						metadata: vec![],
 						parameters: vec![],
 						query: vec![],
-						child_scopes: vec![hir::types::Scope {
+						scopes: vec![hir::types::Scope {
 							name: "metrics".into(),
-							child_scopes: vec![],
-							child_models: vec![],
-							child_paths: vec![],
+							scopes: vec![],
+							models: vec![],
+							paths: vec![],
 							methods: vec![hir::types::Method {
 									method: http::Method::from_str("GET").expect(
 												"a method used for testing the hir-lowering crate doesn't exist",

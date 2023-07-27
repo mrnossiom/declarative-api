@@ -151,12 +151,12 @@ impl Parse for hir::types::Path {
 			&mut new_parser_variables,
 		);
 		parse_children(
-			&self.child_scopes,
+			&self.scopes,
 			&new_parser_variables,
 			intermediate_representation,
 		);
 		parse_children(
-			&self.child_paths,
+			&self.paths,
 			&new_parser_variables,
 			intermediate_representation,
 		);
@@ -206,7 +206,7 @@ impl Parse for hir::types::Scope {
 			.scopes
 			.get_mut(&parser_variables.scope_path)
 			.expect("tried adding a child scope to a non-existant scope")
-			.child_scopes
+			.scopes
 			.insert(self.name.clone());
 		let mut new_parser_variables = parser_variables;
 		new_parser_variables.scope_path.push(self.name.clone());
@@ -226,17 +226,17 @@ impl Parse for hir::types::Scope {
 			&mut new_parser_variables,
 		);
 		parse_children(
-			&self.child_scopes,
+			&self.scopes,
 			&new_parser_variables,
 			intermediate_representation,
 		);
 		parse_children(
-			&self.child_models,
+			&self.models,
 			&new_parser_variables,
 			intermediate_representation,
 		);
 		parse_children(
-			&self.child_paths,
+			&self.paths,
 			&new_parser_variables,
 			intermediate_representation,
 		);
@@ -254,11 +254,7 @@ impl Parse for hir::types::ApiData {
 		parser_variables: types::ParserVariables,
 		intermediate_representation: &mut types::IntermediateRepresentation,
 	) {
-		parse_children(
-			&self.child_scopes,
-			&parser_variables,
-			intermediate_representation,
-		);
+		parse_children(&self.scopes, &parser_variables, intermediate_representation);
 	}
 }
 

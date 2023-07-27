@@ -23,11 +23,11 @@ pub trait WriteFiles {
 impl Generate for hir_lowering::types::ApiMetadata {
 	fn markdown(&self) -> String {
 		format!(
-			"# {} (v{})\n## URLs\n{}\n{}\n",
+			"# {} (v{}){}\n## URLs\n{}\n",
 			self.name,
 			self.version,
+			format_optional(&self.comment),
 			self.urls.format_as_list(),
-			format_optional(&self.comment)
 		)
 	}
 }
@@ -76,7 +76,7 @@ impl Generate for hir_lowering::types::Scope {
 		format!(
 			"{}\n# Child scopes\n{}\n\n# Endpoints\n{}\n# Models\n{}\n",
 			format_optional(&self.comment),
-			Vec::from_iter(self.child_scopes.clone())
+			Vec::from_iter(self.scopes.clone())
 				.iter()
 				.map(|x| format!("[{}]({})", x, vec![x.clone()].get_markdown_file_name()))
 				.collect::<Vec<String>>()

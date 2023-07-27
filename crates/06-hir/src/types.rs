@@ -33,8 +33,8 @@ pub struct Method {
 #[derive(Debug)]
 pub struct Path {
 	pub name: String,
-	pub child_scopes: Vec<Scope>,
-	pub child_paths: Vec<Path>,
+	pub scopes: Vec<Scope>,
+	pub paths: Vec<Path>,
 	pub methods: Vec<Method>,
 	pub headers: Vec<KeyValuePair>,
 	pub parameters: Vec<KeyValuePair>,
@@ -57,9 +57,9 @@ pub struct KeyValuePair {
 #[derive(Debug)]
 pub struct Scope {
 	pub name: String,
-	pub child_scopes: Vec<Scope>,
-	pub child_models: Vec<Model>,
-	pub child_paths: Vec<Path>,
+	pub scopes: Vec<Scope>,
+	pub models: Vec<Model>,
+	pub paths: Vec<Path>,
 	pub methods: Vec<Method>,
 	pub headers: Vec<KeyValuePair>,
 	pub parameters: Vec<KeyValuePair>,
@@ -76,7 +76,7 @@ pub struct Model {
 
 #[derive(Debug)]
 pub struct ApiData {
-	pub child_scopes: Vec<Scope>,
+	pub scopes: Vec<Scope>,
 }
 
 #[derive(Debug)]
