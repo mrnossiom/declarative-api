@@ -241,16 +241,16 @@ impl Display for Type {
 			Self::Object(fields) => {
 				let mut v = vec![];
 				for (key, value) in fields {
-					v.push(format!("        {key}: {value}"));
+					v.push(format!("{}{}{key}: {value}", crate::INDENT, crate::INDENT));
 				}
 				write!(f, "{{\n{}\n{}}}", v.join(",\n"), crate::INDENT)
 			}
 			Self::List(list_obj) => {
 				let mut v = vec![];
 				for object in list_obj {
-					v.push(format!("        {object}"));
+					v.push(format!("{}{}{object}", crate::INDENT, crate::INDENT));
 				}
-				write!(f, "[\n{}\n    ]", v.join(",\n"))
+				write!(f, "[\n{}\n{}]", v.join(",\n"), crate::INDENT)
 			}
 		}
 	}
