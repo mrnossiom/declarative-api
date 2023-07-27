@@ -3,4 +3,4 @@ target/
 Cargo.lock
 
 .vscode/
-.ast-lowering/demo/
+.ast-lowering/test-artifacts/
