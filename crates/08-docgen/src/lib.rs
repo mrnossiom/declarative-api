@@ -106,11 +106,7 @@ impl GenerateFilelist for hir_lowering::types::IntermediateRepresentation {
 					1 => "## Index\n[index](../index.md)".into(),
 					_ => {
 						let parent_file = &scope_path[scope_path.len() - 2];
-						format!(
-							"## Parent\n[{}](../{}.md)\n",
-							&parent_file,
-							parent_file.clone()
-						)
+						format!("## Parent\n[{}](../{}.md)\n", &parent_file, &parent_file)
 					}
 				};
 				output_files.insert(
