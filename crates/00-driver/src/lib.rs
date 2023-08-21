@@ -1,14 +1,10 @@
-pub fn add(left: usize, right: usize) -> usize {
-	left + right
-}
+use lexer::rich::Enricher;
+use parser::Parser;
 
-#[cfg(test)]
-mod tests {
-	use super::*;
+fn do_the_work() {
+	let input = todo!();
+	let token_stream = Enricher::from_source(input);
 
-	#[test]
-	fn it_works() {
-		let result = add(2, 2);
-		assert_eq!(result, 4);
-	}
+	let mut parser = Parser::from_tokens(/* token_stream */);
+	let api = parser.parse_api()?;
 }

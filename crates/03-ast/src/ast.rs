@@ -1,18 +1,18 @@
+use lexer::{span::Span, symbols::Symbol};
+
 #[derive(Debug)]
 pub struct Api {
-	pub attrs: Vec<Attribute>,
+	pub meta: Vec<Attribute>,
 	pub items: Vec<Item>,
-	pub span: SpanData,
-	pub id: NodeId,
+	pub span: Span,
 }
 
 #[derive(Debug)]
 pub struct Item {
 	pub attrs: Vec<Attribute>,
 	pub kind: ItemKind,
-	pub span: SpanData,
+	pub span: Span,
 	pub ident: Ident,
-	pub id: NodeId,
 }
 
 #[derive(Debug)]
@@ -52,9 +52,8 @@ pub struct Headers {
 #[derive(Debug)]
 pub struct HeaderField {
 	pub ident: Ident,
-	pub ty: Type,
 	pub attrs: Vec<Attribute>,
-	pub span: SpanData,
+	pub span: Span,
 }
 
 #[derive(Debug)]
@@ -79,14 +78,14 @@ pub struct ModelField {
 	pub ident: Ident,
 	pub ty: Type,
 	pub attrs: Vec<Attribute>,
-	pub span: SpanData,
+	pub span: Span,
 }
 
 #[derive(Debug)]
 pub struct MetaField {
 	pub ident: Ident,
 	pub value: MetaFieldKind,
-	pub span: SpanData,
+	pub span: Span,
 }
 
 #[derive(Debug)]
@@ -105,30 +104,17 @@ pub struct Type(pub(crate) String);
 pub struct Attribute {
 	pub ident: Ident,
 	pub value: String,
-	pub span: SpanData,
+	pub span: Span,
 }
 
 #[derive(Debug)]
 pub enum ScopeKind {
-	Loaded { items: Vec<Item>, span: SpanData },
+	Loaded { items: Vec<Item>, span: Span },
 	Unloaded,
 }
 
 #[derive(Debug)]
 pub struct Ident {
 	pub symbol: Symbol,
-	pub span: SpanData,
+	pub span: Span,
 }
-
-#[derive(Debug)]
-pub struct Symbol(pub(crate) String);
-// pub struct Symbol(u32);
-
-#[derive(Debug)]
-pub struct SpanData {
-	pub start: usize,
-	pub end: usize,
-}
-
-#[derive(Debug)]
-pub struct NodeId(pub(crate) u32);
