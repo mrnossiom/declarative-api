@@ -1,52 +1,16 @@
+use std::str::FromStr;
 
-use std::{
-	str::FromStr,
-	vec,
-};
-
-
-use super::*;
-
-#[test]
-fn test_1() {
-	let v1 = types::Version {
-		major: 1,
-		minor: 2,
-		patch: 3,
-	};
-
-	let v2 = types::Version {
-		major: 1,
-		minor: 2,
-		patch: 3,
-	};
-	assert_eq!(v1, v2);
-}
-
-#[test]
-fn test_2() {
-	let v1 = types::Version {
-		major: 1,
-		minor: 2,
-		patch: 3,
-	};
-	let v2 = types::Version {
-		major: 0,
-		minor: 3,
-		patch: 4,
-	};
-	assert!(v1 > v2);
-}
-
-
+use crate::{types, utils, Parse};
 
 #[test]
 #[allow(clippy::too_many_lines)]
 fn test_3() {
-	let input_hir = hir::types::Api {
-		metadata: hir::types::ApiMetadata {
+	use hir::types::*;
+
+	let input_hir = Api {
+		metadata: ApiMetadata {
 			name: Some("Wiro's API".into()),
-			version: Some(hir::types::Version {
+			version: Some(Version {
 				major: 1,
 				minor: 0,
 				patch: 0,
@@ -58,45 +22,48 @@ fn test_3() {
 			],
 			comment: Some("Je suis un commentaire de documentation (des métadonnées)".into()),
 		},
-		data: hir::types::ApiData {
-			scopes: vec![hir::types::Scope {
+		data: ApiData {
+			scopes: vec![Scope {
 				name: "dashboard".into(),
 				scopes: vec![],
-				models: vec![hir::types::Model{
-					name:"metrics".into(),
-					model_body: vec![hir::types::KeyValuePair{
-						key:"name".into(),
-						type_:hir::types::Type::String,
-						description:"The name of the metric".into(),
-						parameters:vec![],
-						comment:None,
-					},hir::types::KeyValuePair{
-						key:"email".into(),
-						type_:hir::types::Type::String,
-						description:String::new(),
-						parameters:vec![],
-						comment:None,
-					},hir::types::KeyValuePair{
-						key:"password".into(),
-						type_:hir::types::Type::String,
-						description:String::new(),
-						parameters:vec![],
-						comment:None,
-					},
+				models: vec![Model {
+					name: "metrics".into(),
+					model_body: vec![
+						KeyValuePair {
+							key: "name".into(),
+							type_: Type::String,
+							description: "The name of the metric".into(),
+							parameters: vec![],
+							comment: None,
+						},
+						KeyValuePair {
+							key: "email".into(),
+							type_: Type::String,
+							description: String::new(),
+							parameters: vec![],
+							comment: None,
+						},
+						KeyValuePair {
+							key: "password".into(),
+							type_: Type::String,
+							description: String::new(),
+							parameters: vec![],
+							comment: None,
+						},
 					],
-				comment:None,
+					comment: None,
 				}],
-				paths: vec![hir::types::Path {
+				paths: vec![Path {
 					name: "dashboard".into(),
 					scopes: vec![],
-					paths: vec![hir::types::Path {
+					paths: vec![Path {
 						name: "metrics".into(),
 						paths: vec![],
 						comment: None,
 						methods: vec![],
-						headers: vec![hir::types::KeyValuePair {
+						headers: vec![KeyValuePair {
 							key: "Authorization".into(),
-							type_: hir::types::Type::String,
+							type_: Type::String,
 							description: "The authorization key.".into(),
 							parameters: vec![],
 							comment: None,
@@ -104,40 +71,39 @@ fn test_3() {
 						metadata: vec![],
 						parameters: vec![],
 						query: vec![],
-						scopes: vec![hir::types::Scope {
+						scopes: vec![Scope {
 							name: "metrics".into(),
 							scopes: vec![],
 							models: vec![],
 							paths: vec![],
-							methods: vec![hir::types::Method {
+							methods: vec![Method {
 									method: http::Method::from_str("GET").expect(
 												"a method used for testing the hir-lowering crate doesn't exist",
 											),
 											responses: vec![
-												hir::types::Response{
+												Response{
 													headers: vec![],
 													status_code: 200,
 													body:vec![
-                                                        
-                                                    hir::types::KeyValuePair{
+                                                    KeyValuePair{
 														key:"metrics".into(),
-														type_:hir::types::Type::Model("metrics".into()),
+														type_:Type::Model("metrics".into()),
 														description:String::new(),
 														parameters:vec![],
 														comment: None,
-													},hir::types::KeyValuePair{
+													},KeyValuePair{
 														key:"status".into(),
-														type_:hir::types::Type::Object(
+														type_:Type::Object(
 															vec![
-																hir::types::KeyValuePair{
+																KeyValuePair{
 																	key:"message".into(),
-																	type_:hir::types::Type::String,
+																	type_:Type::String,
 																	description:"The status message itself".into(),
 																	parameters:vec![],
 																	comment: None,
-																},hir::types::KeyValuePair{
+																},KeyValuePair{
 																	key:"code".into(),
-																	type_:hir::types::Type::Int,
+																	type_:Type::Int,
 																	description:"The status code".into(),
 																	parameters:vec![],
 																	comment: None,
@@ -176,15 +142,12 @@ fn test_3() {
 			}],
 		},
 	};
-	
-	
-	let mut parsed_intermediate_representation = types::IntermediateRepresentation::default();
-	input_hir.parse(
-		types::ParserVariables::default(),
-		&mut parsed_intermediate_representation,
-	);
-	let expected_intermediate_representation = utils::gen_test_ir();
-	//dbg!(&expected_intermediate_representation);
-	//dbg!(&parsed_intermediate_representation);
-	assert!(expected_intermediate_representation == parsed_intermediate_representation);
+
+	let mut parsed_ir = types::Ir::default();
+
+	input_hir.parse(types::ParserVariables::default(), &mut parsed_ir);
+
+	let expected_ir = utils::gen_test_ir();
+
+	assert!(expected_ir == parsed_ir);
 }

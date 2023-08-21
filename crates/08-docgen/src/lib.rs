@@ -87,7 +87,7 @@ impl Generate for hir_lowering::types::Scope {
 	}
 }
 
-impl GenerateFilelist for hir_lowering::types::IntermediateRepresentation {
+impl GenerateFilelist for hir_lowering::types::Ir {
 	fn markdown(&self, output_files: &mut HashMap<Box<Path>, String>) {
 		output_files.insert(
 			Path::new("index.md").into(),

@@ -6,7 +6,6 @@
 )]
 
 use std::collections::BTreeMap;
-
 use types::ResolveModels;
 
 pub mod types;
@@ -17,16 +16,12 @@ pub trait Parse {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
-		intermediate_representation: &mut types::IntermediateRepresentation,
+		intermediate_representation: &mut types::Ir,
 	);
 }
 
 impl Parse for hir::types::ApiMetadata {
-	fn parse(
-		&self,
-		_: types::ParserVariables,
-		intermediate_representation: &mut types::IntermediateRepresentation,
-	) {
+	fn parse(&self, _: types::ParserVariables, intermediate_representation: &mut types::Ir) {
 		intermediate_representation.metadata.name =
 			self.name.clone().expect("please provide an API name"); // Panic if this field is not set.
 		let version = self
@@ -47,7 +42,7 @@ impl Parse for hir::types::Response {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
-		intermediate_representation: &mut types::IntermediateRepresentation,
+		intermediate_representation: &mut types::Ir,
 	) {
 		let endpoint_path = parser_variables
 			.endpoint_path
@@ -85,7 +80,7 @@ impl Parse for hir::types::Method {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
-		intermediate_representation: &mut types::IntermediateRepresentation,
+		intermediate_representation: &mut types::Ir,
 	) {
 		let mut new_parser_variables = parser_variables;
 		update_headers(&self.headers, &mut new_parser_variables);
@@ -137,7 +132,7 @@ impl Parse for hir::types::Path {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
-		intermediate_representation: &mut types::IntermediateRepresentation,
+		intermediate_representation: &mut types::Ir,
 	) {
 		let mut new_parser_variables = parser_variables;
 		new_parser_variables.endpoint_path = new_parser_variables
@@ -172,7 +167,7 @@ impl Parse for hir::types::Model {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
-		intermediate_representation: &mut types::IntermediateRepresentation,
+		intermediate_representation: &mut types::Ir,
 	) {
 		let scope_model_map_ref = &mut intermediate_representation
 			.scopes
@@ -200,7 +195,7 @@ impl Parse for hir::types::Scope {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
-		intermediate_representation: &mut types::IntermediateRepresentation,
+		intermediate_representation: &mut types::Ir,
 	) {
 		intermediate_representation
 			.scopes
@@ -252,7 +247,7 @@ impl Parse for hir::types::ApiData {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
-		intermediate_representation: &mut types::IntermediateRepresentation,
+		intermediate_representation: &mut types::Ir,
 	) {
 		parse_children(&self.scopes, &parser_variables, intermediate_representation);
 	}
@@ -262,7 +257,7 @@ impl Parse for hir::types::Api {
 	fn parse(
 		&self,
 		parser_variables: types::ParserVariables,
-		intermediate_representation: &mut types::IntermediateRepresentation,
+		intermediate_representation: &mut types::Ir,
 	) {
 		self.metadata
 			.parse(parser_variables.clone(), intermediate_representation);
@@ -291,7 +286,7 @@ impl Parse for hir::types::Api {
 fn parse_children<T: Parse>(
 	children: &[T],
 	parser_variables: &types::ParserVariables,
-	intermediate_representation: &mut types::IntermediateRepresentation,
+	intermediate_representation: &mut types::Ir,
 ) {
 	for child in children.iter() {
 		child.parse(parser_variables.clone(), intermediate_representation);
@@ -337,21 +332,6 @@ fn update_query(
 		&mut parser_variables.query_params.clone(),
 		&types::KeyValuePairValue::map_from_hir_key_value_pair_vec(query_params),
 	);
-}
-
-#[must_use]
-pub fn quote_if_not_empty(input: &String) -> String {
-	if input.clone() == String::new() {
-		return String::new();
-	}
-	format!("\"{input}\"")
-}
-
-#[must_use]
-pub fn prefix_if_not_null(input: &Option<String>) -> String {
-	input
-		.as_ref()
-		.map_or_else(String::new, |string| format!(" # {string}"))
 }
 
 #[cfg(test)]

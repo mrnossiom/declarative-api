@@ -1,12 +1,11 @@
 use std::{
+	borrow::Cow,
 	cmp::Ordering,
 	collections::{BTreeMap, HashMap, HashSet},
 	fmt::{self, Display},
 	hash::Hash,
 	path::Path,
 };
-
-use crate::{prefix_if_not_null, quote_if_not_empty};
 
 #[derive(Debug, Clone)]
 pub struct Version {
@@ -44,11 +43,7 @@ impl PartialEq for Version {
 }
 
 pub trait ResolveModels {
-	fn resolve_models(
-		&mut self,
-		scope: &ScopePath,
-		intermediate_representation: IntermediateRepresentation,
-	);
+	fn resolve_models(&mut self, scope: &ScopePath, intermediate_representation: Ir);
 }
 
 pub type ScopePath = Vec<String>;
@@ -124,11 +119,7 @@ impl KeyValuePairValue {
 }
 
 impl ResolveModels for BTreeMap<String, KeyValuePairValue> {
-	fn resolve_models(
-		&mut self,
-		scope: &ScopePath,
-		intermediate_representation: IntermediateRepresentation,
-	) {
+	fn resolve_models(&mut self, scope: &ScopePath, intermediate_representation: Ir) {
 		for value in self.values_mut() {
 			match &mut value.type_ {
 				Type::Model(model_name) => {
@@ -258,12 +249,22 @@ impl Display for Type {
 
 impl Display for KeyValuePairValue {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		let desc = if self.description.is_empty() {
+			Cow::Borrowed(&self.description)
+		} else {
+			Cow::Owned(format!(r#""{}""#, &self.description))
+		};
+
 		write!(
 			f,
 			"{} {}{}",
 			self.type_,
-			quote_if_not_empty(&self.description),
-			prefix_if_not_null(&self.comment),
+			desc,
+			&self
+				.comment
+				.as_ref()
+				.map(|comment| { format!(" # {comment}") })
+				.unwrap_or_default(),
 		)
 	}
 }
@@ -277,12 +278,12 @@ pub struct ApiMetadata {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct IntermediateRepresentation {
+pub struct Ir {
 	pub metadata: ApiMetadata,
 	pub scopes: BTreeMap<ScopePath, Scope>,
 }
 
-impl Default for IntermediateRepresentation {
+impl Default for Ir {
 	fn default() -> Self {
 		let mut scopes_map = BTreeMap::new();
 		scopes_map.insert(vec![], Scope::default());
@@ -324,5 +325,26 @@ impl Default for ParserVariables {
 			query_params: BTreeMap::new(),
 			comment: None,
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	#[rustfmt::skip]
+	fn version_eq_impl_is_correct() {
+		let v1 = Version { major: 1, minor: 2, patch: 3 };
+		let v2 = Version { major: 1, minor: 2, patch: 3 };
+		assert!(v1 == v2);
+	}
+
+	#[test]
+	#[rustfmt::skip]
+	fn version_ord_impl_is_correct() {
+		let v1 = Version { major: 1, minor: 2, patch: 3 };
+		let v2 = Version { major: 0, minor: 3, patch: 4 };
+		assert!(v1 > v2);
 	}
 }

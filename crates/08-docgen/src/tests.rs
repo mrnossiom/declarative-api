@@ -70,8 +70,7 @@ fn test_2() {
 			}],
 		},
 	};
-	let mut parsed_intermediate_representation =
-		hir_lowering::types::IntermediateRepresentation::default();
+	let mut parsed_intermediate_representation = hir_lowering::types::Ir::default();
 	input_hir.parse(
 		hir_lowering::types::ParserVariables::default(),
 		&mut parsed_intermediate_representation,

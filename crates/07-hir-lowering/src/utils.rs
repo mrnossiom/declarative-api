@@ -1,10 +1,9 @@
-use std::collections::{HashMap, HashSet};
-
-use super::{types, BTreeMap};
+use super::types;
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 #[must_use]
 #[allow(clippy::too_many_lines)]
-pub fn gen_test_ir() -> types::IntermediateRepresentation {
+pub fn gen_test_ir() -> types::Ir {
 	let mut expected_endpoint_object = types::Endpoint::default();
 	expected_endpoint_object.methods.insert(
 		http::Method::GET.to_string(),
@@ -138,7 +137,7 @@ pub fn gen_test_ir() -> types::IntermediateRepresentation {
 			},
 		),
 	]);
-	types::IntermediateRepresentation {
+	types::Ir {
 		metadata: types::ApiMetadata {
 			name: "Wiro's API".into(),
 			version: types::Version {
