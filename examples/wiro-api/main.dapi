@@ -37,7 +37,7 @@ scope dashboard {
 
 				GET {
 					query {
-						#! Je suis un commentaire de documentation (d'une paire clé, valeur)
+						## Je suis un commentaire de documentation (d'une paire clé, valeur)
 						data string "Query date" @format: date
 					}
 

@@ -37,7 +37,7 @@ impl<'a> Cursor<'a> {
 	}
 
 	/// Peeks the second symbol from the input stream without consuming it.
-	pub(super) fn _second(&self) -> char {
+	pub(super) fn second(&self) -> char {
 		let mut iter = self.chars.clone();
 		iter.next();
 		iter.next().unwrap_or(EOF_CHAR)
@@ -75,6 +75,23 @@ impl<'a> Cursor<'a> {
 		while predicate(self.first()) && !self.is_eof() {
 			self.bump();
 		}
+	}
+
+	pub(super) fn eat_decimal_digits(&mut self) -> bool {
+		let mut has_digits = false;
+		loop {
+			match self.first() {
+				'_' => {
+					self.bump();
+				}
+				'0'..='9' => {
+					has_digits = true;
+					self.bump();
+				}
+				_ => break,
+			}
+		}
+		has_digits
 	}
 }
 

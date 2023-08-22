@@ -28,6 +28,9 @@ impl<'a> Cursor<'a> {
 			// start as identifier).
 			c if is_id_start(c) => self.ident(),
 
+			// Numeric literal.
+			c @ '0'..='9' => self.number(c),
+
 			// One-symbol tokens.
 			';' => Semi,
 			',' => Comma,
@@ -58,8 +61,7 @@ impl<'a> Cursor<'a> {
 			// String literal.
 			'"' => {
 				let terminated = self.double_quoted_string();
-				let kind = Str { terminated };
-				Literal(kind)
+				Literal(Str { terminated })
 			}
 
 			_ => Unknown,
@@ -132,6 +134,12 @@ impl<'a> Cursor<'a> {
 		// End of file reached.
 		false
 	}
+
+	fn number(&mut self, _c: char) -> TokenKind {
+		self.eat_decimal_digits();
+
+		Literal(Number)
+	}
 }
 
 /// True if `c` is considered a whitespace
@@ -176,7 +184,7 @@ fn is_id_continue(c: char) -> bool {
 }
 
 /// The passed string is lexically an identifier.
-fn is_ident(string: &str) -> bool {
+fn _is_ident(string: &str) -> bool {
 	let mut chars = string.chars();
 	chars.next().map_or(false, |start| {
 		is_id_start(start) && chars.all(is_id_continue)

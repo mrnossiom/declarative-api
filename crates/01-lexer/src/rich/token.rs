@@ -15,7 +15,7 @@ impl Token {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TokenKind {
 	// IDEA: maybe multiline
-	Comment(AttrStyle, Symbol),
+	DocComment(AttrStyle, Symbol),
 
 	/// An identifier
 	Ident(Symbol),
@@ -74,10 +74,10 @@ impl TokenKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LiteralKind {
+	/// ""abc"", ""abc"
+	Str,
 	/// "12_u8", "0o100", "0b120i99", "1f32".
 	Number,
-	/// ""abc"", ""abc"
-	Str { terminated: bool },
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]

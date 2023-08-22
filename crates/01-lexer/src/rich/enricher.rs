@@ -5,6 +5,9 @@ use crate::{
 	symbols::Symbol,
 };
 
+/// Transforms [`poor::Token`]s that are only relevant when reading the source file at the
+/// same time into [`rich::Token`]s that are self-explanatory. The latter doesn't include
+/// tokens that don't add information to the generator such as whitespace or comments.
 pub struct Enricher<'a> {
 	source: &'a str,
 	cursor: poor::Cursor<'a>,
@@ -12,6 +15,8 @@ pub struct Enricher<'a> {
 }
 
 impl<'a> Enricher<'a> {
+	/// Creates a new [`Enricher`] for the given source, creating in the way
+	/// the underlying [`poor::Cursor`] to get tokens to enrich.
 	#[must_use]
 	pub fn from_source(source: &'a str) -> Self {
 		Self {
@@ -21,6 +26,10 @@ impl<'a> Enricher<'a> {
 		}
 	}
 
+	/// Fetches the next token from the underlying poor lexer and add information
+	///
+	/// # Panics
+	/// TODO: invalid characters or ident are not implemented yet
 	pub fn next_token(&mut self) -> (Token, bool) {
 		let mut has_whitespace_before = false;
 
@@ -32,19 +41,32 @@ impl<'a> Enricher<'a> {
 			let kind = match token.kind {
 				poor::TokenKind::Ident => {
 					let ident = self.str_from(start).to_owned();
-					// TODO: `oula` need to remove this a fast as possible
-					let ident = Box::leak(Box::new(ident));
+					let sym = symbol_dark_magic_to_remove(ident);
 
-					let sym = Symbol::new_static(ident);
 					TokenKind::Ident(sym)
 				}
 				poor::TokenKind::LineComment(style) => {
-					let (style, sym) = self.cook_line_comment(style);
+					// Skip non-doc comments
+					let Some(style) = style else {
+						has_whitespace_before = true;
+						continue;
+					};
 
-					TokenKind::Comment(style, sym)
+					let len = match style {
+						// `##`
+						poor::DocStyle::Inner => 2,
+						// `##!`
+						poor::DocStyle::Outer => 3,
+					};
+
+					let content = self.str_from(start + len);
+
+					let (style, sym) = Self::cook_doc_line_comment(content, style);
+
+					TokenKind::DocComment(style, sym)
 				}
 				poor::TokenKind::Literal(kind) => {
-					let (kind, sym) = self.cook_literal(kind);
+					let (kind, sym) = self.cook_literal(start, self.pos, kind);
 
 					TokenKind::Literal(kind, sym)
 				}
@@ -95,12 +117,41 @@ impl<'a> Enricher<'a> {
 		}
 	}
 
-	fn cook_line_comment(&mut self, style: Option<poor::DocStyle>) -> (AttrStyle, Symbol) {
-		todo!()
+	fn cook_doc_line_comment(content: &str, style: poor::DocStyle) -> (AttrStyle, Symbol) {
+		let sym = symbol_dark_magic_to_remove(content.to_owned());
+
+		let style = match style {
+			poor::DocStyle::Inner => AttrStyle::Inner,
+			poor::DocStyle::Outer => AttrStyle::Outer,
+		};
+
+		(style, sym)
 	}
 
-	fn cook_literal(&mut self, kind: poor::LiteralKind) -> (LiteralKind, Symbol) {
-		todo!()
+	fn cook_literal(
+		&mut self,
+		start: u32,
+		end: u32,
+		kind: poor::LiteralKind,
+	) -> (LiteralKind, Symbol) {
+		match kind {
+			poor::LiteralKind::Str { terminated } => {
+				if !terminated {
+					// error somehow
+				}
+
+				let content = self.str_from_to(start + 1, end - 1);
+				let sym = symbol_dark_magic_to_remove(content.to_owned());
+
+				(LiteralKind::Str, sym)
+			}
+			poor::LiteralKind::Number => {
+				let content = self.str_from(start);
+				let sym = symbol_dark_magic_to_remove(content.to_owned());
+
+				(LiteralKind::Number, sym)
+			}
+		}
 	}
 
 	/// Slice of the source text from `start` up to but excluding `self.pos`,
@@ -150,9 +201,11 @@ mod tests {
 
 	#[test]
 	fn can_enrich_example_file() {
-		let _rich_tokens = Enricher::from_source(EXAMPLE)
+		let rich_tokens = Enricher::from_source(EXAMPLE)
 			.into_iter()
 			.collect::<Vec<_>>();
+
+		println!("{rich_tokens:#?}");
 	}
 
 	#[test]
@@ -180,4 +233,12 @@ mod tests {
 		next_token!(Ident(Symbol::new_static("date")), 9, 13);
 		next_token!(@end);
 	}
+}
+
+fn symbol_dark_magic_to_remove(ident: String) -> Symbol {
+	// FIXME(milo): oula, need to remove this a fast as possible
+	// maybe using a symbol interner like what Rust does
+	let ident = Box::leak(Box::new(ident));
+
+	Symbol::new_static(ident)
 }
