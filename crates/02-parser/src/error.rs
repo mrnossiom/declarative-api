@@ -1,5 +1,7 @@
 pub type PResult<T> = Result<T, PError>;
 
+// #[derive(thiserror::Error)]
+#[derive(Debug)]
 pub struct PError {
 	message: String,
 }

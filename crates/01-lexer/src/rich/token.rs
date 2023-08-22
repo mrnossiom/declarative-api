@@ -1,4 +1,7 @@
-use crate::{span::Span, symbols::Symbol};
+use crate::{
+	span::Span,
+	symbols::{Ident, Symbol},
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Token {
@@ -9,6 +12,27 @@ pub struct Token {
 impl Token {
 	pub(crate) const fn new(kind: TokenKind, span: Span) -> Self {
 		Self { kind, span }
+	}
+
+	#[must_use]
+	pub const fn dummy() -> Self {
+		Self {
+			kind: TokenKind::Eof,
+			span: Span::dummy(),
+		}
+	}
+
+	#[must_use]
+	pub const fn ident(&self) -> Option<Ident> {
+		match &self.kind {
+			TokenKind::Ident(sym) => Some(Ident::new(*sym, self.span)),
+			_ => None,
+		}
+	}
+
+	#[must_use]
+	pub fn is_keyword(&self, kw: Symbol) -> bool {
+		self.ident().map_or(false, |id| id.name == kw)
 	}
 }
 

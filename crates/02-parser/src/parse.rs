@@ -1,4 +1,4 @@
-use crate::parser::{PResult, Parser};
+use crate::{PResult, Parser};
 use ast::ast::{Api, Attribute, Item};
 use lexer::{span::Span, symbols::kw};
 
