@@ -1,6 +1,7 @@
 use crate::ast::*;
 use lexer::{span::Span, symbols::Symbol};
 
+#[allow(clippy::too_many_lines)]
 fn _dummy_api() -> Api {
 	Api {
 		meta: vec![

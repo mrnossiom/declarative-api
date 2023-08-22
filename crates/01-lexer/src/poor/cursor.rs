@@ -37,7 +37,7 @@ impl<'a> Cursor<'a> {
 	}
 
 	/// Peeks the second symbol from the input stream without consuming it.
-	pub(super) fn second(&self) -> char {
+	pub(super) fn _second(&self) -> char {
 		let mut iter = self.chars.clone();
 		iter.next();
 		iter.next().unwrap_or(EOF_CHAR)
@@ -49,8 +49,12 @@ impl<'a> Cursor<'a> {
 	}
 
 	/// Returns amount of already consumed symbols.
+	///
+	/// # Panics
+	/// When used in a file that is over 4GiB
 	pub(super) fn pos_within_token(&self) -> u32 {
-		(self.len_remaining - self.chars.as_str().len()) as u32
+		u32::try_from(self.len_remaining - self.chars.as_str().len())
+			.expect("does not seem very real that source code goes this big")
 	}
 
 	/// Resets the number of bytes consumed to 0.
@@ -123,7 +127,21 @@ impl<'a> IntoIterator for Cursor<'a> {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::tests::{ATTR, EXAMPLE};
+	use crate::{
+		poor::LiteralKind,
+		tests::{ATTR, EXAMPLE, URLS},
+	};
+
+	macro_rules! tokens {
+		($expr:ident, $(($ty:expr, $len:literal)),+) => {
+			let mut tokens = Cursor::new($expr).into_iter();
+
+			$(
+				assert_eq!(tokens.next(), Some(Token::new($ty, $len)));
+			)+
+			assert_eq!(tokens.next(), None);
+		};
+	}
 
 	#[test]
 	fn can_tokenize_example_file() {
@@ -131,25 +149,36 @@ mod tests {
 	}
 
 	#[test]
-	fn parse_attr_style() {
+	fn parse_attr() {
 		use crate::poor::TokenKind::*;
 
-		let mut tokens = Cursor::new(ATTR).into_iter();
+		tokens![
+			ATTR,
+			(At, 1),
+			(Ident, 6),
+			(Colon, 1),
+			(Whitespace, 1),
+			(Ident, 4)
+		];
+	}
 
-		macro_rules! next_token {
-			($ty:ident, $len:literal) => {
-				assert_eq!(tokens.next(), Some(Token::new($ty, $len)));
-			};
-			(@end) => {
-				assert_eq!(tokens.next(), None);
-			};
-		}
+	#[test]
+	fn parse_array_like() {
+		use crate::poor::TokenKind::*;
 
-		next_token!(At, 1);
-		next_token!(Ident, 6);
-		next_token!(Colon, 1);
-		next_token!(Whitespace, 1);
-		next_token!(Ident, 4);
-		next_token!(@end);
+		tokens![
+			URLS,
+			(Ident, 4),
+			(Whitespace, 1),
+			(OpenBracket, 1),
+			(Whitespace, 2),
+			(Literal(LiteralKind::Str { terminated: true }), 36),
+			(Whitespace, 2),
+			(Literal(LiteralKind::Str { terminated: true }), 44),
+			(Whitespace, 2),
+			(Literal(LiteralKind::Str { terminated: true }), 40),
+			(Whitespace, 1),
+			(CloseBracket, 1)
+		];
 	}
 }

@@ -3,8 +3,6 @@
 	clippy::unwrap_used,
 	clippy::nursery,
 	clippy::pedantic,
-	// clippy::cargo,
-	rustdoc::broken_intra_doc_links
 )]
 #![allow(
 	clippy::redundant_pub_crate,
@@ -22,4 +20,10 @@ mod tests {
 	pub const EXAMPLE: &str = include_str!("../../../examples/wiro-api/main.dapi");
 
 	pub const ATTR: &str = "@format: date";
+
+	pub const URLS: &str = r#"urls [
+	"https://paradigm.lighton.ai/api/v1"
+	"https://paradigm-preprod.lighton.ai/api/v1"
+	"https://paradigm-dev.lighton.ai/api/v1"
+]"#;
 }

@@ -196,8 +196,28 @@ mod tests {
 	use super::*;
 	use crate::{
 		symbols::attrs,
-		tests::{ATTR, EXAMPLE},
+		tests::{ATTR, EXAMPLE, URLS},
 	};
+
+	macro_rules! sym {
+		($lit:literal) => {
+			Symbol::new_static($lit)
+		};
+	}
+
+	macro_rules! tokens {
+		($expr:ident, $(($ty:expr, [$lo:literal, $hi:literal])),+) => {
+			let mut tokens = Enricher::from_source($expr).into_iter();
+
+			$(
+				assert_eq!(
+					tokens.next(),
+					Some(Token::new($ty, Span::from_bounds($lo, $hi)))
+				);
+			)+
+			assert_eq!(tokens.next(), None);
+		};
+	}
 
 	#[test]
 	fn can_enrich_example_file() {
@@ -209,29 +229,42 @@ mod tests {
 	}
 
 	#[test]
-	fn parse_attr_style() {
+	fn parse_attr() {
 		use crate::rich::TokenKind::*;
 		use crate::span::Span;
 
-		let mut tokens = Enricher::from_source(ATTR).into_iter();
+		tokens!(
+			ATTR,
+			(At, [0, 1]),
+			(Ident(attrs::Format), [1, 7]),
+			(Colon, [7, 8]),
+			(Ident(Symbol::new_static("date")), [9, 13])
+		);
+	}
 
-		macro_rules! next_token {
-			($ty:expr, $lo:literal, $hi:literal) => {
-				assert_eq!(
-					tokens.next(),
-					Some(Token::new($ty, Span::from_bounds($lo, $hi)))
-				);
-			};
-			(@end) => {
-				assert_eq!(tokens.next(), None);
-			};
-		}
+	#[test]
+	fn parse_array_like() {
+		use crate::rich::{Delimiter::*, LiteralKind::*, TokenKind::*};
+		use crate::span::Span;
 
-		next_token!(At, 0, 1);
-		next_token!(Ident(attrs::Format), 1, 7);
-		next_token!(Colon, 7, 8);
-		next_token!(Ident(Symbol::new_static("date")), 9, 13);
-		next_token!(@end);
+		tokens![
+			URLS,
+			(Ident(sym!("urls")), [0, 4]),
+			(OpenDelim(Bracket), [5, 6]),
+			(
+				Literal(Str, sym!("https://paradigm.lighton.ai/api/v1")),
+				[8, 44]
+			),
+			(
+				Literal(Str, sym!("https://paradigm-preprod.lighton.ai/api/v1")),
+				[46, 90]
+			),
+			(
+				Literal(Str, sym!("https://paradigm-dev.lighton.ai/api/v1")),
+				[92, 132]
+			),
+			(CloseDelim(Bracket), [133, 134])
+		];
 	}
 }
 
