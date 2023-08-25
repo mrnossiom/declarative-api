@@ -33,6 +33,12 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
 	#[must_use]
+	pub fn from_source(source: &'a str) -> Self {
+		let tokens = Enricher::from_source(source);
+		Self::from_tokens(tokens)
+	}
+
+	#[must_use]
 	pub fn from_tokens(cursor: Enricher<'a>) -> Self {
 		Self {
 			token: Token::dummy(),

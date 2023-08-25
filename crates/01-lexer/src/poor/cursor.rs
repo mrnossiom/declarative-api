@@ -13,7 +13,7 @@ pub(crate) const EOF_CHAR: char = '\0';
 
 impl<'a> Cursor<'a> {
 	#[must_use]
-	pub fn new(source: &'a str) -> Cursor<'a> {
+	pub fn from_source(source: &'a str) -> Cursor<'a> {
 		Cursor {
 			len_remaining: source.len(),
 			chars: source.chars(),
@@ -134,7 +134,7 @@ mod tests {
 
 	macro_rules! tokens {
 		($expr:ident, $(($ty:expr, $len:literal)),+) => {
-			let mut tokens = Cursor::new($expr).into_iter();
+			let mut tokens = Cursor::from_source($expr).into_iter();
 
 			$(
 				assert_eq!(tokens.next(), Some(Token::new($ty, $len)));
@@ -145,7 +145,7 @@ mod tests {
 
 	#[test]
 	fn can_tokenize_example_file() {
-		let _poor_tokens = Cursor::new(EXAMPLE).into_iter().collect::<Vec<_>>();
+		let _poor_tokens = Cursor::from_source(EXAMPLE).into_iter().collect::<Vec<_>>();
 	}
 
 	#[test]

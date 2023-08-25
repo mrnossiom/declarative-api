@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 ast = { workspace = true }
+clap = { version = "4.3.21", features = ["derive"] }
 lexer = { workspace = true }
 parser = { workspace = true }

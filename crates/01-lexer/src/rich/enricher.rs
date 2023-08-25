@@ -21,7 +21,7 @@ impl<'a> Enricher<'a> {
 	pub fn from_source(source: &'a str) -> Self {
 		Self {
 			source,
-			cursor: poor::Cursor::new(source),
+			cursor: poor::Cursor::from_source(source),
 			pos: 0,
 		}
 	}
