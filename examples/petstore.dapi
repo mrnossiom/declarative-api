@@ -1,0 +1,311 @@
+meta {
+	name "Swagger Petstore"
+	description "/
+	This is a sample server Petstore server. You can find out more about
+	Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net,
+	#swagger](http://swagger.io/irc/). For this sample, you can use the api key
+	`special-key` to test the authorization filters."
+	version "1.0.2"
+
+	license "MIT"
+
+	urls ["https://petstore.swagger.io/v2"]
+}
+
+## Everything about your Pets [def](https://a.link/)
+scope pet {
+	auth BasicApiKey {
+		# plz god give me idea of syntax
+	}
+
+	enum Status {
+		Available "available"
+		Pending "pending"
+		Sold "sold"
+	}
+
+	model Category {
+		id int
+		name string
+	}
+
+	model Tags {
+		id int
+		name string
+	}
+
+	model Pet {
+		id int
+		category Category
+		name string
+		## The optional string following the type is sugar for @desc("...")
+		photoUrls string[] "Photos to be displayed on the selling page carousel"
+		## Maybe inline?
+		tags Tags[]
+		status Status
+	}
+
+	path pet {
+		path . {
+			## Add a new pet to the store
+			# sugar -> @doc(" Add a new pet to the store")
+			POST {
+				# Maybe this should be a Media Type (ex-MIME)
+				body Pet @type: "json"
+
+				200 {}
+
+				## Invalid input
+				405 {}
+			}
+
+			## Update an existing pet
+			PUT {
+				body Pet @type: "json"
+
+				200 {}
+
+				## Invalid ID supplied
+				400 {}
+				## Pet not found
+				404 {}
+				## Validation execption
+				405 {}
+			}
+		}
+
+		path findByStatus {
+			## Finds Pets by status
+			GET {
+				query {
+					# `status` param is a required array of `Status`
+					# sugar -> Array<Status>
+					status Status[] "Statuses to filter by"
+				}
+
+				200 {
+					body Pet @type: "json"
+				}
+
+				## Invalid status value
+				400 {}
+			}
+		}
+
+		path findByTags {
+			## Finds Pets by tags
+			@deprecated
+			GET {
+				query {
+					tags Tags[] "Tags to filter by"
+				}
+
+				200 {
+					body Pet @type: "json"
+				}
+
+				## Invalid tag value
+				400 {}
+			}
+		}
+
+		path {petId} {
+			params {
+				petId int "ID of pet to return"
+			}
+
+			## Find pet by ID
+			GET {
+				200 {}
+
+				## Invalid ID supplied
+				400 {}
+				## Pet not found
+				404 {}
+			}
+
+			## Update a pet in the store with form data
+			POST {
+				body @type: "form" {
+					name string "Updated name of the pet"
+					status Status "Updated status of the pet"
+				}
+
+				# Invalid input
+				405 {}
+			}
+
+			## Delete a pet
+			DELETE {
+				auth BasicApiKey
+
+				## Invalid ID supplied
+				400 {}
+				## Pet not found
+				404 {}
+			}
+		}
+	}
+}
+
+## Access to Petstore orders
+scope store {
+	model Order {
+		id int
+		petId int
+		quantity int
+		shipDate Date
+		status Status
+		complete bool
+	}
+
+	path store {
+		path inventory {
+			## Return pet inventory by status
+			GET {
+				200 {
+					## Returns a map of status codes to quantities
+					# use a `any` type, but that would mean to create the devil in the language itself
+					body any @type: "json"
+
+					# or maybe mapped object litterals? like TypeScript?
+					body @type: "json" {
+						[int]: int
+					}
+				}
+			}
+		}
+
+		path order {
+			path . {
+				## Place an order for a pet
+				POST {
+					body Order @type: "json"
+
+					200 {}
+
+					## Invalid order
+					400 {}
+				}
+			}
+
+			path {orderId} {
+				params {
+					orderId int
+				}
+
+				## Find purchase order by ID
+				GET {
+					200 {
+						body Order @type: "json"
+					}
+
+					## Invalid ID supplied
+					400 {}
+
+					## Order not found
+					404 {}
+				}
+
+				## Delete purchase order by ID
+				DELETE {
+					## Invalid ID supplied
+					400 {}
+
+					## Order not found
+					404 {}
+				}
+			}
+		}
+	}
+}
+
+## Operations about user
+scope user {
+	model User {
+		id int
+		username string
+		firstName string
+		lastName string
+		email string
+		password string
+		phone string
+		userStatus int
+	}
+
+	path user {
+		path . {
+			## Create user
+			## This can only be done by a logged-in user
+			POST {
+				body User @type: "json"
+			}
+		}
+
+		path createWithArray {
+			## Create multilple users with the input array
+			## This can only be done by a logged-in user
+			POST {
+				body User[] @type: "json"
+			}
+		}
+
+		path login {
+			## Log user into the system
+			GET {
+				query {
+					username string
+					password string
+				}
+
+				200 {
+					## Return the authentication token
+					body string @type: "json"
+
+					headers {
+						X-Rate-Limit int "calls per hour allowed by the user"
+						X-Expires-After string "date in UTC when token expires"
+					}
+				}
+			}
+		}
+		path logout {
+			## Log out of current user session
+			GET {}
+		}
+
+		path {username} {
+			params {
+				username string
+			}
+
+			## Get user by username
+			GET {
+				200 {
+					body User @type: "json"
+				}
+
+				## Invalid username supplied
+				400 {}
+				## User not found
+				404 {}
+			}
+			## Update user
+			PUT {
+				body User @type: "json"
+
+				## Invalid username supplied
+				400 {}
+				## User not found
+				404 {}
+			}
+			## Delete user
+			DELETE {
+				## Invalid username supplied
+				400 {}
+				## User not found
+				404 {}
+			}
+		}
+	}
+}

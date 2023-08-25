@@ -17,7 +17,7 @@ pub mod symbols;
 
 #[cfg(test)]
 mod tests {
-	pub const EXAMPLE: &str = include_str!("../../../examples/wiro-api/main.dapi");
+	pub const EXAMPLE: &str = include_str!("../../../examples/paradigm.dapi");
 
 	pub const ATTR: &str = "@format: date";
 

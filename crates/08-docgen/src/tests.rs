@@ -1,16 +1,12 @@
-use std::path::Path;
-
 use super::*;
 use hir_lowering::{utils, Parse};
 
 #[test]
 fn test_1() {
 	let test_ir = utils::gen_test_ir();
-	//dbg!(&test_ir);
 	let mut generated_file_list = HashMap::new();
 	test_ir.markdown(&mut generated_file_list);
-	//dbg!(&generated_file_list);
-	generated_file_list.write(Path::new("test-artifacts/test-1"));
+	// generated_file_list.write(Path::new("test-artifacts/test-1"));
 }
 
 #[test]
@@ -77,5 +73,5 @@ fn test_2() {
 	);
 	let mut generated_file_list = HashMap::new();
 	parsed_intermediate_representation.markdown(&mut generated_file_list);
-	generated_file_list.write(Path::new("test-artifacts/test-2"));
+	// generated_file_list.write(Path::new("test-artifacts/test-2"));
 }

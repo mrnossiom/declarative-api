@@ -10,10 +10,11 @@
 	clippy::module_name_repetitions
 )]
 
-mod eat;
 mod error;
 mod parse;
 mod parser;
 
-pub use error::{PError, PResult};
-pub use parser::Parser;
+pub use crate::{
+	error::{PError, PResult},
+	parser::Parser,
+};
