@@ -1,6 +1,7 @@
 #![allow(non_upper_case_globals)]
 
 use crate::span::Span;
+use std::fmt::Display;
 
 macro_rules! symbols {
 	{$group:ident, $($name:ident <== $match:literal),+} => {
@@ -33,6 +34,12 @@ impl Symbol {
 	#[must_use]
 	pub const fn new_static(ident: &'static str) -> Self {
 		Self(ident)
+	}
+}
+
+impl Display for Symbol {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", self.0)
 	}
 }
 

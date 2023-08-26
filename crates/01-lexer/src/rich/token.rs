@@ -2,6 +2,7 @@ use crate::{
 	span::Span,
 	symbols::{Ident, Symbol},
 };
+use std::fmt::Display;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Token {
@@ -33,6 +34,12 @@ impl Token {
 	#[must_use]
 	pub fn is_keyword(&self, kw: Symbol) -> bool {
 		self.ident().map_or(false, |id| id.name == kw)
+	}
+}
+
+impl Display for Token {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{} ({})", self.kind, self.span)
 	}
 }
 
@@ -96,6 +103,54 @@ impl TokenKind {
 	}
 }
 
+impl Display for TokenKind {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Self::DocComment(style, sym) => write!(
+				f,
+				r#"{} doc comment ("{sym}")"#,
+				match style {
+					AttrStyle::Inner => "inner",
+					AttrStyle::Outer => "outer",
+					AttrStyle::Inline => unreachable!(),
+				}
+			),
+
+			Self::Ident(sym) => write!(f, r#"ident "{sym}""#),
+			Self::InvalidIdent => write!(f, "invalid ident"),
+			Self::Literal(LiteralKind::Number, sym) => write!(f, "lit {sym}"),
+			Self::Literal(LiteralKind::Str, sym) => write!(f, r#"lit "{sym}""#),
+
+			Self::Semi => write!(f, ";"),
+			Self::Comma => write!(f, ","),
+			Self::Dot => write!(f, "."),
+			Self::OpenDelim(Delimiter::Parenthesis) => write!(f, "("),
+			Self::CloseDelim(Delimiter::Parenthesis) => write!(f, ")"),
+			Self::OpenDelim(Delimiter::Brace) => write!(f, "{{"),
+			Self::CloseDelim(Delimiter::Brace) => write!(f, "}}"),
+			Self::OpenDelim(Delimiter::Bracket) => write!(f, "["),
+			Self::CloseDelim(Delimiter::Bracket) => write!(f, "]"),
+			Self::OpenDelim(Delimiter::Invisible) => write!(f, "Ø..."),
+			Self::CloseDelim(Delimiter::Invisible) => write!(f, "...Ø"),
+
+			Self::At => write!(f, "@"),
+			Self::Pound => write!(f, "#"),
+			Self::Tilde => write!(f, "~"),
+			Self::Question => write!(f, "?"),
+			Self::Colon => write!(f, ":"),
+			Self::Dollar => write!(f, "$"),
+			Self::Eq => write!(f, "="),
+			Self::Bang => write!(f, "!"),
+
+			Self::Op(op) => write!(f, "{op}"),
+
+			Self::Unknown => write!(f, "unknown"),
+
+			Self::Eof => write!(f, "<EOF>"),
+		}
+	}
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LiteralKind {
 	/// ""abc"", ""abc"
@@ -142,6 +197,23 @@ pub enum OpKind {
 	Caret,
 	/// "%"
 	Percent,
+}
+
+impl Display for OpKind {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Self::Lt => write!(f, ">"),
+			Self::Gt => write!(f, "<"),
+			Self::Minus => write!(f, "-"),
+			Self::And => write!(f, "&"),
+			Self::Or => write!(f, "|"),
+			Self::Plus => write!(f, "+"),
+			Self::Star => write!(f, "*"),
+			Self::Slash => write!(f, "/"),
+			Self::Caret => write!(f, "^"),
+			Self::Percent => write!(f, "%"),
+		}
+	}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

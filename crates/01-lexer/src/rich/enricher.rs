@@ -53,10 +53,8 @@ impl<'a> Enricher<'a> {
 					};
 
 					let len = match style {
-						// `##`
-						poor::DocStyle::Inner => 2,
-						// `##!`
-						poor::DocStyle::Outer => 3,
+						poor::DocStyle::Inner => 3, // `##!`
+						poor::DocStyle::Outer => 2, // `##`
 					};
 
 					let content = self.str_from(start + len);

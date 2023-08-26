@@ -1,5 +1,5 @@
 use lexer::{poor::Cursor, rich::Enricher};
-use std::{fmt::Debug, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
 #[derive(Debug, clap::Parser)]
 pub(crate) struct Lex {
@@ -14,19 +14,17 @@ impl Lex {
 		let source = fs::read_to_string(&self.file).unwrap();
 
 		if self.rich {
-			let enricher = Enricher::from_source(&source);
-
-			print_all_tokens(enricher.into_iter())
+			Enricher::from_source(&source)
+				.into_iter()
+				.inspect(|item| println!("{}", item))
+				.count();
 		} else {
-			let cursor = Cursor::from_source(&source);
-
-			print_all_tokens(cursor.into_iter())
+			Cursor::from_source(&source)
+				.into_iter()
+				// Skip whitespace that are much too verbose
+				.filter(|item| !item.kind.is_whitespace())
+				.inspect(|item| println!("{}", item))
+				.count();
 		}
 	}
-}
-
-fn print_all_tokens<T: Debug>(iter: impl Iterator<Item = T>) {
-	let _ = iter
-		.inspect(|item| println!("{:?}", item))
-		.collect::<Vec<_>>();
 }
