@@ -10,7 +10,7 @@
 	clippy::module_name_repetitions
 )]
 
+mod ptr;
 pub mod types;
 
-#[cfg(test)]
-mod tests;
+pub use ptr::P;
