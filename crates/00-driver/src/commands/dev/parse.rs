@@ -12,6 +12,6 @@ impl Parse {
 
 		let mut parser = Parser::from_source(&source);
 
-		println!("{:?}", parser.parse_api().unwrap())
+		println!("{:?}", parser.parse_root().unwrap())
 	}
 }

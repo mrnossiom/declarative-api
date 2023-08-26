@@ -1,3 +1,4 @@
+use crate::PResult;
 use lexer::{
 	rich::{Enricher, Token, TokenKind},
 	symbols::Symbol,
@@ -46,6 +47,22 @@ impl<'a> Parser<'a> {
 			prev_token: Token::dummy(),
 			expected_tokens: Vec::default(),
 			cursor,
+		}
+	}
+
+	/// Expects and consumes the token `t`. Signals an error if the next token is not `t`.
+	#[track_caller]
+	pub fn expect(&mut self, tok: &TokenKind) -> PResult</* recovered */ bool> {
+		if self.expected_tokens.is_empty() {
+			if self.token.kind == *tok {
+				self.bump();
+				Ok(false)
+			} else {
+				todo!("recover from unexpected token")
+			}
+		} else {
+			todo!("understand why branch here")
+			// self.expect_one_of(slice::from_ref(tok), &[])
 		}
 	}
 

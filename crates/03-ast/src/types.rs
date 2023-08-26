@@ -2,9 +2,18 @@ use lexer::{span::Span, symbols::Symbol};
 
 #[derive(Debug)]
 pub struct Api {
-	pub meta: Vec<Attribute>,
+	pub attrs: Vec<Attribute>,
+	pub meta: Metadata,
 	pub items: Vec<Item>,
 	pub span: Span,
+}
+
+#[derive(Debug)]
+pub struct Metadata {
+	pub name: String,
+	pub description: String,
+	pub licence: String,
+	pub urls: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -109,7 +118,12 @@ pub struct Attribute {
 
 #[derive(Debug)]
 pub enum ScopeKind {
-	Loaded { items: Vec<Item>, span: Span },
+	Loaded {
+		items: Vec<Item>,
+		/// Whether the scope was defined inline or in an external file.
+		inline: bool,
+		span: Span,
+	},
 	Unloaded,
 }
 

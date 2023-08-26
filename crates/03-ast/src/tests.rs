@@ -1,4 +1,4 @@
-use crate::ast::*;
+use crate::types::*;
 use lexer::{span::Span, symbols::Symbol};
 
 #[allow(clippy::too_many_lines)]

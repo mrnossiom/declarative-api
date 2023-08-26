@@ -10,7 +10,7 @@
 	clippy::module_name_repetitions
 )]
 
-pub mod ast;
+pub mod types;
 
 #[cfg(test)]
 mod tests;

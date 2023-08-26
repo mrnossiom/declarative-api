@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Token {
 	pub kind: TokenKind,
