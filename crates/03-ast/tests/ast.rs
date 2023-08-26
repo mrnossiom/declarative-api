@@ -1,32 +1,25 @@
-use crate::types::*;
+use ast::types::*;
 use lexer::{span::Span, symbols::Symbol};
 
 #[allow(clippy::too_many_lines)]
-fn _dummy_api() -> Api {
+fn dummy_api() -> Api {
 	Api {
-		meta: vec![
+		attrs: vec![
 			Attribute {
-				ident: Ident {
-					symbol: Symbol::new_static("doc"),
-					span: Span { start: 0, end: 0 },
-				},
-				value: " This Api is a test for the documentation generator of the api".into(),
+				kind: AttrKind::DocComment(Symbol::new_static(
+					" This Api is a test for the documentation generator of the api",
+				)),
+				id: 0,
 				span: Span { start: 0, end: 0 },
 			},
 			Attribute {
-				ident: Ident {
-					symbol: Symbol::new_static("doc"),
-					span: Span { start: 0, end: 0 },
-				},
-				value: " This is a second line of comment".into(),
+				kind: AttrKind::DocComment(Symbol::new_static(" This is a second line of comment")),
+				id: 0,
 				span: Span { start: 0, end: 0 },
 			},
 			Attribute {
-				ident: Ident {
-					symbol: Symbol::new_static("doc"),
-					span: Span { start: 0, end: 0 },
-				},
-				value: " This is a third line of comment".into(),
+				kind: AttrKind::DocComment(Symbol::new_static(" This is a third line of comment")),
+				id: 0,
 				span: Span { start: 0, end: 0 },
 			},
 		],
@@ -83,11 +76,10 @@ fn _dummy_api() -> Api {
 			},
 			Item {
 				attrs: vec![Attribute {
-					ident: Ident {
-						symbol: Symbol::new_static("doc"),
-						span: Span { start: 0, end: 0 },
-					},
-					value: " Imports the `builder.dapi` file".into(),
+					kind: AttrKind::DocComment(Symbol::new_static(
+						" Imports the `builder.dapi` file",
+					)),
+					id: 0,
 					span: Span { start: 0, end: 0 },
 				}],
 				ident: Ident {
@@ -104,6 +96,7 @@ fn _dummy_api() -> Api {
 					span: Span { start: 0, end: 0 },
 				},
 				kind: ItemKind::Scope(ScopeKind::Loaded {
+					inline: true,
 					items: vec![Item {
 						attrs: vec![],
 						ident: Ident {

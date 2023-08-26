@@ -111,11 +111,34 @@ pub struct Type(pub(crate) String);
 
 #[derive(Debug)]
 pub struct Attribute {
-	pub ident: Ident,
-	pub value: String,
+	pub kind: AttrKind,
+	pub id: u32, /* should be an index type */
 	pub span: Span,
 }
 
+#[derive(Debug)]
+pub enum AttrKind {
+	/// A normal attribute.
+	Normal(NormalAttr),
+
+	/// A doc comment (e.g. `/// ...`, `//! ...`, `/** ... */`, `/*! ... */`).
+	/// Doc attributes (e.g. `#[doc="..."]`) are represented with the `Normal`
+	/// variant (which is much less compact and thus more expensive).
+	DocComment(Symbol),
+}
+
+#[derive(Debug, Clone)]
+pub struct NormalAttr {
+	pub item: AttrItem,
+	// pub tokens: Option<LazyAttrTokenStream>,
+}
+
+#[derive(Debug, Clone)]
+pub struct AttrItem {
+	// pub path: Path,
+	// pub args: AttrArgs,
+	// pub tokens: Option<LazyAttrTokenStream>,
+}
 #[derive(Debug)]
 pub enum ScopeKind {
 	Loaded {

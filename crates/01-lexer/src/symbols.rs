@@ -1,34 +1,49 @@
-#![allow(non_upper_case_globals)]
-
 use crate::span::Span;
 use std::fmt::Display;
 
 macro_rules! symbols {
-	{$group:ident, $($name:ident <== $match:literal),+} => {
+	{$group:ident, $($name:ident <== $match:literal),+,} => {
+		#[allow(non_upper_case_globals)]
 		pub mod $group {
-			$(
-				pub const $name: super::Symbol = super::Symbol::new_static($match);
-			)+
+			$(pub const $name: super::Symbol = super::Symbol::new_static($match);)+
 		}
 	};
 }
 
 symbols! { kw,
-	Model <== "model",
-	Path <== "path",
 	Meta <== "meta",
-	Scope <== "scope"
+
+	Scope <== "scope",
+	Path <== "path",
+	Auth <== "auth",
+
+	Model <== "model",
+	Enum <== "enum",
+
+	Body <== "body",
+	Headers <== "headers",
+	Query <== "query",
+	Params <== "params",
 }
 
 symbols! { attrs,
 	Doc <== "doc",
-	Format <== "format"
+	Format <== "format",
+	Type <== "type",
+	Deprecated <== "deprecated",
+}
+
+symbols! { remark,
+	Get <== "GET",
+	Post <== "POST",
+	Put <== "PUT",
+	Delete <== "DELETE",
 }
 
 // IDEA: change this to an index
 // pub struct Symbol(u32);
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Symbol(&'static str);
+pub struct Symbol(&'static str /* Should be an index type */);
 
 impl Symbol {
 	#[must_use]
