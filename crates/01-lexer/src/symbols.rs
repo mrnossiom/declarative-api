@@ -60,13 +60,13 @@ impl Display for Symbol {
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Ident {
-	pub name: Symbol,
+	pub symbol: Symbol,
 	pub span: Span,
 }
 
 impl Ident {
 	#[must_use]
-	pub const fn new(name: Symbol, span: Span) -> Self {
-		Self { name, span }
+	pub const fn new(symbol: Symbol, span: Span) -> Self {
+		Self { symbol, span }
 	}
 }

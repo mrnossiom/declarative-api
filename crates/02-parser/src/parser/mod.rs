@@ -1,9 +1,13 @@
 use crate::PResult;
+use ast::types::Ident;
 use lexer::{
 	rich::{Enricher, Token, TokenKind},
 	symbols::Symbol,
 };
 use std::mem;
+
+mod attr;
+mod item;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Spacing {
@@ -18,7 +22,7 @@ pub enum Spacing {
 }
 
 pub struct Parser<'a> {
-	// pub sess: &'a ParseSess,
+	// pub session: &'a ParseSession,
 	/// The current token.
 	pub token: Token,
 	/// The spacing for the current token
@@ -111,5 +115,21 @@ impl<'a> Parser<'a> {
 		} else {
 			false
 		}
+	}
+
+	fn parse_ident(&mut self) -> PResult<Ident> {
+		let ident = if let Some(lexer::symbols::Ident { symbol, span }) = self.token.ident() {
+			Ident { symbol, span }
+		} else {
+			let recover = true;
+			if recover {
+				todo!()
+			} else {
+				return Err(todo!());
+			}
+		};
+
+		self.bump();
+		Ok(ident)
 	}
 }

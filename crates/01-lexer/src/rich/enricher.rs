@@ -120,7 +120,7 @@ impl<'a> Enricher<'a> {
 
 		let style = match style {
 			poor::DocStyle::Inner => AttrStyle::Inner,
-			poor::DocStyle::Outer => AttrStyle::Outer,
+			poor::DocStyle::Outer => AttrStyle::OuterOrInline,
 		};
 
 		(style, sym)

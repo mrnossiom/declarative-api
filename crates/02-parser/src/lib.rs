@@ -11,7 +11,6 @@
 )]
 
 mod error;
-mod parse;
 mod parser;
 
 pub use crate::{

@@ -1,5 +1,8 @@
 use crate::{PResult, Parser};
-use ast::types::{Api, Attribute, Ident, Item, ItemKind, Metadata, ScopeKind};
+use ast::{
+	types::{Api, Attribute, Ident, Item, ItemKind, Metadata, ScopeKind},
+	P,
+};
 use lexer::{
 	rich::{Delimiter, TokenKind},
 	span::Span,
@@ -21,7 +24,7 @@ impl<'a> Parser<'a> {
 		})
 	}
 
-	fn parse_scope_content(&mut self, attrs: &mut Vec<Attribute>) -> PResult<Vec<Item>> {
+	fn parse_scope_content(&mut self, attrs: &mut Vec<Attribute>) -> PResult<Vec<P<Item>>> {
 		attrs.extend(self.parse_inner_attrs()?);
 
 		let mut items = Vec::default();
@@ -32,28 +35,9 @@ impl<'a> Parser<'a> {
 		Ok(items)
 	}
 
-	fn parse_inner_attrs(&mut self) -> PResult<Vec<Attribute>> {
-		self.expect(&TokenKind::At)?;
-		self.expect(&TokenKind::Bang)?;
-		self.expect(&TokenKind::CloseDelim(Delimiter::Parenthesis))?;
-		// TODO: eat attr content
-		self.expect(&TokenKind::CloseDelim(Delimiter::Parenthesis))?;
-
-		todo!()
-	}
-
-	fn parse_attrs(&mut self) -> PResult<Vec<Attribute>> {
-		self.expect(&TokenKind::At)?;
-		self.expect(&TokenKind::CloseDelim(Delimiter::Parenthesis))?;
-		// TODO: eat attr content
-		self.expect(&TokenKind::CloseDelim(Delimiter::Parenthesis))?;
-
-		todo!()
-	}
-
 	fn parse_metadata(&mut self) -> PResult<Metadata> {
 		if !self.eat_keyword(kw::Meta) {
-			// wtf, react accordingly
+			// TODO: react accordingly
 		}
 
 		self.expect(&TokenKind::OpenDelim(Delimiter::Brace))?;
@@ -63,10 +47,10 @@ impl<'a> Parser<'a> {
 		todo!()
 	}
 
-	fn parse_item(&mut self) -> PResult<Option<Item>> {
-		let attrs = self.parse_attrs()?;
+	fn parse_item(&mut self) -> PResult<Option<P<Item>>> {
+		let attrs = self.parse_outer_attrs()?;
 
-		self.parse_item_(attrs)
+		self.parse_item_(attrs).map(|item| item.map(P::<Item>::new))
 	}
 
 	fn parse_item_(&mut self, mut attrs: Vec<Attribute>) -> PResult<Option<Item>> {
@@ -102,9 +86,5 @@ impl<'a> Parser<'a> {
 		};
 
 		Ok((ident, ItemKind::Scope(scope)))
-	}
-
-	fn parse_ident(&mut self) -> PResult<Ident> {
-		todo!()
 	}
 }

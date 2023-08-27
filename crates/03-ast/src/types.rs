@@ -1,10 +1,11 @@
+use crate::P;
 use lexer::{span::Span, symbols::Symbol};
 
 #[derive(Debug)]
 pub struct Api {
 	pub attrs: Vec<Attribute>,
 	pub meta: Metadata,
-	pub items: Vec<Item>,
+	pub items: Vec<P<Item>>,
 	pub span: Span,
 }
 
@@ -109,11 +110,46 @@ pub enum MetaFieldKind {
 #[derive(Debug)]
 pub struct Type(pub(crate) String);
 
+// TODO: should be changed to a `ThinVec`
+pub type AttrVec = Vec<Attribute>;
+
+/// An attribute of these forms
+///
+/// `@name`
+/// `@name(<tokens>)`
+/// `@name{<tokens>}`
+/// `@name[<tokens>]`
+///
+/// or an outer doc comment
+///
+/// `## doc comment`
+///
+/// with an optional `!` after the `@` or the `##` to signify inner.
 #[derive(Debug)]
 pub struct Attribute {
 	pub kind: AttrKind,
 	pub id: u32, /* should be an index type */
+	pub style: AttrStyle,
 	pub span: Span,
+}
+
+/// Define the style of the attribute, corresponding to the optional `!`
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AttrStyle {
+	/// Without a `!` bang
+	OuterOrInline,
+
+	/// With a `!` bang
+	Inner,
+}
+
+impl From<lexer::rich::AttrStyle> for AttrStyle {
+	fn from(value: lexer::rich::AttrStyle) -> Self {
+		match value {
+			lexer::rich::AttrStyle::Inner => Self::Inner,
+			lexer::rich::AttrStyle::OuterOrInline => Self::OuterOrInline,
+		}
+	}
 }
 
 #[derive(Debug)]
@@ -142,7 +178,7 @@ pub struct AttrItem {
 #[derive(Debug)]
 pub enum ScopeKind {
 	Loaded {
-		items: Vec<Item>,
+		items: Vec<P<Item>>,
 		/// Whether the scope was defined inline or in an external file.
 		inline: bool,
 		span: Span,

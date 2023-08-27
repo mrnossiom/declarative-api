@@ -25,15 +25,14 @@ pub struct P<T: ?Sized> {
 	ptr: Box<T>,
 }
 
-/// Construct a `P<T>` from a `T` value.
-#[allow(non_snake_case)]
-pub fn P<T: 'static>(value: T) -> P<T> {
-	P {
-		ptr: Box::new(value),
-	}
-}
-
 impl<T: 'static> P<T> {
+	/// Construct a `P<T>` from a `T` value.
+	pub fn new(value: T) -> Self {
+		Self {
+			ptr: Box::new(value),
+		}
+	}
+
 	/// Move out of the pointer.
 	/// Intended for chaining transformations not covered by `map`.
 	pub fn and_then<U, F>(self, f: F) -> U
@@ -87,7 +86,7 @@ impl<T: ?Sized> DerefMut for P<T> {
 
 impl<T: 'static + Clone> Clone for P<T> {
 	fn clone(&self) -> Self {
-		P((**self).clone())
+		Self::new((**self).clone())
 	}
 }
 

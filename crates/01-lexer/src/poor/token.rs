@@ -192,13 +192,6 @@ pub enum LiteralKind {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AttrStyle {
-	Outer,
-	Inner,
-	Inline,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DocStyle {
 	// `##!` they document inside of scopes
 	Inner,

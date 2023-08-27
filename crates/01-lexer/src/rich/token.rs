@@ -33,7 +33,7 @@ impl Token {
 
 	#[must_use]
 	pub fn is_keyword(&self, kw: Symbol) -> bool {
-		self.ident().map_or(false, |id| id.name == kw)
+		self.ident().map_or(false, |id| id.symbol == kw)
 	}
 }
 
@@ -110,9 +110,8 @@ impl Display for TokenKind {
 				f,
 				r#"{} doc comment ("{sym}")"#,
 				match style {
+					AttrStyle::OuterOrInline => "outer",
 					AttrStyle::Inner => "inner",
-					AttrStyle::Outer => "outer",
-					AttrStyle::Inline => unreachable!(),
 				}
 			),
 
@@ -216,9 +215,23 @@ impl Display for OpKind {
 	}
 }
 
+/// An attribute of these forms
+///
+/// `@name(<tokens>)`
+/// `@name{<tokens>}`
+/// `@name[<tokens>]`
+/// `@name: <token>`
+///
+/// or an outer doc comment
+///
+/// `## doc comment`
+///
+/// with an optional `!` after the `@` or the `##` to signify inner.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AttrStyle {
-	Outer,
+	/// Without a `!` bang
+	OuterOrInline,
+
+	/// With a `!` bang
 	Inner,
-	Inline,
 }
