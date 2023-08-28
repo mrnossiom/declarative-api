@@ -40,10 +40,8 @@ impl<'a> Enricher<'a> {
 
 			let kind = match token.kind {
 				poor::TokenKind::Ident => {
-					let ident = self.str_from(start).to_owned();
-					let sym = symbol_dark_magic_to_remove(ident);
-
-					TokenKind::Ident(sym)
+					let ident = self.str_from(start);
+					TokenKind::Ident(Symbol::intern(ident))
 				}
 				poor::TokenKind::LineComment(style) => {
 					// Skip non-doc comments
@@ -116,14 +114,12 @@ impl<'a> Enricher<'a> {
 	}
 
 	fn cook_doc_line_comment(content: &str, style: poor::DocStyle) -> (AttrStyle, Symbol) {
-		let sym = symbol_dark_magic_to_remove(content.to_owned());
-
 		let style = match style {
 			poor::DocStyle::Inner => AttrStyle::Inner,
 			poor::DocStyle::Outer => AttrStyle::OuterOrInline,
 		};
 
-		(style, sym)
+		(style, Symbol::intern(content))
 	}
 
 	fn cook_literal(
@@ -139,15 +135,11 @@ impl<'a> Enricher<'a> {
 				}
 
 				let content = self.str_from_to(start + 1, end - 1);
-				let sym = symbol_dark_magic_to_remove(content.to_owned());
-
-				(LiteralKind::Str, sym)
+				(LiteralKind::Str, Symbol::intern(content))
 			}
 			poor::LiteralKind::Number => {
 				let content = self.str_from(start);
-				let sym = symbol_dark_magic_to_remove(content.to_owned());
-
-				(LiteralKind::Number, sym)
+				(LiteralKind::Number, Symbol::intern(content))
 			}
 		}
 	}
@@ -199,7 +191,7 @@ mod tests {
 
 	macro_rules! sym {
 		($lit:literal) => {
-			Symbol::new_static($lit)
+			Symbol::intern($lit)
 		};
 	}
 
@@ -236,7 +228,7 @@ mod tests {
 			(At, [0, 1]),
 			(Ident(attrs::Format), [1, 7]),
 			(Colon, [7, 8]),
-			(Ident(Symbol::new_static("date")), [9, 13])
+			(Ident(Symbol::intern("date")), [9, 13])
 		);
 	}
 
@@ -264,12 +256,4 @@ mod tests {
 			(CloseDelim(Bracket), [133, 134])
 		];
 	}
-}
-
-fn symbol_dark_magic_to_remove(ident: String) -> Symbol {
-	// FIXME(milo): oula, need to remove this a fast as possible
-	// maybe using a symbol interner like what Rust does
-	let ident = Box::leak(Box::new(ident));
-
-	Symbol::new_static(ident)
 }

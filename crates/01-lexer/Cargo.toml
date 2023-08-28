@@ -6,5 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+session = { workspace = true }
+macros = { workspace = true }
+
+parking_lot = "0.12.1"
+typed-arena = "2.0.2"
 unic-emoji-char = "0.9.0"
 unicode-xid = "0.2.4"
