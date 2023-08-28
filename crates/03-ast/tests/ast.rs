@@ -1,61 +1,72 @@
-use ast::types::*;
+use ast::{types::*, P};
 use lexer::{span::Span, symbols::Symbol};
+use thin_vec::thin_vec;
+
+macro_rules! sym {
+	($lit:literal) => {
+		Symbol::intern($lit)
+	};
+}
 
 #[allow(clippy::too_many_lines)]
-fn dummy_api() -> Api {
+fn _paradigm_example_ast() -> Api {
 	Api {
-		attrs: vec![
+		meta: Metadata {},
+		attrs: thin_vec![
 			Attribute {
-				kind: AttrKind::DocComment(Symbol::new_static(
-					" This Api is a test for the documentation generator of the api",
+				kind: AttrKind::DocComment(sym!(
+					" This Api is a test for the documentation generator of the api"
 				)),
-				id: 0,
-				span: Span { start: 0, end: 0 },
+				style: AttrStyle::Inner,
+				id: AttrId::make_id(),
+				span: Span::DUMMY,
 			},
 			Attribute {
-				kind: AttrKind::DocComment(Symbol::new_static(" This is a second line of comment")),
-				id: 0,
-				span: Span { start: 0, end: 0 },
+				kind: AttrKind::DocComment(sym!(" This is a second line of comment")),
+				style: AttrStyle::Inner,
+				id: AttrId::make_id(),
+				span: Span::DUMMY,
 			},
 			Attribute {
-				kind: AttrKind::DocComment(Symbol::new_static(" This is a third line of comment")),
-				id: 0,
-				span: Span { start: 0, end: 0 },
+				kind: AttrKind::DocComment(sym!(" This is a third line of comment")),
+				style: AttrStyle::Inner,
+				id: AttrId::make_id(),
+				span: Span::DUMMY,
 			},
 		],
 		items: vec![
-			Item {
-				attrs: vec![],
+			P::<Item>::new(Item {
+				attrs: thin_vec![],
 				kind: ItemKind::Meta(Meta {
 					fields: vec![
 						MetaField {
 							ident: Ident {
-								symbol: Symbol::new_static("name"),
-								span: Span { start: 0, end: 0 },
+								symbol: sym!("name"),
+								span: Span::DUMMY,
 							},
 							value: MetaFieldKind::Str("Wiro's API".into()),
-							span: Span { start: 0, end: 0 },
+							span: Span::DUMMY,
 						},
 						MetaField {
 							ident: Ident {
-								symbol: Symbol::new_static("description"),
-								span: Span { start: 0, end: 0 },
+								symbol: sym!("description"),
+								span: Span::DUMMY,
 							},
 							value: MetaFieldKind::Str("This is the API of Wiro".into()),
-							span: Span { start: 0, end: 0 },
+							span: Span::DUMMY,
 						},
 						MetaField {
 							ident: Ident {
-								symbol: Symbol::new_static("version"),
-								span: Span { start: 0, end: 0 },
+								symbol: sym!("version"),
+								span: Span::DUMMY,
 							},
 							value: MetaFieldKind::Str("1.0.0".into()),
-							span: Span { start: 0, end: 0 },
+							span: Span::DUMMY,
 						},
 						MetaField {
 							ident: Ident {
-								symbol: Symbol::new_static("name"),
-								span: Span { start: 0, end: 0 },
+								symbol: sym!("name"),
+								span: Span::DUMMY,
 							},
 							value: MetaFieldKind::Vec(vec![
 								MetaFieldKind::Str("https://paradigm.lighton.ai/api/v1".into()),
@@ -64,135 +75,140 @@ fn dummy_api() -> Api {
 								),
 								MetaFieldKind::Str("https://paradigm-dev.lighton.ai/api/v1".into()),
 							]),
-							span: Span { start: 0, end: 0 },
+							span: Span::DUMMY,
 						},
 					],
 				}),
-				span: Span { start: 0, end: 0 },
 				ident: Ident {
-					symbol: Symbol::new_static(""),
-					span: Span { start: 0, end: 0 },
+					symbol: sym!(""),
+					span: Span::DUMMY,
 				},
-			},
-			Item {
-				attrs: vec![Attribute {
-					kind: AttrKind::DocComment(Symbol::new_static(
-						" Imports the `builder.dapi` file",
-					)),
-					id: 0,
-					span: Span { start: 0, end: 0 },
+				id: NodeId::DUMMY,
+				span: Span::DUMMY,
+			}),
+			P::<Item>::new(Item {
+				attrs: thin_vec![Attribute {
+					kind: AttrKind::DocComment(sym!(" Imports the `builder.dapi` file")),
+					style: AttrStyle::OuterOrInline,
+					id: AttrId::make_id(),
+					span: Span::DUMMY,
 				}],
 				ident: Ident {
-					symbol: Symbol::new_static("builder"),
-					span: Span { start: 0, end: 0 },
+					symbol: sym!("builder"),
+					span: Span::DUMMY,
 				},
 				kind: ItemKind::Scope(ScopeKind::Unloaded),
-				span: Span { start: 0, end: 0 },
-			},
-			Item {
-				attrs: vec![],
+				id: NodeId::DUMMY,
+				span: Span::DUMMY,
+			}),
+			P::<Item>::new(Item {
+				attrs: thin_vec![],
 				ident: Ident {
-					symbol: Symbol::new_static("dashboard"),
-					span: Span { start: 0, end: 0 },
+					symbol: sym!("dashboard"),
+					span: Span::DUMMY,
 				},
 				kind: ItemKind::Scope(ScopeKind::Loaded {
 					inline: true,
-					items: vec![Item {
-						attrs: vec![],
+					items: vec![P::<Item>::new(Item {
+						attrs: thin_vec![],
 						ident: Ident {
-							symbol: Symbol::new_static("dashboard"),
-							span: Span { start: 0, end: 0 },
+							symbol: sym!("dashboard"),
+							span: Span::DUMMY,
 						},
 						kind: ItemKind::Path(Path {
 							path: PathKind::String(Ident {
-								symbol: Symbol::new_static("dashboard"),
-								span: Span { start: 0, end: 0 },
+								symbol: sym!("dashboard"),
+								span: Span::DUMMY,
 							}),
 							items: vec![Item {
-								attrs: vec![],
+								attrs: thin_vec![],
 								ident: Ident {
-									symbol: Symbol::new_static(""),
-									span: Span { start: 0, end: 0 },
+									symbol: sym!(""),
+									span: Span::DUMMY,
 								},
 								kind: ItemKind::Headers(Headers {
 									headers: vec![
 										HeaderField {
 											attrs: vec![
 												Attribute {
-													ident: Ident {
-														symbol: Symbol::new_static("doc"),
-														span: Span { start: 0, end: 0 },
-													},
-													value: " # Safety".into(),
-													span: Span { start: 0, end: 0 },
+													kind: AttrKind::DocComment(sym!(" # Safety")),
+													style: AttrStyle::OuterOrInline,
+													id: AttrId::make_id(),
+													span: Span::DUMMY,
 												},
 												Attribute {
-													ident: Ident {
-														symbol: Symbol::new_static("doc"),
-														span: Span { start: 0, end: 0 },
-													},
-													value: " This is a comment".into(),
-													span: Span { start: 0, end: 0 },
+													kind: AttrKind::DocComment(sym!(
+														" This is a comment"
+													)),
+													style: AttrStyle::OuterOrInline,
+													id: AttrId::make_id(),
+													span: Span::DUMMY,
 												},
 												Attribute {
-													ident: Ident {
-														symbol: Symbol::new_static("doc"),
-														span: Span { start: 0, end: 0 },
-													},
-													value: " This is a second line of comment"
-														.into(),
-													span: Span { start: 0, end: 0 },
+													kind: AttrKind::DocComment(sym!(
+														" This is a second line of comment"
+													)),
+													style: AttrStyle::OuterOrInline,
+													id: AttrId::make_id(),
+													span: Span::DUMMY,
 												},
+												// @description("The API Key of the User")
 												Attribute {
-													ident: Ident {
-														symbol: Symbol::new_static("description"),
-														span: Span { start: 0, end: 0 },
-													},
-													value: "The API Key of the User".into(),
-													span: Span { start: 0, end: 0 },
+													kind: AttrKind::Normal(NormalAttr {
+														item: AttrItem {},
+													}),
+													style: AttrStyle::OuterOrInline,
+													id: AttrId::make_id(),
+													span: Span::DUMMY,
 												},
+												// @prefix("Api-Key")
 												Attribute {
-													ident: Ident {
-														symbol: Symbol::new_static("prefix"),
-														span: Span { start: 0, end: 0 },
-													},
-													value: "Api-Key".into(),
-													span: Span { start: 0, end: 0 },
+													kind: AttrKind::Normal(NormalAttr {
+														item: AttrItem {},
+													}),
+													style: AttrStyle::OuterOrInline,
+													id: AttrId::make_id(),
+													span: Span::DUMMY,
 												},
 											],
 											ident: Ident {
-												symbol: Symbol::new_static("Authorization"),
-												span: Span { start: 0, end: 0 },
+												symbol: sym!("Authorization"),
+												span: Span::DUMMY,
 											},
-											span: Span { start: 0, end: 0 },
+											span: Span::DUMMY,
 										},
 										HeaderField {
+											// @description("The Model of the User")
 											attrs: vec![Attribute {
-												ident: Ident {
-													symbol: Symbol::new_static("description"),
-													span: Span { start: 0, end: 0 },
-												},
-												value: "The Model of the User".into(),
-												span: Span { start: 0, end: 0 },
+												kind: AttrKind::Normal(NormalAttr {
+													item: AttrItem {},
+												}),
+												style: AttrStyle::OuterOrInline,
+												id: AttrId::make_id(),
+												span: Span::DUMMY,
 											}],
 											ident: Ident {
-												symbol: Symbol::new_static("X-Model"),
-												span: Span { start: 0, end: 0 },
+												symbol: sym!("X-Model"),
+												span: Span::DUMMY,
 											},
-											span: Span { start: 0, end: 0 },
+											span: Span::DUMMY,
 										},
 									],
 								}),
-								span: Span { start: 0, end: 0 },
+								id: NodeId::DUMMY,
+								span: Span::DUMMY,
 							}],
 						}),
-						span: Span { start: 0, end: 0 },
-					}],
-					span: Span { start: 0, end: 0 },
+						id: NodeId::DUMMY,
+						span: Span::DUMMY,
+					})],
+					span: Span::DUMMY,
 				}),
-				span: Span { start: 0, end: 0 },
-			},
+				id: NodeId::DUMMY,
+				span: Span::DUMMY,
+			}),
 		],
-		span: Span { start: 0, end: 0 },
+		id: NodeId::ROOT,
+		span: Span::DUMMY,
 	}
 }

@@ -7,6 +7,10 @@ pub struct PError {
 }
 
 impl PError {
+	pub(crate) const fn new(message: String) -> Self {
+		Self { message }
+	}
+
 	fn report(&self) {
 		eprintln!("Error: {}", self.message);
 	}

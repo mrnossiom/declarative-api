@@ -4,11 +4,13 @@ use crate::{
 	span::Span,
 	symbols::Symbol,
 };
+use session::ParseSession;
 
 /// Transforms [`poor::Token`]s that are only relevant when reading the source file at the
 /// same time into [`rich::Token`](crate::rich::Token)s that are self-explanatory. The latter doesn't include
 /// tokens that don't add information to the generator such as whitespace or comments.
 pub struct Enricher<'a> {
+	session: &'a ParseSession,
 	source: &'a str,
 	cursor: poor::Cursor<'a>,
 	pos: u32,
@@ -18,8 +20,9 @@ impl<'a> Enricher<'a> {
 	/// Creates a new [`Enricher`] for the given source, creating in the way
 	/// the underlying [`poor::Cursor`] to get tokens to enrich.
 	#[must_use]
-	pub fn from_source(source: &'a str) -> Self {
+	pub fn from_source(session: &'a ParseSession, source: &'a str) -> Self {
 		Self {
+			session,
 			source,
 			cursor: poor::Cursor::from_source(source),
 			pos: 0,
@@ -197,7 +200,7 @@ mod tests {
 
 	macro_rules! tokens {
 		($expr:ident, $(($ty:expr, [$lo:literal, $hi:literal])),+) => {
-			let mut tokens = Enricher::from_source($expr).into_iter();
+			let mut tokens = Enricher::from_source(&ParseSession {}, $expr).into_iter();
 
 			$(
 				assert_eq!(
@@ -211,7 +214,7 @@ mod tests {
 
 	#[test]
 	fn can_enrich_example_file() {
-		let rich_tokens = Enricher::from_source(EXAMPLE)
+		let rich_tokens = Enricher::from_source(&ParseSession {}, EXAMPLE)
 			.into_iter()
 			.collect::<Vec<_>>();
 

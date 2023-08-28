@@ -4,6 +4,7 @@ use lexer::{
 	rich::{Enricher, Token, TokenKind},
 	symbols::Symbol,
 };
+use session::ParseSession;
 use std::mem;
 
 mod attr;
@@ -22,7 +23,7 @@ pub enum Spacing {
 }
 
 pub struct Parser<'a> {
-	// pub session: &'a ParseSession,
+	pub session: &'a ParseSession,
 	/// The current token.
 	pub token: Token,
 	/// The spacing for the current token
@@ -31,24 +32,23 @@ pub struct Parser<'a> {
 	pub prev_token: Token,
 
 	expected_tokens: Vec<TokenKind>,
-	// Important: This must only be advanced from `bump` to ensure that
-	// `token_cursor.num_next_calls` is updated properly.
 	cursor: Enricher<'a>,
 }
 
 impl<'a> Parser<'a> {
 	#[must_use]
-	pub fn from_source(source: &'a str) -> Self {
-		let tokens = Enricher::from_source(source);
-		Self::from_tokens(tokens)
+	pub fn from_source(session: &'a ParseSession, source: &'a str) -> Self {
+		let tokens = Enricher::from_source(session, source);
+		Self::from_tokens(session, tokens)
 	}
 
 	#[must_use]
-	pub fn from_tokens(cursor: Enricher<'a>) -> Self {
+	pub fn from_tokens(session: &'a ParseSession, cursor: Enricher<'a>) -> Self {
 		Self {
-			token: Token::dummy(),
+			session,
+			token: Token::DUMMY,
 			token_spacing: Spacing::Alone,
-			prev_token: Token::dummy(),
+			prev_token: Token::DUMMY,
 			expected_tokens: Vec::default(),
 			cursor,
 		}

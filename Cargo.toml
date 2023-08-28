@@ -12,3 +12,7 @@ ast-lowering = { path = "crates/05-ast-lowering" }
 hir = { path = "crates/06-hir" }
 hir-lowering = { path = "crates/07-hir-lowering" }
 docgen = { path = "crates/08-docgen" }
+session = { path = "crates/session" }
+macros = { path = "crates/macros" }
+
+thin-vec = "0.2.12"

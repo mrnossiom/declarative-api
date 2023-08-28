@@ -1,17 +1,17 @@
-use crate::{PResult, Parser};
-use ast::types::{AttrKind, AttrStyle, AttrVec, Attribute};
-use lexer::{rich::TokenKind, span::Span};
+use crate::{PError, PResult, Parser};
+use ast::types::{AttrId, AttrKind, AttrStyle, AttrVec, Attribute};
+use lexer::rich::TokenKind;
 
 impl<'a> Parser<'a> {
-	pub(crate) fn parse_inner_attrs(&mut self) -> PResult<Vec<Attribute>> {
+	pub(crate) fn parse_inner_attrs(&mut self) -> PResult<AttrVec> {
 		self.parse_attrs(AttrStyle::Inner)
 	}
 
-	pub(crate) fn parse_outer_attrs(&mut self) -> PResult<Vec<Attribute>> {
+	pub(crate) fn parse_outer_attrs(&mut self) -> PResult<AttrVec> {
 		self.parse_attrs(AttrStyle::OuterOrInline)
 	}
 
-	fn parse_attrs(&mut self, style: AttrStyle) -> PResult<Vec<Attribute>> {
+	fn parse_attrs(&mut self, style: AttrStyle) -> PResult<AttrVec> {
 		let mut attrs = AttrVec::new();
 
 		loop {
@@ -20,11 +20,10 @@ impl<'a> Parser<'a> {
 			} else if let TokenKind::DocComment(style, sym) = self.token.kind {
 				Some(Attribute {
 					kind: AttrKind::DocComment(sym),
-					// TODO: gen attr id
-					id: 0,
+					id: AttrId::make_id(),
 					style: style.into(),
 					// TODO: set span
-					span: Span::dummy(),
+					span: self.token.span,
 				})
 			} else {
 				None
@@ -50,6 +49,12 @@ impl<'a> Parser<'a> {
 		} else {
 			AttrStyle::OuterOrInline
 		};
+
+		if style_found == style {
+			return Err(PError::new(format!(
+				"found a {style_found} styled attribute where we expected a {style} styled attribute"
+			)));
+		}
 
 		todo!("eat attr content")
 	}

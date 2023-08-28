@@ -1,31 +1,57 @@
 use crate::{PResult, Parser};
 use ast::{
-	types::{Api, Attribute, Ident, Item, ItemKind, Metadata, ScopeKind},
+	types::{Api, AttrVec, Ident, Item, ItemKind, Metadata, NodeId, ScopeKind},
 	P,
 };
 use lexer::{
 	rich::{Delimiter, TokenKind},
-	span::Span,
 	symbols::kw,
 };
 
 impl<'a> Parser<'a> {
 	pub fn parse_root(&mut self) -> PResult<Api> {
+		let lo = self.token.span;
+
 		let attrs = self.parse_inner_attrs()?;
 		let meta = self.parse_metadata()?;
 
-		let items = self.parse_scope_content(&mut vec![])?;
+		let items = self.parse_scope_content(None)?;
 
 		Ok(Api {
 			attrs,
 			meta,
 			items,
-			span: Span::dummy(),
+
+			id: NodeId::ROOT,
+			span: lo.to(self.prev_token.span),
 		})
 	}
 
-	fn parse_scope_content(&mut self, attrs: &mut Vec<Attribute>) -> PResult<Vec<P<Item>>> {
-		attrs.extend(self.parse_inner_attrs()?);
+	fn parse_scope(&mut self, attrs: &mut AttrVec) -> PResult<(Ident, ItemKind)> {
+		let ident = self.parse_ident()?;
+
+		let scope = if self.eat(&TokenKind::Semi) {
+			ScopeKind::Unloaded
+		} else {
+			let lo = self.token.span;
+			self.expect(&TokenKind::OpenDelim(Delimiter::Brace))?;
+			let items = self.parse_scope_content(Some(attrs))?;
+			self.expect(&TokenKind::CloseDelim(Delimiter::Brace))?;
+
+			ScopeKind::Loaded {
+				items,
+				inline: true,
+				span: lo.to(self.prev_token.span),
+			}
+		};
+
+		Ok((ident, ItemKind::Scope(scope)))
+	}
+
+	fn parse_scope_content(&mut self, attrs: Option<&mut AttrVec>) -> PResult<Vec<P<Item>>> {
+		if let Some(attrs) = attrs {
+			attrs.extend(self.parse_inner_attrs()?);
+		}
 
 		let mut items = Vec::default();
 		while let Some(item) = self.parse_item()? {
@@ -53,7 +79,9 @@ impl<'a> Parser<'a> {
 		self.parse_item_(attrs).map(|item| item.map(P::<Item>::new))
 	}
 
-	fn parse_item_(&mut self, mut attrs: Vec<Attribute>) -> PResult<Option<Item>> {
+	fn parse_item_(&mut self, mut attrs: AttrVec) -> PResult<Option<Item>> {
+		let lo = self.token.span;
+
 		let (ident, kind) = if self.eat_keyword(kw::Scope) {
 			self.parse_scope(&mut attrs)?
 		} else {
@@ -64,27 +92,9 @@ impl<'a> Parser<'a> {
 			attrs,
 			ident,
 			kind,
-			span: Span::dummy(),
+
+			id: NodeId::DUMMY,
+			span: lo.to(self.prev_token.span),
 		}))
-	}
-
-	fn parse_scope(&mut self, attrs: &mut Vec<Attribute>) -> PResult<(Ident, ItemKind)> {
-		let ident = self.parse_ident()?;
-
-		let scope = if self.eat(&TokenKind::Semi) {
-			ScopeKind::Unloaded
-		} else {
-			self.expect(&TokenKind::OpenDelim(Delimiter::Brace))?;
-			let items = self.parse_scope_content(attrs)?;
-			self.expect(&TokenKind::CloseDelim(Delimiter::Brace))?;
-
-			ScopeKind::Loaded {
-				items,
-				inline: true,
-				span: Span::dummy(),
-			}
-		};
-
-		Ok((ident, ItemKind::Scope(scope)))
 	}
 }

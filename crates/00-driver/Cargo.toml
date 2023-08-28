@@ -9,5 +9,6 @@ edition = "2021"
 ast = { workspace = true }
 lexer = { workspace = true }
 parser = { workspace = true }
+session = { workspace = true }
 
 clap = { version = "4.3.21", features = ["derive"] }

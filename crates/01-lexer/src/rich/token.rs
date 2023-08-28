@@ -11,16 +11,13 @@ pub struct Token {
 }
 
 impl Token {
+	pub const DUMMY: Self = Self {
+		kind: TokenKind::Eof,
+		span: Span::DUMMY,
+	};
+
 	pub(crate) const fn new(kind: TokenKind, span: Span) -> Self {
 		Self { kind, span }
-	}
-
-	#[must_use]
-	pub const fn dummy() -> Self {
-		Self {
-			kind: TokenKind::Eof,
-			span: Span::dummy(),
-		}
 	}
 
 	#[must_use]

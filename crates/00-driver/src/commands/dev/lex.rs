@@ -1,4 +1,5 @@
 use lexer::{poor::Cursor, rich::Enricher};
+use session::ParseSession;
 use std::{fs, path::PathBuf};
 
 #[derive(Debug, clap::Parser)]
@@ -14,7 +15,7 @@ impl Lex {
 		let source = fs::read_to_string(&self.file).unwrap();
 
 		if self.rich {
-			Enricher::from_source(&source)
+			Enricher::from_source(&ParseSession {}, &source)
 				.into_iter()
 				.inspect(|item| println!("{}", item))
 				.count();
