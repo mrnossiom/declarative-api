@@ -25,14 +25,15 @@ pub struct P<T: ?Sized> {
 	ptr: Box<T>,
 }
 
-impl<T: 'static> P<T> {
-	/// Construct a `P<T>` from a `T` value.
-	pub fn new(value: T) -> Self {
-		Self {
-			ptr: Box::new(value),
-		}
+/// Construct a `P<T>` from a `T` value.
+#[allow(non_snake_case)]
+pub fn P<T>(value: T) -> P<T> {
+	P {
+		ptr: Box::new(value),
 	}
+}
 
+impl<T: 'static> P<T> {
 	/// Move out of the pointer.
 	/// Intended for chaining transformations not covered by `map`.
 	pub fn and_then<U, F>(self, f: F) -> U
@@ -86,7 +87,7 @@ impl<T: ?Sized> DerefMut for P<T> {
 
 impl<T: 'static + Clone> Clone for P<T> {
 	fn clone(&self) -> Self {
-		Self::new((**self).clone())
+		P((**self).clone())
 	}
 }
 
@@ -150,6 +151,7 @@ impl<T> From<Vec<T>> for P<[T]> {
 	}
 }
 
+#[allow(clippy::from_over_into)]
 impl<T> Into<Vec<T>> for P<[T]> {
 	fn into(self) -> Vec<T> {
 		self.into_vec()

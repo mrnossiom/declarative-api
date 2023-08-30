@@ -9,6 +9,8 @@ use std::mem;
 use tracing::instrument;
 
 mod attr;
+mod expr;
+mod factory;
 mod item;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -45,14 +47,18 @@ impl<'a> Parser<'a> {
 
 	#[must_use]
 	pub fn from_tokens(session: &'a ParseSession, cursor: Enricher<'a>) -> Self {
-		Self {
+		let mut parser = Self {
 			session,
 			token: Token::DUMMY,
 			token_spacing: Spacing::Alone,
 			prev_token: Token::DUMMY,
 			expected_tokens: Vec::default(),
 			cursor,
-		}
+		};
+
+		parser.bump();
+
+		parser
 	}
 
 	/// Expects and consumes the token `t`. Signals an error if the next token is not `t`.
@@ -64,14 +70,33 @@ impl<'a> Parser<'a> {
 				self.bump();
 				Ok(false)
 			} else {
-				todo!("recover from unexpected token")
+				todo!("recover from unexpected token {}", self.token)
 			}
 		} else {
-			todo!("understand why branch here")
+			if self.token.kind == *tok {
+				self.bump();
+				Ok(false)
+			} else {
+				todo!("recover from unexpected token {}", self.token)
+			}
+			// todo!("understand why branch here")
 			// self.expect_one_of(slice::from_ref(tok), &[])
 		}
 	}
 
+	/// If the given word is not a keyword, signals an error.
+	/// If the next token is not the given word, signals an error.
+	/// Otherwise, eats it.
+	#[instrument(level = "TRACE", skip(self))]
+	fn expect_keyword(&mut self, kw: Symbol) -> PResult<()> {
+		if self.eat_keyword(kw) {
+			Ok(())
+		} else {
+			todo!()
+		}
+	}
+
+	#[instrument(level = "TRACE", skip(self))]
 	fn bump(&mut self) {
 		use Spacing::*;
 		let (next_token, has_space_before) = self.cursor.next_token();

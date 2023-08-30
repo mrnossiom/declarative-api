@@ -11,7 +11,6 @@ macro_rules! sym {
 #[allow(clippy::too_many_lines)]
 fn _paradigm_example_ast() -> Api {
 	Api {
-		meta: Metadata {},
 		attrs: thin_vec![
 			Attribute {
 				kind: AttrKind::DocComment(sym!(
@@ -34,8 +33,8 @@ fn _paradigm_example_ast() -> Api {
 				span: Span::DUMMY,
 			},
 		],
-		items: vec![
-			P::<Item>::new(Item {
+		items: thin_vec![
+			P(Item {
 				attrs: thin_vec![],
 				kind: ItemKind::Meta(Meta {
 					fields: vec![
@@ -86,7 +85,7 @@ fn _paradigm_example_ast() -> Api {
 				id: NodeId::DUMMY,
 				span: Span::DUMMY,
 			}),
-			P::<Item>::new(Item {
+			P(Item {
 				attrs: thin_vec![Attribute {
 					kind: AttrKind::DocComment(sym!(" Imports the `builder.dapi` file")),
 					style: AttrStyle::OuterOrInline,
@@ -101,7 +100,7 @@ fn _paradigm_example_ast() -> Api {
 				id: NodeId::DUMMY,
 				span: Span::DUMMY,
 			}),
-			P::<Item>::new(Item {
+			P(Item {
 				attrs: thin_vec![],
 				ident: Ident {
 					symbol: sym!("dashboard"),
@@ -109,14 +108,14 @@ fn _paradigm_example_ast() -> Api {
 				},
 				kind: ItemKind::Scope(ScopeKind::Loaded {
 					inline: true,
-					items: vec![P::<Item>::new(Item {
+					items: vec![P(Item {
 						attrs: thin_vec![],
 						ident: Ident {
 							symbol: sym!("dashboard"),
 							span: Span::DUMMY,
 						},
 						kind: ItemKind::Path(Path {
-							path: PathKind::String(Ident {
+							kind: PathKind::Simple(Ident {
 								symbol: sym!("dashboard"),
 								span: Span::DUMMY,
 							}),

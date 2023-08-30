@@ -114,6 +114,9 @@ impl fmt::Display for TokenKind {
 
 			Self::Ident(sym) => write!(f, r#"ident "{sym}""#),
 			Self::InvalidIdent => write!(f, "invalid ident"),
+			Self::Literal(LiteralKind::Bool, _sym) => {
+				unreachable!("bool literal doesn't exist in lexer")
+			}
 			Self::Literal(LiteralKind::Number, sym) => write!(f, "lit {sym}"),
 			Self::Literal(LiteralKind::Str, sym) => write!(f, r#"lit "{sym}""#),
 
@@ -149,6 +152,9 @@ impl fmt::Display for TokenKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LiteralKind {
+	/// AST only, represent  `true` or `false`
+	Bool,
+
 	/// ""abc"", ""abc"
 	Str,
 	/// "12_u8", "0o100", "0b120i99", "1f32".

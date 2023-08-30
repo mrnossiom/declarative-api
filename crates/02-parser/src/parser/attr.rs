@@ -1,30 +1,31 @@
 use crate::{PError, PResult, Parser};
-use ast::types::{AttrId, AttrKind, AttrStyle, AttrVec, Attribute};
+use ast::types::{AttrStyle, AttrVec, Attribute};
 use lexer::rich::TokenKind;
+use tracing::{debug_span, instrument};
 
 impl<'a> Parser<'a> {
+	#[instrument(level = "DEBUG", skip(self))]
 	pub(crate) fn parse_inner_attrs(&mut self) -> PResult<AttrVec> {
 		self.parse_attrs(AttrStyle::Inner)
 	}
 
+	#[instrument(level = "DEBUG", skip(self))]
 	pub(crate) fn parse_outer_attrs(&mut self) -> PResult<AttrVec> {
 		self.parse_attrs(AttrStyle::OuterOrInline)
 	}
 
+	#[instrument(level = "DEBUG", skip(self))]
 	fn parse_attrs(&mut self, style: AttrStyle) -> PResult<AttrVec> {
 		let mut attrs = AttrVec::new();
 
 		loop {
-			let attr = if self.check(&TokenKind::Pound) {
+			let attr = if self.check(&TokenKind::At) {
 				Some(self.parse_attr(style)?)
 			} else if let TokenKind::DocComment(style, sym) = self.token.kind {
-				Some(Attribute {
-					kind: AttrKind::DocComment(sym),
-					id: AttrId::make_id(),
-					style: style.into(),
-					// TODO: set span
-					span: self.token.span,
-				})
+				let _span = debug_span!("parse_doc_attr").entered();
+
+				self.bump();
+				Some(Self::make_doc_attr(sym, style.into(), self.prev_token.span))
 			} else {
 				None
 			};
@@ -41,21 +42,26 @@ impl<'a> Parser<'a> {
 		Ok(attrs)
 	}
 
+	#[instrument(level = "DEBUG", skip(self))]
 	fn parse_attr(&mut self, style: AttrStyle) -> PResult<Attribute> {
+		let lo = self.token.span;
+
 		self.expect(&TokenKind::At)?;
 
-		let style_found = if self.eat(&TokenKind::Bang) {
+		let parsed_style = if self.eat(&TokenKind::Bang) {
 			AttrStyle::Inner
 		} else {
 			AttrStyle::OuterOrInline
 		};
 
-		if style_found == style {
+		if parsed_style == style {
 			return Err(PError::new(format!(
-				"found a {style_found} styled attribute where we expected a {style} styled attribute"
+				"found a {parsed_style} styled attribute where we expected a {style} styled attribute"
 			)));
 		}
 
-		todo!("eat attr content")
+		// TODO: eat attr content
+
+		Ok(Self::make_normal_attr(parsed_style, self.span(lo)))
 	}
 }

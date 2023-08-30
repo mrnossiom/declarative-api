@@ -12,9 +12,13 @@ thread_local! {
 
 symbols! {
 	kw {
+
 		Auth: "auth",
 		Body: "body",
+		// should be at the top, but we have to fix ordering first
+		Empty: "",
 		Enum: "enum",
+		False: "false",
 		Headers: "headers",
 		Meta: "meta",
 		Model: "model",
@@ -22,6 +26,7 @@ symbols! {
 		Path: "path",
 		Query: "query",
 		Scope: "scope",
+		True: "true",
 	}
 
 	attrs {

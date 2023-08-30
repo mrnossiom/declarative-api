@@ -13,9 +13,9 @@ pub struct Item {
 	pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ItemKind {
-	Meta(Meta),
+	Meta(Metadata),
 
 	Scope(ScopeKind),
 	Path(Path),
@@ -25,80 +25,51 @@ pub enum ItemKind {
 	StatusCode(StatusCode),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Verb {
 	pub method: String,
-	pub items: Vec<Item>,
+	pub items: ThinVec<P<Item>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StatusCode {
 	pub code: u16,
-	pub items: Vec<Item>,
+	pub items: ThinVec<P<Item>>,
 }
 
-#[derive(Debug)]
-pub struct Meta {
-	pub fields: Vec<MetaField>,
+#[derive(Debug, Clone)]
+/// Contains information like name, description, licence or base server urls.
+pub struct Metadata {
+	pub fields: ThinVec<P<PropertyDef>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Headers {
-	pub headers: Vec<HeaderField>,
+	pub headers: ThinVec<P<FieldDef>>,
 }
 
-#[derive(Debug)]
-pub struct HeaderField {
-	pub ident: Ident,
-	pub attrs: Vec<Attribute>,
-	pub span: Span,
-}
-
-#[derive(Debug)]
-pub struct Path {
-	pub path: PathKind,
-	pub items: Vec<Item>,
-}
-
-#[derive(Debug)]
-pub enum PathKind {
-	String(Ident),
-	Variable(Ident),
-	Complex(Vec<Self>),
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Model {
-	pub fields: Vec<ModelField>,
-}
-#[derive(Debug)]
-pub struct ModelField {
-	pub ident: Ident,
-	pub ty: Type,
-	pub attrs: Vec<Attribute>,
-	pub span: Span,
+	pub fields: ThinVec<P<FieldDef>>,
 }
 
-#[derive(Debug)]
-pub struct MetaField {
-	pub ident: Ident,
-	pub value: MetaFieldKind,
-	pub span: Span,
+#[derive(Debug, Clone)]
+pub struct Path {
+	pub kind: PathKind,
+	pub items: ThinVec<Item>,
 }
 
-#[derive(Debug)]
-pub enum MetaFieldKind {
-	Str(String),
-	Bool(bool),
-	Int(u64),
-	Float(f64),
-	Vec(Vec<Self>),
+#[derive(Debug, Clone)]
+pub enum PathKind {
+	Simple(Ident),
+	Variable(Ident),
+	Complex(ThinVec<Self>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ScopeKind {
 	Loaded {
-		items: Vec<P<Item>>,
+		items: ThinVec<P<Item>>,
 		/// Whether the scope was defined inline or in an external file.
 		inline: bool,
 		span: Span,
@@ -112,7 +83,7 @@ pub enum ScopeKind {
 #[derive(Clone, Debug)]
 pub struct FieldDef {
 	pub attrs: AttrVec,
-	pub ident: Option<Ident>,
+	pub ident: Ident,
 	pub ty: P<Type>,
 
 	pub id: NodeId,
