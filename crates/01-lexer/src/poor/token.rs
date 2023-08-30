@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Token {
@@ -12,9 +12,9 @@ impl Token {
 	}
 }
 
-impl Display for Token {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}", self.kind,)?;
+impl fmt::Display for Token {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", self.kind)?;
 
 		if !self.kind.is_single_char() {
 			write!(f, " ({})", self.length)?;
@@ -129,8 +129,8 @@ impl TokenKind {
 	}
 }
 
-impl Display for TokenKind {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for TokenKind {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::LineComment(None) => write!(f, "line comment"),
 			Self::LineComment(Some(DocStyle::Inner)) => write!(f, "inner line comment"),

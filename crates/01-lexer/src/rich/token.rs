@@ -2,7 +2,7 @@ use crate::{
 	span::Span,
 	symbols::{Ident, Symbol},
 };
-use std::fmt::Display;
+use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Token {
@@ -34,8 +34,8 @@ impl Token {
 	}
 }
 
-impl Display for Token {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Token {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(f, "{} ({})", self.kind, self.span)
 	}
 }
@@ -100,8 +100,8 @@ impl TokenKind {
 	}
 }
 
-impl Display for TokenKind {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for TokenKind {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::DocComment(style, sym) => write!(
 				f,
@@ -195,8 +195,8 @@ pub enum OpKind {
 	Percent,
 }
 
-impl Display for OpKind {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for OpKind {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::Lt => write!(f, ">"),
 			Self::Gt => write!(f, "<"),

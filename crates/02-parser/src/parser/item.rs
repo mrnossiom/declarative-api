@@ -9,6 +9,7 @@ use lexer::{
 };
 
 impl<'a> Parser<'a> {
+	#[tracing::instrument(level = "DEBUG", skip(self))]
 	pub fn parse_root(&mut self) -> PResult<Api> {
 		let lo = self.token.span;
 
@@ -27,6 +28,7 @@ impl<'a> Parser<'a> {
 		})
 	}
 
+	#[tracing::instrument(level = "DEBUG", skip(self, attrs))]
 	fn parse_scope(&mut self, attrs: &mut AttrVec) -> PResult<(Ident, ItemKind)> {
 		let ident = self.parse_ident()?;
 

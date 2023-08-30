@@ -3,7 +3,7 @@ use std::fmt;
 /// Identifies an AST node.
 ///
 /// This identifies top-level definitions, expressions, and everything in between.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct NodeId(u32);
 
 impl NodeId {
@@ -16,8 +16,20 @@ impl NodeId {
 	pub const DUMMY: Self = Self(u32::MAX);
 }
 
+impl fmt::Debug for NodeId {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			&Self::DUMMY => write!(f, "NodeId(DUMMY)"),
+			Self(id) => fmt::Display::fmt(&id, f),
+		}
+	}
+}
+
 impl fmt::Display for NodeId {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		fmt::Display::fmt(&self.0, f)
+		match self {
+			&Self::DUMMY => write!(f, "NodeId(DUMMY)"),
+			Self(id) => fmt::Display::fmt(&id, f),
+		}
 	}
 }

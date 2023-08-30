@@ -10,5 +10,7 @@ ast = { workspace = true }
 lexer = { workspace = true }
 parser = { workspace = true }
 session = { workspace = true }
+tracing = { workspace = true }
 
 clap = { version = "4.3.21", features = ["derive"] }
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }

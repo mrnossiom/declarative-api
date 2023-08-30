@@ -1,5 +1,5 @@
 use std::{
-	fmt::Display,
+	fmt,
 	sync::atomic::{AtomicU32, Ordering},
 };
 
@@ -39,8 +39,8 @@ pub enum AttrStyle {
 	Inner,
 }
 
-impl Display for AttrStyle {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AttrStyle {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::Inner => write!(f, "inner"),
 			Self::OuterOrInline => write!(f, "outer or inline"),

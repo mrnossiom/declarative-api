@@ -2,7 +2,7 @@ use std::{
 	borrow::Cow,
 	cmp::Ordering,
 	collections::{BTreeMap, HashMap, HashSet},
-	fmt::{self, Display},
+	fmt,
 	hash::Hash,
 	path::Path,
 };
@@ -222,7 +222,7 @@ impl Type {
 	}
 }
 
-impl Display for Type {
+impl fmt::Display for Type {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::Int => write!(f, "int"),
@@ -247,7 +247,7 @@ impl Display for Type {
 	}
 }
 
-impl Display for KeyValuePairValue {
+impl fmt::Display for KeyValuePairValue {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let desc = if self.description.is_empty() {
 			Cow::Borrowed(&self.description)

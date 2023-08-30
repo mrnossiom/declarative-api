@@ -10,3 +10,4 @@ lexer = { workspace = true }
 ast = { workspace = true }
 session = { workspace = true }
 thin-vec = { workspace = true }
+tracing = { workspace = true }

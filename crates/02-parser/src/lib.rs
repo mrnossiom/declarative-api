@@ -7,7 +7,8 @@
 #![allow(
 	clippy::redundant_pub_crate,
 	clippy::enum_glob_use,
-	clippy::module_name_repetitions
+	clippy::module_name_repetitions,
+	clippy::missing_errors_doc
 )]
 
 mod error;

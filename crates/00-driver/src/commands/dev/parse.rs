@@ -12,7 +12,6 @@ impl Parse {
 		let source = fs::read_to_string(&self.file).unwrap();
 
 		let mut parser = Parser::from_source(&ParseSession {}, &source);
-
 		println!("{:?}", parser.parse_root().unwrap())
 	}
 }

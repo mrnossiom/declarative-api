@@ -1,8 +1,9 @@
-use super::{AttrVec, Attribute, Ident, NodeId, Type};
+use super::{AttrVec, Ident, NodeId, PropertyDef, Type};
 use crate::P;
 use lexer::span::Span;
+use thin_vec::ThinVec;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Item {
 	pub attrs: AttrVec,
 	pub kind: ItemKind,

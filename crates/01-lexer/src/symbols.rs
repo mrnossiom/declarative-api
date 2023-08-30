@@ -1,6 +1,7 @@
 use crate::span::Span;
 use macros::symbols;
 use parking_lot::Mutex;
+use std::fmt;
 use std::mem;
 use std::{collections::HashMap, fmt::Display};
 use typed_arena::Arena;
@@ -38,8 +39,17 @@ symbols! {
 	}
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Symbol(u32);
+
+impl fmt::Debug for Symbol {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			&kw::Empty => write!(f, "Symbol(Empty)"),
+			Self(id) => write!(f, r#"Symbol({} "{}")"#, id, self.as_str()),
+		}
+	}
+}
 
 impl Symbol {
 	#[must_use]
@@ -103,9 +113,9 @@ impl SymbolInterner {
 		}))
 	}
 
+	#[tracing::instrument(level = "DEBUG", skip(self))]
 	fn intern(&self, sym: &str) -> Symbol {
 		let mut this = self.0.lock();
-
 		if let Some(&name) = this.names.get(sym) {
 			return name;
 		}

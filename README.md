@@ -1,8 +1,8 @@
 # Declarative API
 
-## Process
+## Generation process
 
-Files are process this way
+Files are process this way:
 
 1. They are first tokenized into [`lexer::poor::Token`]s that are deeply connected to source
 2. These are next enriched (see [`lexer::rich::Enricher`]) to crate independent [`lexer::rich::Token`]s

@@ -5,6 +5,7 @@ use crate::{
 	symbols::Symbol,
 };
 use session::ParseSession;
+use tracing::instrument;
 
 /// Transforms [`poor::Token`]s that are only relevant when reading the source file at the
 /// same time into [`rich::Token`](crate::rich::Token)s that are self-explanatory. The latter doesn't include
@@ -33,6 +34,7 @@ impl<'a> Enricher<'a> {
 	///
 	/// # Panics
 	/// TODO: invalid characters or ident are not implemented yet
+	#[instrument(level = "DEBUG", skip(self))]
 	pub fn next_token(&mut self) -> (Token, bool) {
 		let mut has_whitespace_before = false;
 
@@ -116,6 +118,7 @@ impl<'a> Enricher<'a> {
 		}
 	}
 
+	#[instrument(level = "DEBUG")]
 	fn cook_doc_line_comment(content: &str, style: poor::DocStyle) -> (AttrStyle, Symbol) {
 		let style = match style {
 			poor::DocStyle::Inner => AttrStyle::Inner,
@@ -125,6 +128,7 @@ impl<'a> Enricher<'a> {
 		(style, Symbol::intern(content))
 	}
 
+	#[instrument(level = "DEBUG", skip(self))]
 	fn cook_literal(
 		&mut self,
 		start: u32,
@@ -149,11 +153,13 @@ impl<'a> Enricher<'a> {
 
 	/// Slice of the source text from `start` up to but excluding `self.pos`,
 	/// meaning the slice does not include the character `self.ch`.
+	#[instrument(level = "DEBUG", skip(self))]
 	fn str_from(&self, start: u32) -> &'a str {
 		self.str_from_to(start, self.pos)
 	}
 
 	/// Slice of the source text spanning from `start` up to but excluding `end`.
+	#[instrument(level = "DEBUG", skip(self))]
 	fn str_from_to(&self, start: u32, end: u32) -> &'a str {
 		&self.source[(start as usize)..(end as usize)]
 	}

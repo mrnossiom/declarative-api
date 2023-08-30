@@ -7,9 +7,11 @@ use super::{
 		TokenKind::{self, *},
 	},
 };
+use tracing::instrument;
 use unicode_xid::UnicodeXID;
 
 impl<'a> Cursor<'a> {
+	#[instrument(level = "TRACE", skip(self))]
 	pub(crate) fn advance_token(&mut self) -> Token {
 		let Some(first_char) = self.bump() else {
 			return Token::new(Eof, 0);
@@ -72,6 +74,7 @@ impl<'a> Cursor<'a> {
 		res
 	}
 
+	#[instrument(level = "TRACE", skip(self))]
 	fn line_comment(&mut self) -> TokenKind {
 		debug_assert!(self.prev() == '#' && (self.first() == '#' || self.first() == ' '));
 		self.bump();
@@ -86,12 +89,14 @@ impl<'a> Cursor<'a> {
 		LineComment(style)
 	}
 
+	#[instrument(level = "TRACE", skip(self))]
 	fn whitespace(&mut self) -> TokenKind {
 		debug_assert!(is_whitespace(self.prev()));
 		self.eat_while(is_whitespace);
 		Whitespace
 	}
 
+	#[instrument(level = "TRACE", skip(self))]
 	fn ident(&mut self) -> TokenKind {
 		debug_assert!(is_id_start(self.prev()));
 		// Start is already eaten, eat the rest of identifier.
@@ -104,6 +109,7 @@ impl<'a> Cursor<'a> {
 		}
 	}
 
+	#[instrument(level = "TRACE", skip(self))]
 	fn fake_ident(&mut self) -> TokenKind {
 		// Start is already eaten, eat the rest of identifier.
 		self.eat_while(|c| {
@@ -117,6 +123,7 @@ impl<'a> Cursor<'a> {
 
 	/// Eats double-quoted string and returns true
 	/// if string is terminated.
+	#[instrument(level = "TRACE", skip(self))]
 	fn double_quoted_string(&mut self) -> bool {
 		debug_assert!(self.prev() == '"');
 		while let Some(c) = self.bump() {
@@ -135,6 +142,7 @@ impl<'a> Cursor<'a> {
 		false
 	}
 
+	#[instrument(level = "TRACE", skip(self))]
 	fn number(&mut self, _c: char) -> TokenKind {
 		self.eat_decimal_digits();
 

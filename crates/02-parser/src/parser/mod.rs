@@ -6,6 +6,7 @@ use lexer::{
 };
 use session::ParseSession;
 use std::mem;
+use tracing::instrument;
 
 mod attr;
 mod item;
@@ -56,6 +57,7 @@ impl<'a> Parser<'a> {
 
 	/// Expects and consumes the token `t`. Signals an error if the next token is not `t`.
 	#[track_caller]
+	#[instrument(level = "TRACE", skip(self))]
 	pub fn expect(&mut self, tok: &TokenKind) -> PResult</* recovered */ bool> {
 		if self.expected_tokens.is_empty() {
 			if self.token.kind == *tok {
@@ -80,6 +82,7 @@ impl<'a> Parser<'a> {
 		self.expected_tokens.clear();
 	}
 
+	#[instrument(level = "TRACE", skip(self))]
 	fn check(&mut self, tok: &TokenKind) -> bool {
 		let is_present = self.token.kind == *tok;
 
@@ -91,6 +94,7 @@ impl<'a> Parser<'a> {
 	}
 
 	/// Consumes a token 'tok' if it exists. Returns whether the given token was present.
+	#[instrument(level = "TRACE", skip(self))]
 	pub fn eat(&mut self, tok: &TokenKind) -> bool {
 		let is_present = self.check(tok);
 		if is_present {
@@ -101,6 +105,7 @@ impl<'a> Parser<'a> {
 
 	/// If the next token is the given keyword, returns `true` without eating it.
 	/// An expectation is also added for diagnostics purposes.
+	#[instrument(level = "TRACE", skip(self))]
 	fn check_keyword(&mut self, kw: Symbol) -> bool {
 		self.expected_tokens.push(TokenKind::Ident(kw));
 		self.token.is_keyword(kw)
@@ -108,6 +113,7 @@ impl<'a> Parser<'a> {
 
 	/// If the next token is the given keyword, eats it and returns `true`.
 	/// Otherwise, returns `false`. An expectation is also added for diagnostics purposes.
+	#[instrument(level = "TRACE", skip(self))]
 	pub fn eat_keyword(&mut self, kw: Symbol) -> bool {
 		if self.check_keyword(kw) {
 			self.bump();
@@ -117,6 +123,7 @@ impl<'a> Parser<'a> {
 		}
 	}
 
+	#[instrument(level = "TRACE", skip(self))]
 	fn parse_ident(&mut self) -> PResult<Ident> {
 		let ident = if let Some(lexer::symbols::Ident { symbol, span }) = self.token.ident() {
 			Ident { symbol, span }
