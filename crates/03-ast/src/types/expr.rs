@@ -5,7 +5,7 @@ use session::{Ident, Span, Symbol};
 use thin_vec::ThinVec;
 
 /// An expression.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Expr {
 	pub attrs: AttrVec,
 	pub kind: ExprKind,
@@ -14,7 +14,7 @@ pub struct Expr {
 	pub span: Span,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ExprKind {
 	/// An array (`[a, b, c, d]`)
 	Array(ThinVec<P<Expr>>),
@@ -22,18 +22,7 @@ pub enum ExprKind {
 	Literal(LiteralKind, Symbol),
 }
 
-/// A single field in a struct expression, e.g. `x: value` and `y` in `Foo { x: value, y }`.
-#[derive(Debug, Clone)]
-pub struct ExprField {
-	pub attrs: AttrVec,
-	pub ident: Ident,
-	pub expr: P<Expr>,
-
-	pub id: NodeId,
-	pub span: Span,
-}
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PropertyDef {
 	pub attrs: AttrVec,
 	pub ident: Ident,

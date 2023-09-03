@@ -21,6 +21,7 @@ use std::ops::{Deref, DerefMut};
 use std::{slice, vec};
 
 /// An owned smart pointer.
+#[derive(PartialEq, Eq)]
 pub struct P<T: ?Sized> {
 	ptr: Box<T>,
 }

@@ -3,7 +3,7 @@ use crate::P;
 use session::{Ident, Span};
 use thin_vec::ThinVec;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Item {
 	pub attrs: AttrVec,
 	pub kind: ItemKind,
@@ -13,7 +13,7 @@ pub struct Item {
 	pub span: Span,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ItemKind {
 	Meta(Metadata),
 
@@ -25,48 +25,48 @@ pub enum ItemKind {
 	StatusCode(StatusCode),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Verb {
 	pub method: String,
 	pub items: ThinVec<P<Item>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StatusCode {
 	pub code: u16,
 	pub items: ThinVec<P<Item>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 /// Contains information like name, description, licence or base server urls.
 pub struct Metadata {
 	pub fields: ThinVec<P<PropertyDef>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Headers {
 	pub headers: ThinVec<P<FieldDef>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Model {
 	pub fields: ThinVec<P<FieldDef>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Path {
 	pub kind: PathKind,
 	pub items: ThinVec<Item>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PathKind {
 	Simple(Ident),
 	Variable(Ident),
 	Complex(ThinVec<Self>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ScopeKind {
 	Loaded {
 		items: ThinVec<P<Item>>,
@@ -80,7 +80,7 @@ pub enum ScopeKind {
 /// Field definition in a struct, variant or union.
 ///
 /// E.g., `bar: usize` as in `struct Foo { bar: usize }`.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FieldDef {
 	pub attrs: AttrVec,
 	pub ident: Ident,

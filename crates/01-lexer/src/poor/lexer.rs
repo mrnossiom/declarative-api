@@ -57,6 +57,7 @@ impl<'a> Cursor<'a> {
 			'|' => Or,
 			'+' => Plus,
 			'*' => Star,
+			'/' => Slash,
 			'^' => Caret,
 			'%' => Percent,
 

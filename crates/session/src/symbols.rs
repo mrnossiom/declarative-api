@@ -15,7 +15,6 @@ thread_local! {
 
 symbols! {
 	kw {
-
 		Auth: "auth",
 		Body: "body",
 		// should be at the top, but we have to fix ordering first

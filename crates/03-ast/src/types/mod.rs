@@ -21,5 +21,5 @@ pub struct Api {
 }
 
 // TODO: nope, not a String
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Type(pub String);

@@ -9,7 +9,7 @@ pub(crate) struct Dev {
 
 impl Dev {
 	pub(crate) fn act(&mut self) {
-		self.command.act()
+		self.command.act();
 	}
 }
 

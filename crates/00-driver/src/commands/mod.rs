@@ -8,7 +8,7 @@ pub(crate) struct Args {
 
 impl Args {
 	pub(crate) fn act(&mut self) {
-		self.command.act()
+		self.command.act();
 	}
 }
 

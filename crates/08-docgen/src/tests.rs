@@ -74,5 +74,5 @@ fn test_2() {
 	);
 	let mut generated_file_list = HashMap::new();
 	parsed_intermediate_representation.markdown(&mut generated_file_list);
-	generated_file_list.write(Path::new("test-artifacts/test-2"));
+	// generated_file_list.write(Path::new("test-artifacts/test-2"));
 }

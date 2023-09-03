@@ -3,6 +3,7 @@
 	clippy::unwrap_used,
 	clippy::nursery,
 	clippy::pedantic,
+	clippy::todo,
 )]
 #![allow(
 	clippy::redundant_pub_crate,

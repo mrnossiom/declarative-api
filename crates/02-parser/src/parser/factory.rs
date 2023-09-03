@@ -1,8 +1,8 @@
 use crate::Parser;
 use ast::{
 	types::{
-		AttrId, AttrItem, AttrKind, AttrStyle, AttrVec, Attribute, Expr, ExprKind, Item, ItemKind,
-		NodeId, NormalAttr, PropertyDef,
+		AttrId, AttrItem, AttrKind, AttrStyle, AttrVec, Attribute, Expr, ExprKind, FieldDef, Item,
+		ItemKind, NodeId, NormalAttr, PropertyDef, Type,
 	},
 	P,
 };
@@ -49,6 +49,21 @@ impl<'a> Parser<'a> {
 			attrs,
 			ident,
 			expr,
+			id: NodeId::DUMMY,
+			span,
+		})
+	}
+
+	pub(super) fn make_field_def(
+		attrs: AttrVec,
+		ident: Ident,
+		ty: P<Type>,
+		span: Span,
+	) -> P<FieldDef> {
+		P(FieldDef {
+			attrs,
+			ident,
+			ty,
 			id: NodeId::DUMMY,
 			span,
 		})

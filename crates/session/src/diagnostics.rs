@@ -1,7 +1,7 @@
 use crate::{SourceFile, SourceMap};
 use miette::Severity;
 use parking_lot::Mutex;
-use std::rc::Rc;
+use std::{error::Error, fmt::Display, rc::Rc};
 
 pub trait DiagnosticSource: miette::Diagnostic {
 	fn source_file(&self, source_map: &SourceMap) -> Rc<SourceFile>;
@@ -71,6 +71,7 @@ impl InnerHandler {
 	}
 }
 
+// TODO: maybe log manually, not on a drop?
 impl Drop for InnerHandler {
 	fn drop(&mut self) {
 		println!(
@@ -80,11 +81,22 @@ impl Drop for InnerHandler {
 	}
 }
 
+#[derive(Debug)]
 pub struct Diagnostic {
 	report: miette::Report,
 }
 
-impl Diagnostic {}
+impl Display for Diagnostic {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		self.report.fmt(f)
+	}
+}
+
+impl Error for Diagnostic {
+	fn source(&self) -> Option<&(dyn Error + 'static)> {
+		self.report.source()
+	}
+}
 
 pub trait IntoDiagnostic<'a> {
 	fn into_diag(self, handler: &'a DiagnosticsHandler) -> Diagnostic;

@@ -11,5 +11,6 @@ tracing = { workspace = true }
 
 miette = { workspace = true }
 parking_lot = { workspace = true }
+thiserror = { workspace = true }
 
 typed-arena = "2.0.2"

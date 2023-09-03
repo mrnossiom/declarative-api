@@ -3,186 +3,186 @@ meta {
 	description "This is a sample Pet Store Server based on the DAPI 1.0 specification (is this official yet? lol). In the third iteration of the pet store, we've switched to the design first approach! You can now help us improve the API whether it's by making changes to the definition itself or to the code."
 	version "1.0.11"
 	urls [
-		"https://petstore.swagger.io/v2"
+	"https://petstore.swagger.io/v2"
 	]
 }
 
 scope pet {
 	path pet {
-        PUT {
-            # Update an existing pet by Id
-            body{
-                # Only writing a key with no type will just copy the model's contents to the same level. This comment will be attached to the whole body object.
-                pet "Since there is no key to attach this comment to. The same behaviour as the previous comment is to be assumed."
-            }
-            200 {
-                headers {
-                    Accept string application/json
-                }
-                body {
-                    # Successful operation
-                    pet
-                }
-            }
-            400 {
-                # Invalid ID supplied
-            }
-            404 {
-                # Pet not found
-            }
-            405 {
-                # Validation exception 
-            }
-        }
-        POST {
-            # Add a new pet to the store
-            body {
-                pet
-            }
-            200 {
-                headers {
-                    Accept string application/json
-                }
-                body {
-                    # Successful operation
-                    pet
-                }
-            }
-            405 {
-                # Invalid input
-            }
-        }
-        path findByStatus{
-            GET {
-                # Multiple status values can be provided with comma separated strings
-                params {
-                    status string "Status values that need to be considered for filter
+		PUT {
+			# Update an existing pet by Id
+			body {
+				# Only writing a key with no type will just copy the model's contents to the same level. This comment will be attached to the whole body object.
+				pet "Since there is no key to attach this comment to. The same behaviour as the previous comment is to be assumed."
+			}
+			200 {
+				headers {
+					Accept string application/json
+				}
+				body {
+					# Successful operation
+					pet
+				}
+			}
+			400 {
+				# Invalid ID supplied
+			}
+			404 {
+				# Pet not found
+			}
+			405 {
+				# Validation exception 
+			}
+		}
+		POST {
+			# Add a new pet to the store
+			body {
+				pet
+			}
+			200 {
+				headers {
+					Accept string application/json
+				}
+				body {
+					# Successful operation
+					pet
+				}
+			}
+			405 {
+				# Invalid input
+			}
+		}
+		path findByStatus {
+			GET {
+				# Multiple status values can be provided with comma separated strings
+				params {
+					status string "Status values that need to be considered for filter
                     Available values : available, pending, sold
                     Default value : available"
-                }
-                200 {
-                    headers {
-                        Accept string application/json
-                    }
-                    body {
-                        # Successful operation
-                        []pet
-                    }
-                }
-                400 {
-                    # Invalid status value
-                }
-            }
-        }
-        path findByTags{
-            GET {
-                # Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
-                params {
-                    tags []string "Tags to filter by"
-                }
-                200 {
-                    headers {
-                        Accept string application/json
-                    }
-                    body {
-                        # Successful operation
-                        []pet
-                    }
-                }
-                400 {
-                    # Invalid tag value
-                }
-            }
-        }
-        path {petId}{
-            {
-                petId int "ID of the pet"
-            }
-            GET {
-                # Returns a single pet
-                200 {
-                    headers {
-                        Accept string application/json
-                    }
-                    body {
-                        # Successful operation
-                        []pet
-                    }
-                }
-                400 {
-                    # Invalid ID supplied
-                }
-                404 {
-                    # Pet not found
-                }
-            }
-            POST {
-                # Updates a pet in the store with form data
-                params {
-                    name string "Name of pet that needs to be updated"
-                    status string "Name of pet that needs to be updated"
-                }
-                200 {
-                    headers {
-                        Accept string application/json
-                    }
-                    body {
-                        # Successful operation
-                        []pet
-                    }
-                }
-                405 {
-                    # Invalid input
-                }
-            }
-            DELETE {
-                # Delete a pet
-                header {
-                    Authorization string @prefix: Api-Key
-                }
-                200 {
-                    # Successful operation
-                }
-                400 {
-                    # Invalid pet value
-                }
-            }
-            path uploadImage{
-                params{
-                    additionalMetadata string "Additional metadata"
-                }
-                body file "The body is now a file"
-                200 {
-                    headers {
-                        Accept string application/json
-                    }
-                    body {
-                        # Successful operation
-                        code int
-                        type string
-                        message string
-                    }
-                }
-            }
-        }
-    }
+				}
+				200 {
+					headers {
+						Accept string application/json
+					}
+					body {
+						# Successful operation
+						[]pet
+					}
+				}
+				400 {
+					# Invalid status value
+				}
+			}
+		}
+		path findByTags {
+			GET {
+				# Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
+				params {
+					tags []string "Tags to filter by"
+				}
+				200 {
+					headers {
+						Accept string application/json
+					}
+					body {
+						# Successful operation
+						[]pet
+					}
+				}
+				400 {
+					# Invalid tag value
+				}
+			}
+		}
+		path {petId} {
+			{
+				petId int "ID of the pet"
+			}
+			GET {
+				# Returns a single pet
+				200 {
+					headers {
+						Accept string application/json
+					}
+					body {
+						# Successful operation
+						[]pet
+					}
+				}
+				400 {
+					# Invalid ID supplied
+				}
+				404 {
+					# Pet not found
+				}
+			}
+			POST {
+				# Updates a pet in the store with form data
+				params {
+					name string "Name of pet that needs to be updated"
+					status string "Name of pet that needs to be updated"
+				}
+				200 {
+					headers {
+						Accept string application/json
+					}
+					body {
+						# Successful operation
+						[]pet
+					}
+				}
+				405 {
+					# Invalid input
+				}
+			}
+			DELETE {
+				# Delete a pet
+				header {
+					Authorization string @prefix: Api-Key
+				}
+				200 {
+					# Successful operation
+				}
+				400 {
+					# Invalid pet value
+				}
+			}
+			path uploadImage {
+				params {
+					additionalMetadata string "Additional metadata"
+				}
+				body file "The body is now a file"
+				200 {
+					headers {
+						Accept string application/json
+					}
+					body {
+						# Successful operation
+						code int
+						type string
+						message string
+					}
+				}
+			}
+		}
+	}
 }
 
 model pet {
-    id int
-    name string
-    category category "Writing a key and a type will use the model as the key's contents. This comment will be attached to the category key."
-    photoUrls []string
-    tags []tag
-    status string
+	id int
+	name string
+	category category "Writing a key and a type will use the model as the key's contents. This comment will be attached to the category key."
+	photoUrls []string
+	tags []tag
+	status string
 }
 
 model category {
-    id int
-    name string
+	id int
+	name string
 }
 
 model tag {
-    id int
-    name string
+	id int
+	name string
 }

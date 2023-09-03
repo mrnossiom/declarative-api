@@ -1,6 +1,6 @@
 use crate::{PResult, Parser};
 use ast::{
-	types::{Expr, ExprKind, PropertyDef},
+	types::{Expr, ExprKind, FieldDef, PropertyDef},
 	P,
 };
 use lexer::rich::{Delimiter, LiteralKind, TokenKind};
@@ -78,5 +78,29 @@ impl<'a> Parser<'a> {
 		let attrs = ThinVec::new();
 
 		Ok(Self::make_property_def(attrs, ident, value, self.span(lo)))
+	}
+
+	#[instrument(level = "DEBUG", skip(self))]
+	pub(super) fn parse_field_defs(&mut self) -> PResult<ThinVec<P<FieldDef>>> {
+		let mut props = ThinVec::new();
+
+		while self.token.ident().is_some() {
+			props.push(self.parse_field_def()?);
+		}
+
+		Ok(props)
+	}
+
+	#[instrument(level = "DEBUG", skip(self))]
+	fn parse_field_def(&mut self) -> PResult<P<FieldDef>> {
+		let lo: session::Span = self.token.span;
+
+		let ident = self.parse_ident()?;
+		let ty = self.parse_ty()?;
+
+		// TODO: parse inline attrs
+		let attrs = ThinVec::new();
+
+		Ok(Self::make_field_def(attrs, ident, ty, self.span(lo)))
 	}
 }

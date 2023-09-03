@@ -19,7 +19,7 @@ pub type AttrVec = ThinVec<Attribute>;
 /// `## doc comment`
 ///
 /// with an optional `!` after the `@` or the `##` to signify inner.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Attribute {
 	pub kind: AttrKind,
 	pub style: AttrStyle,
@@ -56,7 +56,7 @@ impl From<lexer::rich::AttrStyle> for AttrStyle {
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AttrKind {
 	/// A normal attribute.
 	Normal(NormalAttr),
@@ -78,13 +78,13 @@ impl AttrId {
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NormalAttr {
 	pub item: AttrItem,
 	// pub tokens: Option<LazyAttrTokenStream>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AttrItem {
 	// pub path: Path,
 	// pub args: AttrArgs,

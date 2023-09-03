@@ -11,6 +11,7 @@ mod attr;
 mod expr;
 mod factory;
 mod item;
+mod ty;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Spacing {
