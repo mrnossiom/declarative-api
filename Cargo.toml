@@ -15,5 +15,8 @@ docgen = { path = "crates/08-docgen" }
 session = { path = "crates/session" }
 macros = { path = "crates/macros" }
 
+miette = "5.10.0"
+parking_lot = "0.12.1"
 thin-vec = "0.2.12"
+thiserror = "1.0.44"
 tracing = "0.1.37"

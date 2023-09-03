@@ -1,12 +1,12 @@
 use crate::Parser;
 use ast::{
 	types::{
-		AttrId, AttrItem, AttrKind, AttrStyle, AttrVec, Attribute, Expr, ExprKind, Ident, Item,
-		ItemKind, NodeId, NormalAttr, PropertyDef,
+		AttrId, AttrItem, AttrKind, AttrStyle, AttrVec, Attribute, Expr, ExprKind, Item, ItemKind,
+		NodeId, NormalAttr, PropertyDef,
 	},
 	P,
 };
-use lexer::{span::Span, symbols::Symbol};
+use session::{Ident, Span, Symbol};
 
 impl<'a> Parser<'a> {
 	pub(super) fn span(&self, lo: Span) -> Span {

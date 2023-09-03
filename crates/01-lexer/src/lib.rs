@@ -12,8 +12,6 @@
 
 pub mod poor;
 pub mod rich;
-pub mod span;
-pub mod symbols;
 
 #[cfg(test)]
 mod tests {

@@ -1,4 +1,4 @@
-use super::{
+use crate::poor::{
 	cursor::Cursor,
 	token::{
 		DocStyle,
@@ -143,7 +143,9 @@ impl<'a> Cursor<'a> {
 	}
 
 	#[instrument(level = "TRACE", skip(self))]
-	fn number(&mut self, _c: char) -> TokenKind {
+	fn number(&mut self, char_: char) -> TokenKind {
+		debug_assert!(char_.is_ascii_digit());
+
 		self.eat_decimal_digits();
 
 		Literal(Number)

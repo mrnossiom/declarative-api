@@ -14,7 +14,4 @@
 mod error;
 mod parser;
 
-pub use crate::{
-	error::{PError, PResult},
-	parser::Parser,
-};
+pub use crate::{error::PResult, parser::Parser};

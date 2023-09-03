@@ -1,4 +1,4 @@
-use super::types;
+use crate::types;
 use std::collections::{BTreeMap, HashMap, HashSet};
 
 #[must_use]

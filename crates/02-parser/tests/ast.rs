@@ -1,5 +1,6 @@
 use ast::{types::*, P};
-use lexer::{span::Span, symbols::Symbol};
+use lexer::rich::LiteralKind;
+use session::{Ident, Span, Symbol};
 use thin_vec::thin_vec;
 
 macro_rules! sym {
@@ -36,46 +37,99 @@ fn _paradigm_example_ast() -> Api {
 		items: thin_vec![
 			P(Item {
 				attrs: thin_vec![],
-				kind: ItemKind::Meta(Meta {
-					fields: vec![
-						MetaField {
+				kind: ItemKind::Meta(Metadata {
+					fields: thin_vec![
+						P(PropertyDef {
+							attrs: thin_vec![],
 							ident: Ident {
 								symbol: sym!("name"),
-								span: Span::DUMMY,
+								span: Span::DUMMY
 							},
-							value: MetaFieldKind::Str("Wiro's API".into()),
-							span: Span::DUMMY,
-						},
-						MetaField {
+							expr: P(Expr {
+								attrs: thin_vec![],
+								kind: ExprKind::Literal(LiteralKind::Str, sym!("Wiro's API")),
+								id: NodeId::DUMMY,
+								span: Span::DUMMY
+							}),
+							id: NodeId::DUMMY,
+							span: Span::DUMMY
+						}),
+						P(PropertyDef {
+							attrs: thin_vec![],
 							ident: Ident {
 								symbol: sym!("description"),
-								span: Span::DUMMY,
+								span: Span::DUMMY
 							},
-							value: MetaFieldKind::Str("This is the API of Wiro".into()),
-							span: Span::DUMMY,
-						},
-						MetaField {
+							expr: P(Expr {
+								attrs: thin_vec![],
+								kind: ExprKind::Literal(
+									LiteralKind::Str,
+									sym!("This is the API of Wiro")
+								),
+								id: NodeId::DUMMY,
+								span: Span::DUMMY
+							}),
+							id: NodeId::DUMMY,
+							span: Span::DUMMY
+						}),
+						P(PropertyDef {
+							attrs: thin_vec![],
 							ident: Ident {
 								symbol: sym!("version"),
-								span: Span::DUMMY,
+								span: Span::DUMMY
 							},
-							value: MetaFieldKind::Str("1.0.0".into()),
-							span: Span::DUMMY,
-						},
-						MetaField {
+							expr: P(Expr {
+								attrs: thin_vec![],
+								kind: ExprKind::Literal(LiteralKind::Str, sym!("1.0.0")),
+								id: NodeId::DUMMY,
+								span: Span::DUMMY
+							}),
+							id: NodeId::DUMMY,
+							span: Span::DUMMY
+						}),
+						P(PropertyDef {
+							attrs: thin_vec![],
 							ident: Ident {
 								symbol: sym!("name"),
-								span: Span::DUMMY,
+								span: Span::DUMMY
 							},
-							value: MetaFieldKind::Vec(vec![
-								MetaFieldKind::Str("https://paradigm.lighton.ai/api/v1".into()),
-								MetaFieldKind::Str(
-									"https://paradigm-preprod.lighton.ai/api/v1".into(),
-								),
-								MetaFieldKind::Str("https://paradigm-dev.lighton.ai/api/v1".into()),
-							]),
-							span: Span::DUMMY,
-						},
+							expr: P(Expr {
+								attrs: thin_vec![],
+								kind: ExprKind::Array(thin_vec![
+									P(Expr {
+										attrs: thin_vec![],
+										kind: ExprKind::Literal(
+											LiteralKind::Str,
+											sym!("https://paradigm.lighton.ai/api/v1")
+										),
+										id: NodeId::DUMMY,
+										span: Span::DUMMY
+									}),
+									P(Expr {
+										attrs: thin_vec![],
+										kind: ExprKind::Literal(
+											LiteralKind::Str,
+											sym!("https://paradigm-preprod.lighton.ai/api/v1")
+										),
+										id: NodeId::DUMMY,
+										span: Span::DUMMY
+									}),
+									P(Expr {
+										attrs: thin_vec![],
+										kind: ExprKind::Literal(
+											LiteralKind::Str,
+											sym!("https://paradigm-dev.lighton.ai/api/v1")
+										),
+										id: NodeId::DUMMY,
+										span: Span::DUMMY
+									})
+								]),
+								id: NodeId::DUMMY,
+								span: Span::DUMMY
+							}),
+							id: NodeId::DUMMY,
+							span: Span::DUMMY
+						}),
 					],
 				}),
 				ident: Ident {
@@ -108,7 +162,7 @@ fn _paradigm_example_ast() -> Api {
 				},
 				kind: ItemKind::Scope(ScopeKind::Loaded {
 					inline: true,
-					items: vec![P(Item {
+					items: thin_vec![P(Item {
 						attrs: thin_vec![],
 						ident: Ident {
 							symbol: sym!("dashboard"),
@@ -119,16 +173,16 @@ fn _paradigm_example_ast() -> Api {
 								symbol: sym!("dashboard"),
 								span: Span::DUMMY,
 							}),
-							items: vec![Item {
+							items: thin_vec![Item {
 								attrs: thin_vec![],
 								ident: Ident {
 									symbol: sym!(""),
 									span: Span::DUMMY,
 								},
 								kind: ItemKind::Headers(Headers {
-									headers: vec![
-										HeaderField {
-											attrs: vec![
+									headers: thin_vec![
+										P(FieldDef {
+											attrs: thin_vec![
 												Attribute {
 													kind: AttrKind::DocComment(sym!(" # Safety")),
 													style: AttrStyle::OuterOrInline,
@@ -174,11 +228,13 @@ fn _paradigm_example_ast() -> Api {
 												symbol: sym!("Authorization"),
 												span: Span::DUMMY,
 											},
+											ty: P(Type("".into())),
+											id: NodeId::DUMMY,
 											span: Span::DUMMY,
-										},
-										HeaderField {
+										}),
+										P(FieldDef {
 											// @description("The Model of the User")
-											attrs: vec![Attribute {
+											attrs: thin_vec![Attribute {
 												kind: AttrKind::Normal(NormalAttr {
 													item: AttrItem {},
 												}),
@@ -190,8 +246,10 @@ fn _paradigm_example_ast() -> Api {
 												symbol: sym!("X-Model"),
 												span: Span::DUMMY,
 											},
+											ty: P(Type("".into())),
+											id: NodeId::DUMMY,
 											span: Span::DUMMY,
-										},
+										}),
 									],
 								}),
 								id: NodeId::DUMMY,

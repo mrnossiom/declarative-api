@@ -1,9 +1,12 @@
 use crate::span::Span;
 use macros::symbols;
 use parking_lot::Mutex;
-use std::fmt;
-use std::mem;
-use std::{collections::HashMap, fmt::Display};
+use std::{
+	collections::HashMap,
+	fmt::{self, Display},
+	mem,
+};
+use tracing::instrument;
 use typed_arena::Arena;
 
 thread_local! {
@@ -88,13 +91,18 @@ impl Display for Symbol {
 	}
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Ident {
 	pub symbol: Symbol,
 	pub span: Span,
 }
 
 impl Ident {
+	pub const EMPTY: Self = Self {
+		symbol: kw::Empty,
+		span: Span::DUMMY,
+	};
+
 	#[must_use]
 	pub const fn new(symbol: Symbol, span: Span) -> Self {
 		Self { symbol, span }
@@ -118,7 +126,7 @@ impl SymbolInterner {
 		}))
 	}
 
-	#[tracing::instrument(level = "DEBUG", skip(self))]
+	#[instrument(level = "DEBUG", skip(self))]
 	fn intern(&self, sym: &str) -> Symbol {
 		let mut this = self.0.lock();
 		if let Some(&name) = this.names.get(sym) {

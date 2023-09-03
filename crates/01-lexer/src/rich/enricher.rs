@@ -1,10 +1,8 @@
 use crate::{
 	poor,
 	rich::{AttrStyle, Delimiter, LiteralKind, OpKind, Token, TokenKind},
-	span::Span,
-	symbols::Symbol,
 };
-use session::ParseSession;
+use session::{BytePos, ParseSession, SourceFile, Span, Symbol};
 use tracing::instrument;
 
 /// Transforms [`poor::Token`]s that are only relevant when reading the source file at the
@@ -14,19 +12,21 @@ pub struct Enricher<'a> {
 	session: &'a ParseSession,
 	source: &'a str,
 	cursor: poor::Cursor<'a>,
-	pos: u32,
+	start_pos: BytePos,
+	pos: BytePos,
 }
 
 impl<'a> Enricher<'a> {
 	/// Creates a new [`Enricher`] for the given source, creating in the way
 	/// the underlying [`poor::Cursor`] to get tokens to enrich.
 	#[must_use]
-	pub fn from_source(session: &'a ParseSession, source: &'a str) -> Self {
+	pub fn from_source(session: &'a ParseSession, source: &'a SourceFile) -> Self {
 		Self {
 			session,
-			source,
-			cursor: poor::Cursor::from_source(source),
-			pos: 0,
+			source: &source.source,
+			cursor: poor::Cursor::from_source(&source.source),
+			start_pos: source.start_pos,
+			pos: source.start_pos,
 		}
 	}
 
@@ -41,7 +41,7 @@ impl<'a> Enricher<'a> {
 		loop {
 			let token = self.cursor.advance_token();
 			let start = self.pos;
-			self.pos += token.length;
+			self.pos += BytePos(token.length);
 
 			let kind = match token.kind {
 				poor::TokenKind::Ident => {
@@ -60,7 +60,7 @@ impl<'a> Enricher<'a> {
 						poor::DocStyle::Outer => 2, // `##`
 					};
 
-					let content = self.str_from(start + len);
+					let content = self.str_from(start + BytePos(len));
 
 					let (style, sym) = Self::cook_doc_line_comment(content, style);
 
@@ -131,8 +131,8 @@ impl<'a> Enricher<'a> {
 	#[instrument(level = "DEBUG", skip(self))]
 	fn cook_literal(
 		&mut self,
-		start: u32,
-		end: u32,
+		start: BytePos,
+		end: BytePos,
 		kind: poor::LiteralKind,
 	) -> (LiteralKind, Symbol) {
 		match kind {
@@ -141,7 +141,7 @@ impl<'a> Enricher<'a> {
 					// error somehow
 				}
 
-				let content = self.str_from_to(start + 1, end - 1);
+				let content = self.str_from_to(start + BytePos(1), end - BytePos(1));
 				(LiteralKind::Str, Symbol::intern(content))
 			}
 			poor::LiteralKind::Number => {
@@ -151,17 +151,22 @@ impl<'a> Enricher<'a> {
 		}
 	}
 
+	#[inline]
+	fn src_index(&self, pos: BytePos) -> usize {
+		(pos - self.start_pos).0 as usize
+	}
+
 	/// Slice of the source text from `start` up to but excluding `self.pos`,
 	/// meaning the slice does not include the character `self.ch`.
 	#[instrument(level = "DEBUG", skip(self))]
-	fn str_from(&self, start: u32) -> &'a str {
+	fn str_from(&self, start: BytePos) -> &'a str {
 		self.str_from_to(start, self.pos)
 	}
 
 	/// Slice of the source text spanning from `start` up to but excluding `end`.
 	#[instrument(level = "DEBUG", skip(self))]
-	fn str_from_to(&self, start: u32, end: u32) -> &'a str {
-		&self.source[(start as usize)..(end as usize)]
+	fn str_from_to(&self, start: BytePos, end: BytePos) -> &'a str {
+		&self.source[self.src_index(start)..self.src_index(end)]
 	}
 }
 
@@ -193,10 +198,8 @@ impl<'a> IntoIterator for Enricher<'a> {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{
-		symbols::attrs,
-		tests::{ATTR, EXAMPLE, URLS},
-	};
+	use crate::tests::{ATTR, EXAMPLE, URLS};
+	use session::symbols::attrs;
 
 	macro_rules! sym {
 		($lit:literal) => {
@@ -206,12 +209,14 @@ mod tests {
 
 	macro_rules! tokens {
 		($expr:ident, $(($ty:expr, [$lo:literal, $hi:literal])),+) => {
-			let mut tokens = Enricher::from_source(&ParseSession {}, $expr).into_iter();
+			let psession = ParseSession::default();
+			let source = psession.source_map.add_source($expr.into());
+			let mut tokens = Enricher::from_source(&psession, &source).into_iter();
 
 			$(
 				assert_eq!(
 					tokens.next(),
-					Some(Token::new($ty, Span::from_bounds($lo, $hi)))
+					Some(Token::new($ty, Span::from_bounds(BytePos($lo), BytePos($hi))))
 				);
 			)+
 			assert_eq!(tokens.next(), None);
@@ -220,7 +225,10 @@ mod tests {
 
 	#[test]
 	fn can_enrich_example_file() {
-		let rich_tokens = Enricher::from_source(&ParseSession {}, EXAMPLE)
+		let parse_sess = ParseSession::default();
+		let source = parse_sess.source_map.add_source(EXAMPLE.into());
+
+		let rich_tokens = Enricher::from_source(&parse_sess, &source)
 			.into_iter()
 			.collect::<Vec<_>>();
 
@@ -230,7 +238,7 @@ mod tests {
 	#[test]
 	fn parse_attr() {
 		use crate::rich::TokenKind::*;
-		use crate::span::Span;
+		use session::Span;
 
 		tokens!(
 			ATTR,
@@ -244,7 +252,7 @@ mod tests {
 	#[test]
 	fn parse_array_like() {
 		use crate::rich::{Delimiter::*, LiteralKind::*, TokenKind::*};
-		use crate::span::Span;
+		use session::Span;
 
 		tokens![
 			URLS,

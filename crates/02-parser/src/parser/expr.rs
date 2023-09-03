@@ -1,12 +1,10 @@
 use crate::{PResult, Parser};
 use ast::{
-	types::{Expr, ExprKind, Ident, PropertyDef},
+	types::{Expr, ExprKind, PropertyDef},
 	P,
 };
-use lexer::{
-	rich::{Delimiter, LiteralKind, TokenKind},
-	symbols::kw,
-};
+use lexer::rich::{Delimiter, LiteralKind, TokenKind};
+use session::{symbols::kw, Ident};
 use thin_vec::{thin_vec, ThinVec};
 use tracing::instrument;
 

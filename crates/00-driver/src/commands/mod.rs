@@ -8,7 +8,7 @@ pub(crate) struct Args {
 
 impl Args {
 	pub(crate) fn act(&mut self) {
-		self.command.act();
+		self.command.act()
 	}
 }
 
@@ -21,6 +21,6 @@ impl Commands {
 	fn act(&mut self) {
 		match self {
 			Self::Dev(dev) => dev.act(),
-		};
+		}
 	}
 }

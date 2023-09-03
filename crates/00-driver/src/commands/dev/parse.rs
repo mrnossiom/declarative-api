@@ -1,6 +1,6 @@
 use parser::Parser;
-use session::ParseSession;
-use std::{fs, path::PathBuf};
+use session::Session;
+use std::path::PathBuf;
 
 #[derive(Debug, clap::Parser)]
 pub(crate) struct Parse {
@@ -9,9 +9,14 @@ pub(crate) struct Parse {
 
 impl Parse {
 	pub(crate) fn act(&mut self) {
-		let source = fs::read_to_string(&self.file).unwrap();
+		let session = Session::default();
+		let file = session.parse.source_map.load_file(&self.file).unwrap();
 
-		let mut parser = Parser::from_source(&ParseSession {}, &source);
-		println!("{:?}", parser.parse_root().unwrap())
+		let mut parser = Parser::from_source(&session.parse, &file);
+
+		match parser.parse_root() {
+			Ok(root) => println!("{root:?}"),
+			Err(err) => session.parse.diagnostic.emit_diagnostic(err),
+		}
 	}
 }

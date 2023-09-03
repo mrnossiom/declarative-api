@@ -9,5 +9,8 @@ edition = "2021"
 lexer = { workspace = true }
 ast = { workspace = true }
 session = { workspace = true }
+
+miette = { workspace = true }
 thin-vec = { workspace = true }
+thiserror = { workspace = true }
 tracing = { workspace = true }

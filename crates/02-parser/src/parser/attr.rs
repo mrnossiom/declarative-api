@@ -1,16 +1,16 @@
-use crate::{PError, PResult, Parser};
+use crate::{error::WrongAttrStyle, PResult, Parser};
 use ast::types::{AttrStyle, AttrVec, Attribute};
 use lexer::rich::TokenKind;
 use tracing::{debug_span, instrument};
 
 impl<'a> Parser<'a> {
 	#[instrument(level = "DEBUG", skip(self))]
-	pub(crate) fn parse_inner_attrs(&mut self) -> PResult<AttrVec> {
+	pub(super) fn parse_inner_attrs(&mut self) -> PResult<AttrVec> {
 		self.parse_attrs(AttrStyle::Inner)
 	}
 
 	#[instrument(level = "DEBUG", skip(self))]
-	pub(crate) fn parse_outer_attrs(&mut self) -> PResult<AttrVec> {
+	pub(super) fn parse_outer_attrs(&mut self) -> PResult<AttrVec> {
 		self.parse_attrs(AttrStyle::OuterOrInline)
 	}
 
@@ -33,6 +33,13 @@ impl<'a> Parser<'a> {
 			if let Some(attr) = attr {
 				if attr.style == style {
 					attrs.push(attr);
+				} else {
+					// Emit and recover
+					self.diag().emit(WrongAttrStyle {
+						attr: attr.span,
+						style,
+						parsed_style: attr.style,
+					});
 				}
 			} else {
 				break;
@@ -53,12 +60,6 @@ impl<'a> Parser<'a> {
 		} else {
 			AttrStyle::OuterOrInline
 		};
-
-		if parsed_style == style {
-			return Err(PError::new(format!(
-				"found a {parsed_style} styled attribute where we expected a {style} styled attribute"
-			)));
-		}
 
 		// TODO: eat attr content
 

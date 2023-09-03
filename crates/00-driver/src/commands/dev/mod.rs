@@ -24,6 +24,6 @@ impl DevCommands {
 		match self {
 			Self::Lex(lex) => lex.act(),
 			Self::Parse(parse) => parse.act(),
-		};
+		}
 	}
 }

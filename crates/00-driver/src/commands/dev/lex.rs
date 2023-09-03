@@ -1,6 +1,6 @@
 use lexer::{poor::Cursor, rich::Enricher};
-use session::ParseSession;
-use std::{fs, path::PathBuf};
+use session::Session;
+use std::path::PathBuf;
 
 #[derive(Debug, clap::Parser)]
 pub(crate) struct Lex {
@@ -12,15 +12,16 @@ pub(crate) struct Lex {
 
 impl Lex {
 	pub(crate) fn act(&mut self) {
-		let source = fs::read_to_string(&self.file).unwrap();
+		let session = Session::default();
+		let file = session.parse.source_map.load_file(&self.file).unwrap();
 
 		if self.rich {
-			Enricher::from_source(&ParseSession {}, &source)
+			Enricher::from_source(&session.parse, &file)
 				.into_iter()
 				.inspect(|item| println!("{}", item))
 				.count();
 		} else {
-			Cursor::from_source(&source)
+			Cursor::from_source(&file.source)
 				.into_iter()
 				// Skip whitespace that are much too verbose
 				.filter(|item| !item.kind.is_whitespace())

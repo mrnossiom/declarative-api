@@ -1,7 +1,4 @@
-use crate::{
-	span::Span,
-	symbols::{Ident, Symbol},
-};
+use session::{Ident, Span, Symbol};
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq)]

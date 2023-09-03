@@ -1,9 +1,8 @@
+use session::{Span, Symbol};
 use std::{
 	fmt,
 	sync::atomic::{AtomicU32, Ordering},
 };
-
-use lexer::{span::Span, symbols::Symbol};
 use thin_vec::ThinVec;
 
 pub type AttrVec = ThinVec<Attribute>;

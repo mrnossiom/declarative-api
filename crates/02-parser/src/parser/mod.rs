@@ -1,10 +1,9 @@
-use crate::PResult;
-use ast::types::Ident;
-use lexer::{
-	rich::{Enricher, Token, TokenKind},
-	symbols::Symbol,
+use crate::{
+	error::{UnexpectedToken, UnexpectedTokenInsteadOfKeyword},
+	PResult,
 };
-use session::ParseSession;
+use lexer::rich::{Enricher, Token, TokenKind};
+use session::{DiagnosticsHandler, Ident, IntoDiagnostic, ParseSession, SourceFile, Symbol};
 use std::mem;
 use tracing::instrument;
 
@@ -40,7 +39,7 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
 	#[must_use]
-	pub fn from_source(session: &'a ParseSession, source: &'a str) -> Self {
+	pub fn from_source(session: &'a ParseSession, source: &'a SourceFile) -> Self {
 		let tokens = Enricher::from_source(session, source);
 		Self::from_tokens(session, tokens)
 	}
@@ -61,26 +60,42 @@ impl<'a> Parser<'a> {
 		parser
 	}
 
+	#[must_use]
+	const fn diag(&self) -> &DiagnosticsHandler {
+		&self.session.diagnostic
+	}
+
 	/// Expects and consumes the token `t`. Signals an error if the next token is not `t`.
 	#[track_caller]
 	#[instrument(level = "TRACE", skip(self))]
-	pub fn expect(&mut self, tok: &TokenKind) -> PResult</* recovered */ bool> {
+	fn expect(&mut self, tok: &TokenKind) -> PResult</* recovered */ bool> {
 		if self.expected_tokens.is_empty() {
-			if self.token.kind == *tok {
+			if &self.token.kind == tok {
 				self.bump();
 				Ok(false)
 			} else {
-				todo!("recover from unexpected token {}", self.token)
+				// todo!("recover from unexpected token {}", self.token)
+				Err(UnexpectedToken {
+					token: self.token.span,
+					parsed: self.token.kind.clone(),
+					expected: tok.clone(),
+				}
+				.into_diag(&self.session.diagnostic))
 			}
+		} else if &self.token.kind == tok {
+			self.bump();
+			Ok(false)
 		} else {
-			if self.token.kind == *tok {
-				self.bump();
-				Ok(false)
-			} else {
-				todo!("recover from unexpected token {}", self.token)
+			// todo!("recover from unexpected token {}", self.token)
+
+			// TODO: pass `expected_tokens`
+
+			Err(UnexpectedToken {
+				token: self.token.span,
+				parsed: self.token.kind.clone(),
+				expected: tok.clone(),
 			}
-			// todo!("understand why branch here")
-			// self.expect_one_of(slice::from_ref(tok), &[])
+			.into_diag(&self.session.diagnostic))
 		}
 	}
 
@@ -92,7 +107,12 @@ impl<'a> Parser<'a> {
 		if self.eat_keyword(kw) {
 			Ok(())
 		} else {
-			todo!()
+			Err(UnexpectedTokenInsteadOfKeyword {
+				token: self.token.span,
+				parsed: self.token.kind.clone(),
+				expected: kw,
+			}
+			.into_diag(&self.session.diagnostic))
 		}
 	}
 
@@ -109,7 +129,7 @@ impl<'a> Parser<'a> {
 
 	#[instrument(level = "TRACE", skip(self))]
 	fn check(&mut self, tok: &TokenKind) -> bool {
-		let is_present = self.token.kind == *tok;
+		let is_present = &self.token.kind == tok;
 
 		if !is_present {
 			self.expected_tokens.push(tok.clone());
@@ -120,7 +140,7 @@ impl<'a> Parser<'a> {
 
 	/// Consumes a token 'tok' if it exists. Returns whether the given token was present.
 	#[instrument(level = "TRACE", skip(self))]
-	pub fn eat(&mut self, tok: &TokenKind) -> bool {
+	fn eat(&mut self, tok: &TokenKind) -> bool {
 		let is_present = self.check(tok);
 		if is_present {
 			self.bump();
@@ -139,7 +159,7 @@ impl<'a> Parser<'a> {
 	/// If the next token is the given keyword, eats it and returns `true`.
 	/// Otherwise, returns `false`. An expectation is also added for diagnostics purposes.
 	#[instrument(level = "TRACE", skip(self))]
-	pub fn eat_keyword(&mut self, kw: Symbol) -> bool {
+	fn eat_keyword(&mut self, kw: Symbol) -> bool {
 		if self.check_keyword(kw) {
 			self.bump();
 			true
@@ -150,7 +170,7 @@ impl<'a> Parser<'a> {
 
 	#[instrument(level = "TRACE", skip(self))]
 	fn parse_ident(&mut self) -> PResult<Ident> {
-		let ident = if let Some(lexer::symbols::Ident { symbol, span }) = self.token.ident() {
+		let ident = if let Some(session::Ident { symbol, span }) = self.token.ident() {
 			Ident { symbol, span }
 		} else {
 			let recover = true;

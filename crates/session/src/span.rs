@@ -1,17 +1,23 @@
+use miette::SourceSpan;
+
+use crate::source_map::BytePos;
 use std::{cmp, fmt};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Span {
-	pub start: u32,
-	pub end: u32,
+	pub start: BytePos,
+	pub end: BytePos,
 }
 
 impl Span {
-	pub const DUMMY: Self = Self { start: 0, end: 0 };
+	pub const DUMMY: Self = Self {
+		start: BytePos(u32::MAX),
+		end: BytePos(u32::MAX),
+	};
 
 	#[must_use]
-	pub const fn from_bounds(lo: u32, hi: u32) -> Self {
-		Self { start: lo, end: hi }
+	pub const fn from_bounds(start: BytePos, end: BytePos) -> Self {
+		Self { start, end }
 	}
 
 	#[must_use]
@@ -22,9 +28,6 @@ impl Span {
 		}
 	}
 }
-
-// Recursive expansion of Debug macro
-// ===================================
 
 impl fmt::Debug for Span {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -45,5 +48,20 @@ impl fmt::Display for Span {
 			&Self::DUMMY => write!(f, "DUMMY"),
 			Self { start, end } => write!(f, "{start} -> {end}"),
 		}
+	}
+}
+
+impl From<&SourceSpan> for Span {
+	fn from(value: &SourceSpan) -> Self {
+		Self {
+			start: BytePos(value.offset() as u32),
+			end: BytePos((value.offset() as u32) + (value.len() as u32)),
+		}
+	}
+}
+
+impl From<Span> for SourceSpan {
+	fn from(sp: Span) -> Self {
+		(sp.start.0 as usize, (sp.end - sp.start).0 as usize).into()
 	}
 }

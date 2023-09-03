@@ -1,12 +1,10 @@
 use crate::{PResult, Parser};
 use ast::{
-	types::{Api, AttrVec, Ident, Item, ItemKind, Metadata, NodeId, Path, PathKind, ScopeKind},
+	types::{Api, AttrVec, Item, ItemKind, Metadata, NodeId, Path, PathKind, ScopeKind},
 	P,
 };
-use lexer::{
-	rich::{Delimiter, OpKind, TokenKind},
-	symbols::kw,
-};
+use lexer::rich::{Delimiter, OpKind, TokenKind};
+use session::{symbols::kw, Ident};
 use thin_vec::{thin_vec, ThinVec};
 
 impl<'a> Parser<'a> {
@@ -146,12 +144,12 @@ impl<'a> Parser<'a> {
 
 				Ok((ident, PathKind::Complex(parts)))
 			} else {
-				Ok((ident.clone(), PathKind::Variable(ident)))
+				Ok((ident, PathKind::Variable(ident)))
 			}
 		} else {
 			let ident = self.parse_ident()?;
 
-			Ok((ident.clone(), PathKind::Simple(ident)))
+			Ok((ident, PathKind::Simple(ident)))
 		}
 	}
 }

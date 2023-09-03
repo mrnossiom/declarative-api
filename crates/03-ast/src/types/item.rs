@@ -1,6 +1,6 @@
-use super::{AttrVec, Ident, NodeId, PropertyDef, Type};
+use crate::types::{AttrVec, NodeId, PropertyDef, Type};
 use crate::P;
-use lexer::span::Span;
+use session::{Ident, Span};
 use thin_vec::ThinVec;
 
 #[derive(Debug, Clone)]

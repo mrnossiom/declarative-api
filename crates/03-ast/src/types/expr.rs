@@ -1,6 +1,7 @@
-use super::{AttrVec, Ident, NodeId};
+use crate::types::{AttrVec, NodeId};
 use crate::P;
-use lexer::{rich::LiteralKind, span::Span, symbols::Symbol};
+use lexer::rich::LiteralKind;
+use session::{Ident, Span, Symbol};
 use thin_vec::ThinVec;
 
 /// An expression.
