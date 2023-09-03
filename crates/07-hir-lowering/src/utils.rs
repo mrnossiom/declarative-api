@@ -145,6 +145,7 @@ pub fn gen_test_ir() -> types::Ir {
 				minor: 0,
 				patch: 0,
 			},
+			licence: None,
 			urls: vec![
 				"https://paradigm.lighton.ai/api/v1".into(),
 				"https://paradigm-preprod.lighton.ai/api/v1".into(),

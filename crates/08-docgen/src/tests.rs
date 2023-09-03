@@ -20,6 +20,7 @@ fn test_2() {
 				minor: 0,
 				patch: 0,
 			}),
+			licence: Some("MIT".into()),
 			urls: vec![
 				"https://paradigm.lighton.ai/api/v1".into(),
 				"https://paradigm-preprod.lighton.ai/api/v1".into(),
@@ -73,5 +74,5 @@ fn test_2() {
 	);
 	let mut generated_file_list = HashMap::new();
 	parsed_intermediate_representation.markdown(&mut generated_file_list);
-	// generated_file_list.write(Path::new("test-artifacts/test-2"));
+	generated_file_list.write(Path::new("test-artifacts/test-2"));
 }

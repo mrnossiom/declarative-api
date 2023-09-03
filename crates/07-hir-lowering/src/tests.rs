@@ -15,6 +15,7 @@ fn test_3() {
 				minor: 0,
 				patch: 0,
 			}),
+			licence: None,
 			urls: vec![
 				"https://paradigm.lighton.ai/api/v1".into(),
 				"https://paradigm-preprod.lighton.ai/api/v1".into(),
@@ -144,7 +145,6 @@ fn test_3() {
 	};
 
 	let mut parsed_ir = types::Ir::default();
-
 	input_hir.parse(types::ParserVariables::default(), &mut parsed_ir);
 
 	let expected_ir = utils::gen_test_ir();

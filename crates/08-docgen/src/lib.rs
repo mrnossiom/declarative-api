@@ -23,10 +23,11 @@ pub trait WriteFiles {
 impl Generate for hir_lowering::types::ApiMetadata {
 	fn markdown(&self) -> String {
 		format!(
-			"# {} (v{}){}\n## URLs\n{}\n",
+			"# {} (v{}){}\n{}\n## URLs\n{}\n",
 			self.name,
 			self.version,
-			format_optional(&self.comment),
+			format_optional(&self.licence, Some("Licence: ".into())),
+			format_optional(&self.comment, None),
 			self.urls.format_as_list(),
 		)
 	}
@@ -36,7 +37,7 @@ impl Generate for hir_lowering::types::Response {
 	fn markdown(&self) -> String {
 		format!(
 			"{}\n##### Headers\n{}\n##### Body\n{}",
-			format_optional(&self.comment),
+			format_optional(&self.comment, None),
 			self.headers.markdown(),
 			self.body.markdown(),
 		)
@@ -47,7 +48,7 @@ impl Generate for hir_lowering::types::Method {
 	fn markdown(&self) -> String {
 		format!(
 			"{}\n##### Query parameters\n{}\n##### Headers\n{}\n### Responses\n\n{}",
-			format_optional(&self.comment),
+			format_optional(&self.comment, None),
 			self.query_params.markdown(),
 			self.headers.markdown(),
 			self.responses.markdown(),
@@ -65,7 +66,7 @@ impl Generate for hir_lowering::types::Model {
 	fn markdown(&self) -> String {
 		format!(
 			"{}\n{}",
-			format_optional(&self.comment),
+			format_optional(&self.comment, None),
 			self.model_body.markdown(),
 		)
 	}
@@ -75,7 +76,7 @@ impl Generate for hir_lowering::types::Scope {
 	fn markdown(&self) -> String {
 		format!(
 			"{}\n# Child scopes\n{}\n\n# Endpoints\n{}\n# Models\n{}\n",
-			format_optional(&self.comment),
+			format_optional(&self.comment, None),
 			Vec::from_iter(self.scopes.clone())
 				.iter()
 				.map(|x| format!("[{}]({})", x, vec![x.clone()].get_markdown_file_name()))
@@ -175,9 +176,9 @@ impl WriteFiles for HashMap<Box<Path>, String> {
 	}
 }
 
-fn format_optional(optional: &Option<String>) -> String {
-	match optional.clone() {
-		Some(string) => format!("\n{}", string),
+fn format_optional(optional: &Option<String>, prefix: Option<String>) -> String {
+	match optional {
+		Some(string) => format!("\n{}{}", prefix.unwrap_or("".into()), string),
 		None => String::new(),
 	}
 }

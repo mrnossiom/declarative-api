@@ -273,6 +273,7 @@ impl fmt::Display for KeyValuePairValue {
 pub struct ApiMetadata {
 	pub name: String,
 	pub version: Version,
+	pub licence: Option<String>,
 	pub urls: Vec<String>,
 	pub comment: Option<String>,
 }
@@ -295,6 +296,7 @@ impl Default for Ir {
 					minor: 0,
 					patch: 0,
 				},
+				licence: None,
 				urls: vec![],
 				comment: None,
 			},

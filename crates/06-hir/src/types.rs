@@ -9,6 +9,7 @@ pub struct Version {
 pub struct ApiMetadata {
 	pub name: Option<String>,
 	pub version: Option<Version>,
+	pub licence: Option<String>,
 	pub urls: Vec<String>,
 	pub comment: Option<String>,
 }

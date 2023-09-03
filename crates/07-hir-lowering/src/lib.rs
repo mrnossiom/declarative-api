@@ -33,6 +33,7 @@ impl Parse for hir::types::ApiMetadata {
 			minor: version.minor,
 			patch: version.patch,
 		};
+		intermediate_representation.metadata.licence = self.licence.clone();
 		intermediate_representation.metadata.urls = self.urls.clone();
 		intermediate_representation.metadata.comment = self.comment.clone();
 	}
