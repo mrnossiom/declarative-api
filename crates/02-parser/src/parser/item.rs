@@ -1,6 +1,9 @@
 use crate::{PResult, Parser};
 use ast::{
-	types::{Api, AttrVec, Headers, Item, ItemKind, Metadata, NodeId, Path, PathKind, ScopeKind},
+	types::{
+		Api, AttrVec, Headers, Item, ItemKind, Metadata, NodeId, PathItem, PathKind, Query,
+		ScopeKind, Verb,
+	},
 	P,
 };
 use lexer::rich::{Delimiter, OpKind, TokenKind};
@@ -21,7 +24,6 @@ impl<'a> Parser<'a> {
 		Ok(Api {
 			attrs,
 			items,
-
 			id: NodeId::ROOT,
 			span: self.span(lo),
 		})
@@ -37,9 +39,8 @@ impl<'a> Parser<'a> {
 			ScopeKind::Unloaded
 		} else {
 			let lo = self.token.span;
-			self.expect(&TokenKind::OpenDelim(Delimiter::Brace))?;
-			let items = self.parse_scope_content(Some(attrs))?;
-			self.expect(&TokenKind::CloseDelim(Delimiter::Brace))?;
+
+			let items = self.expect_braced(|p| p.parse_scope_content(Some(attrs)))?;
 
 			ScopeKind::Loaded {
 				items,
@@ -57,12 +58,7 @@ impl<'a> Parser<'a> {
 			attrs.extend(self.parse_inner_attrs()?);
 		}
 
-		let mut items = ThinVec::default();
-		while let Some(item) = self.parse_item()? {
-			items.push(item);
-		}
-
-		Ok(items)
+		self.parse_items()
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self))]
@@ -73,9 +69,7 @@ impl<'a> Parser<'a> {
 			// TODO: react accordingly
 		}
 
-		self.expect(&TokenKind::OpenDelim(Delimiter::Brace))?;
-		let fields = self.parse_property_defs()?;
-		self.expect(&TokenKind::CloseDelim(Delimiter::Brace))?;
+		let fields = self.expect_braced(Self::parse_property_defs)?;
 
 		let meta = Metadata { fields };
 
@@ -88,28 +82,41 @@ impl<'a> Parser<'a> {
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self))]
-	fn parse_item(&mut self) -> PResult<Option<P<Item>>> {
-		let attrs = self.parse_outer_attrs()?;
-
-		self.parse_item_(attrs)
+	fn parse_items(&mut self) -> PResult<ThinVec<P<Item>>> {
+		let mut items = ThinVec::default();
+		while let Some(item) = self.parse_item()? {
+			items.push(item);
+		}
+		Ok(items)
 	}
 
-	#[tracing::instrument(level = "DEBUG", skip(self, attrs))]
-	fn parse_item_(&mut self, mut attrs: AttrVec) -> PResult<Option<P<Item>>> {
+	#[tracing::instrument(level = "DEBUG", skip(self))]
+	fn parse_item(&mut self) -> PResult<Option<P<Item>>> {
+		let mut attrs = self.parse_outer_attrs()?;
+
 		let lo = self.token.span;
 
 		let (ident, kind) = if self.check_keyword(kw::Scope) {
+			// `scope { <items> }`
 			let (ident, kind) = self.parse_scope(&mut attrs)?;
 			(Some(ident), kind)
 		} else if self.check_keyword(kw::Path) {
+			// `path { <items> }`
 			(None, self.parse_path_item()?)
 		} else if self.check_keyword(kw::Meta) {
+			// `meta { <properties> }`
 			// TODO: change or emit warn about misplaces metadata
 			(None, self.parse_metadata()?.kind.clone())
 		} else if self.check_keyword(kw::Headers) {
+			// `headers { <fields> }`
 			(None, self.parse_headers()?)
-		} else if true {
-			todo!()
+		} else if self.check_keyword(kw::Query) {
+			// `query { <fields> }`
+			(None, self.parse_query()?)
+		} else if self.check_ident() {
+			// HTTP verbs (e.g. `GET`, `POST`)
+			let (ident, verb) = self.parse_verb()?;
+			(Some(ident), verb)
 		} else {
 			return Ok(None);
 		};
@@ -120,15 +127,9 @@ impl<'a> Parser<'a> {
 	#[tracing::instrument(level = "DEBUG", skip(self))]
 	fn parse_path_item(&mut self) -> PResult<ItemKind> {
 		self.expect_keyword(kw::Path)?;
-
 		let kind = self.parse_path_item_kind()?;
-
-		self.expect(&TokenKind::OpenDelim(Delimiter::Brace))?;
-		// TODO: get path items
-		let items = thin_vec![];
-		self.expect(&TokenKind::CloseDelim(Delimiter::Brace))?;
-
-		Ok(ItemKind::Path(Path { kind, items }))
+		let items = self.expect_braced(Self::parse_items)?;
+		Ok(ItemKind::Path(PathItem { kind, items }))
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self))]
@@ -160,38 +161,37 @@ impl<'a> Parser<'a> {
 	#[tracing::instrument(level = "DEBUG", skip(self))]
 	fn parse_headers(&mut self) -> PResult<ItemKind> {
 		self.expect_keyword(kw::Headers)?;
-
-		self.expect(&TokenKind::OpenDelim(Delimiter::Brace))?;
-		let headers = self.parse_field_defs()?;
-		self.expect(&TokenKind::CloseDelim(Delimiter::Brace))?;
-
+		let headers = self.expect_braced(Self::parse_field_defs)?;
 		Ok(ItemKind::Headers(Headers { headers }))
+	}
+
+	#[tracing::instrument(level = "DEBUG", skip(self))]
+	fn parse_query(&mut self) -> PResult<ItemKind> {
+		self.expect_keyword(kw::Query)?;
+		let fields = self.expect_braced(Self::parse_field_defs)?;
+		Ok(ItemKind::Query(Query { fields }))
+	}
+
+	#[tracing::instrument(level = "DEBUG", skip(self))]
+	fn parse_verb(&mut self) -> PResult<(Ident, ItemKind)> {
+		let method = self.parse_ident()?;
+		let items = self.expect_braced(Self::parse_items)?;
+		Ok((method, ItemKind::Verb(Verb { method, items })))
 	}
 }
 
 #[cfg(test)]
 mod tests {
+	use crate::Parser;
 	use ast::types::PathKind::{self, *};
-	use session::{BytePos, Ident, Session, Span, Symbol};
+	use session::{ident, Session};
 	use std::error::Error;
 	use thin_vec::thin_vec;
 
-	macro_rules! ident {
-		($name:literal, $start:literal, $end:literal) => {
-			Ident::new(
-				Symbol::intern($name),
-				Span {
-					start: BytePos($start),
-					end: BytePos($end),
-				},
-			)
-		};
-	}
-
 	fn expect_path_item(source: &str, expected: &PathKind) -> Result<(), Box<dyn Error>> {
 		let session = Session::default();
-		let source = session.parse.source_map.add_source(source.into());
-		let mut p = crate::Parser::from_source(&session.parse, &source);
+		let source = session.parse.source_map.load_anon(source.into());
+		let mut p = Parser::from_source(&session.parse, &source);
 
 		let kind = p.parse_path_item_kind()?;
 

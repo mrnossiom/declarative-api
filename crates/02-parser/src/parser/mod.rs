@@ -2,9 +2,10 @@ use crate::{
 	error::{UnexpectedToken, UnexpectedTokenInsteadOfKeyword},
 	PResult,
 };
-use lexer::rich::{Enricher, Token, TokenKind};
+use lexer::rich::{Delimiter, Enricher, Token, TokenKind};
 use session::{DiagnosticsHandler, Ident, IntoDiagnostic, ParseSession, SourceFile, Symbol};
 use std::mem;
+use thin_vec::ThinVec;
 use tracing::instrument;
 
 mod attr;
@@ -81,7 +82,7 @@ impl<'a> Parser<'a> {
 					parsed: self.token.kind.clone(),
 					expected: tok.clone(),
 				}
-				.into_diag(&self.session.diagnostic))
+				.into_diag())
 			}
 		} else if &self.token.kind == tok {
 			self.bump();
@@ -96,8 +97,15 @@ impl<'a> Parser<'a> {
 				parsed: self.token.kind.clone(),
 				expected: tok.clone(),
 			}
-			.into_diag(&self.session.diagnostic))
+			.into_diag())
 		}
+	}
+
+	fn expect_braced<T>(&mut self, mut p: impl FnMut(&mut Self) -> PResult<T>) -> PResult<T> {
+		self.expect(&TokenKind::OpenDelim(Delimiter::Brace))?;
+		let parsed = p(self)?;
+		self.expect(&TokenKind::CloseDelim(Delimiter::Brace))?;
+		Ok(parsed)
 	}
 
 	/// If the given word is not a keyword, signals an error.
@@ -113,7 +121,7 @@ impl<'a> Parser<'a> {
 				parsed: self.token.kind.clone(),
 				expected: kw,
 			}
-			.into_diag(&self.session.diagnostic))
+			.into_diag())
 		}
 	}
 
@@ -169,20 +177,96 @@ impl<'a> Parser<'a> {
 		}
 	}
 
+	/// If the next token is the given keyword, returns `true` without eating it.
+	/// An expectation is also added for diagnostics purposes.
+	#[instrument(level = "TRACE", skip(self))]
+	fn check_ident(&mut self) -> bool {
+		// self.expected_tokens.push(TokenKind::Ident(kw));
+		self.token.ident().is_some()
+	}
+
+	#[instrument(level = "TRACE", skip(self))]
+	fn eat_ident(&mut self) -> Option<Ident> {
+		self.token.ident().map(|ident| {
+			self.bump();
+			ident
+		})
+	}
+
 	#[instrument(level = "TRACE", skip(self))]
 	fn parse_ident(&mut self) -> PResult<Ident> {
-		let ident = if let Some(session::Ident { symbol, span }) = self.token.ident() {
-			Ident { symbol, span }
-		} else {
-			let recover = true;
-			if recover {
-				todo!()
-			} else {
-				return Err(todo!());
-			}
+		let Some(ident) = self.token.ident() else {
+			todo!("recover")
 		};
 
 		self.bump();
 		Ok(ident)
+	}
+
+	#[instrument(level = "TRACE", skip(self))]
+	fn parse_delimited(&mut self) -> PResult<(Delimiter, ThinVec<Token>)> {
+		let mut tokens = ThinVec::default();
+
+		let delim_kind = match self.token.kind {
+			TokenKind::OpenDelim(delim) => {
+				self.bump();
+				Ok(delim)
+			}
+			_ => todo!("recover"),
+		}?;
+
+		let mut nesting = 0;
+
+		loop {
+			match self.token.kind {
+				TokenKind::OpenDelim(delim) if delim == delim_kind => {
+					nesting += 1;
+				}
+
+				TokenKind::CloseDelim(delim) if delim == delim_kind => {
+					if nesting == 0 {
+						break Ok((delim_kind, tokens));
+					}
+
+					nesting -= 1;
+				}
+				_ => {}
+			}
+
+			tokens.push(self.token.clone());
+			self.bump();
+		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use crate::Parser;
+	use lexer::rich::{Delimiter, TokenKind};
+	use session::{sym, ParseSession};
+	use std::error::Error;
+
+	#[test]
+	fn parse_delimited() -> Result<(), Box<dyn Error>> {
+		use TokenKind::*;
+
+		// Like in `@key(bar, baz)`
+		let src = "(bar, baz)";
+
+		let session = ParseSession::default();
+		let sf = session.source_map.load_anon(src.into());
+		let mut p = Parser::from_source(&session, &sf);
+
+		let (kind, tokens) = p.parse_delimited()?;
+
+		assert_eq!(kind, Delimiter::Parenthesis);
+
+		assert_eq!(tokens.len(), 3);
+
+		assert_eq!(tokens[0].kind, Ident(sym!("bar")));
+		assert_eq!(tokens[1].kind, Comma);
+		assert_eq!(tokens[2].kind, Ident(sym!("baz")));
+
+		Ok(())
 	}
 }

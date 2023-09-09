@@ -1,12 +1,14 @@
 use crate::Parser;
 use ast::{
 	types::{
-		AttrId, AttrItem, AttrKind, AttrStyle, AttrVec, Attribute, Expr, ExprKind, FieldDef, Item,
-		ItemKind, NodeId, NormalAttr, PropertyDef, Type,
+		AttrId, AttrKind, AttrStyle, AttrVec, Attribute, Expr, ExprKind, FieldDef, Item, ItemKind,
+		MetaAttr, NodeId, NormalAttr, Path, PathSegment, PropertyDef, Ty, TyKind,
 	},
 	P,
 };
+use lexer::rich::{Delimiter, Token};
 use session::{Ident, Span, Symbol};
+use thin_vec::{thin_vec, ThinVec};
 
 impl<'a> Parser<'a> {
 	pub(super) fn span(&self, lo: Span) -> Span {
@@ -57,7 +59,7 @@ impl<'a> Parser<'a> {
 	pub(super) fn make_field_def(
 		attrs: AttrVec,
 		ident: Ident,
-		ty: P<Type>,
+		ty: P<Ty>,
 		span: Span,
 	) -> P<FieldDef> {
 		P(FieldDef {
@@ -79,8 +81,21 @@ impl<'a> Parser<'a> {
 		}
 	}
 
-	pub(super) fn make_normal_attr(style: AttrStyle, span: Span) -> Attribute {
-		let normal = NormalAttr { item: AttrItem {} };
+	pub(super) fn make_normal_attr(
+		delim: Delimiter,
+		tokens: ThinVec<Token>,
+		style: AttrStyle,
+		span: Span,
+	) -> Attribute {
+		let normal = NormalAttr {
+			// TODO: hum, hum
+			path: Path {
+				segments: thin_vec![],
+				span: Span::DUMMY,
+			},
+			delim,
+			tokens,
+		};
 
 		Attribute {
 			kind: AttrKind::Normal(normal),
@@ -88,5 +103,38 @@ impl<'a> Parser<'a> {
 			id: AttrId::make_id(),
 			span,
 		}
+	}
+
+	pub(super) fn make_meta_attr(
+		ident: Ident,
+		expr: Option<P<Expr>>,
+		style: AttrStyle,
+		span: Span,
+	) -> Attribute {
+		Attribute {
+			kind: AttrKind::Meta(MetaAttr { ident, expr }),
+			style,
+			id: AttrId::make_id(),
+			span,
+		}
+	}
+
+	// --- Types ---
+	pub(super) fn make_ty(kind: TyKind, span: Span) -> P<Ty> {
+		P(Ty {
+			kind,
+			id: NodeId::DUMMY,
+			span,
+		})
+	}
+
+	pub(super) fn make_ty_kind_single(ident: Ident, span: Span) -> TyKind {
+		TyKind::Path(Path {
+			segments: thin_vec![PathSegment {
+				ident,
+				id: NodeId::DUMMY,
+			}],
+			span,
+		})
 	}
 }

@@ -33,6 +33,7 @@ symbols! {
 
 	attrs {
 		Deprecated: "deprecated",
+		Description: "description",
 		Doc: "doc",
 		Format: "format",
 		Type: "type",
@@ -137,7 +138,7 @@ impl SymbolInterner {
 		let id = this.arena.alloc_str(sym);
 
 		// TODO: check safety
-		let id = unsafe { &*(id as *mut str as *const str) };
+		let id = unsafe { &*(id as *mut str).cast_const() };
 
 		this.names.insert(id, name);
 		this.strings.push(id);

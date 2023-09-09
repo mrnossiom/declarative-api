@@ -52,7 +52,9 @@ impl<'a> Cursor<'a> {
 			'!' => Bang,
 			'<' => Lt,
 			'>' => Gt,
-			'-' => Minus,
+
+			// TODO: remove from enum, is contained by ident
+			// '-' => Minus,
 			'&' => And,
 			'|' => Or,
 			'+' => Plus,
@@ -191,7 +193,7 @@ fn is_id_start(c: char) -> bool {
 
 /// True if `c` is valid as a non-first character of an identifier.
 fn is_id_continue(c: char) -> bool {
-	UnicodeXID::is_xid_continue(c)
+	UnicodeXID::is_xid_continue(c) || c == '-'
 }
 
 /// The passed string is lexically an identifier.

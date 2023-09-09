@@ -4,6 +4,7 @@
 	clippy::nursery,
 	clippy::pedantic,
 	clippy::todo,
+	clippy::dbg_macro,
 )]
 #![allow(
 	clippy::redundant_pub_crate,

@@ -1,17 +1,13 @@
 use ast::types::AttrStyle;
 use lexer::rich::TokenKind;
-use session::{
-	Diagnostic, DiagnosticSource, DiagnosticsHandler, IntoDiagnostic, SourceFile, SourceMap, Span,
-	Symbol,
-};
-use std::rc::Rc;
+use session::{Diagnostic, DiagnosticsHandler, IntoDiagnostic, Span, Symbol};
 use thiserror::Error;
 
 pub type PResult<'a, T> = Result<T, Diagnostic>;
 
 #[derive(Debug, Error, miette::Diagnostic)]
 #[error("we expected an {style} attribute but found a {parsed_style} attribute")]
-#[diagnostic(code(dapi::wrong_attr_style), severity(Warning))]
+#[diagnostic(code(dapi::wrong_attr_style))]
 pub struct WrongAttrStyle {
 	#[label = "expected {style}"]
 	pub attr: Span,
@@ -20,17 +16,9 @@ pub struct WrongAttrStyle {
 	pub parsed_style: AttrStyle,
 }
 
-impl DiagnosticSource for WrongAttrStyle {
-	fn source_file(&self, source_map: &SourceMap) -> Rc<SourceFile> {
-		source_map
-			.lookup_source_file_and_relative_pos(self.attr.start)
-			.0
-	}
-}
-
 impl<'a> IntoDiagnostic<'a> for WrongAttrStyle {
-	fn into_diag(self, handler: &'a DiagnosticsHandler) -> Diagnostic {
-		handler.builder(self)
+	fn into_diag(self) -> Diagnostic {
+		DiagnosticsHandler::builder(self)
 	}
 }
 
@@ -45,17 +33,9 @@ pub struct UnexpectedToken {
 	pub expected: TokenKind,
 }
 
-impl DiagnosticSource for UnexpectedToken {
-	fn source_file(&self, source_map: &SourceMap) -> Rc<SourceFile> {
-		source_map
-			.lookup_source_file_and_relative_pos(self.token.start)
-			.0
-	}
-}
-
 impl<'a> IntoDiagnostic<'a> for UnexpectedToken {
-	fn into_diag(self, handler: &'a DiagnosticsHandler) -> Diagnostic {
-		handler.builder(self)
+	fn into_diag(self) -> Diagnostic {
+		DiagnosticsHandler::builder(self)
 	}
 }
 
@@ -70,16 +50,8 @@ pub struct UnexpectedTokenInsteadOfKeyword {
 	pub expected: Symbol,
 }
 
-impl DiagnosticSource for UnexpectedTokenInsteadOfKeyword {
-	fn source_file(&self, source_map: &SourceMap) -> Rc<SourceFile> {
-		source_map
-			.lookup_source_file_and_relative_pos(self.token.start)
-			.0
-	}
-}
-
 impl<'a> IntoDiagnostic<'a> for UnexpectedTokenInsteadOfKeyword {
-	fn into_diag(self, handler: &'a DiagnosticsHandler) -> Diagnostic {
-		handler.builder(self)
+	fn into_diag(self) -> Diagnostic {
+		DiagnosticsHandler::builder(self)
 	}
 }

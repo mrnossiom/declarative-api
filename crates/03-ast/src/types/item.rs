@@ -1,4 +1,4 @@
-use crate::types::{AttrVec, NodeId, PropertyDef, Type};
+use crate::types::{AttrVec, NodeId, PropertyDef, Ty};
 use crate::P;
 use session::{Ident, Span};
 use thin_vec::ThinVec;
@@ -18,8 +18,9 @@ pub enum ItemKind {
 	Meta(Metadata),
 
 	Scope(ScopeKind),
-	Path(Path),
+	Path(PathItem),
 	Model(Model),
+	Query(Query),
 	Headers(Headers),
 	Verb(Verb),
 	StatusCode(StatusCode),
@@ -27,7 +28,7 @@ pub enum ItemKind {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Verb {
-	pub method: String,
+	pub method: Ident,
 	pub items: ThinVec<P<Item>>,
 }
 
@@ -54,9 +55,14 @@ pub struct Model {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Path {
+pub struct Query {
+	pub fields: ThinVec<P<FieldDef>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PathItem {
 	pub kind: PathKind,
-	pub items: ThinVec<Item>,
+	pub items: ThinVec<P<Item>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -84,7 +90,7 @@ pub enum ScopeKind {
 pub struct FieldDef {
 	pub attrs: AttrVec,
 	pub ident: Ident,
-	pub ty: P<Type>,
+	pub ty: P<Ty>,
 
 	pub id: NodeId,
 	pub span: Span,

@@ -1,4 +1,8 @@
-use session::{Span, Symbol};
+use crate::P;
+
+use super::{Expr, Path};
+use lexer::rich::{Delimiter, Token};
+use session::{Ident, Span, Symbol};
 use std::{
 	fmt,
 	sync::atomic::{AtomicU32, Ordering},
@@ -58,8 +62,11 @@ impl From<lexer::rich::AttrStyle> for AttrStyle {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AttrKind {
-	/// A normal attribute.
+	/// A normal attribute. Which keeps tokens to be later processed.
 	Normal(NormalAttr),
+
+	/// A simple key-value attribute (e.g. `@key: "value"` where "value" can be any expr).
+	Meta(MetaAttr),
 
 	/// A doc comment (e.g. `## ...`, `##! ...`).
 	/// Doc attributes (e.g. `@doc("...")`) are represented with the `Normal`
@@ -80,13 +87,13 @@ impl AttrId {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NormalAttr {
-	pub item: AttrItem,
-	// pub tokens: Option<LazyAttrTokenStream>,
+	pub path: Path,
+	pub delim: Delimiter,
+	pub tokens: ThinVec<Token>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AttrItem {
-	// pub path: Path,
-	// pub args: AttrArgs,
-	// pub tokens: Option<LazyAttrTokenStream>,
+pub struct MetaAttr {
+	pub ident: Ident,
+	pub expr: Option<P<Expr>>,
 }

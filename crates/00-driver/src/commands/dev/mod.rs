@@ -1,3 +1,6 @@
+use super::Act;
+use std::error::Error;
+
 mod lex;
 mod parse;
 
@@ -7,9 +10,9 @@ pub(crate) struct Dev {
 	command: DevCommands,
 }
 
-impl Dev {
-	pub(crate) fn act(&mut self) {
-		self.command.act();
+impl Act for Dev {
+	fn act(&mut self) -> Result<(), Box<dyn Error>> {
+		self.command.act()
 	}
 }
 
@@ -19,8 +22,8 @@ pub(crate) enum DevCommands {
 	Parse(parse::Parse),
 }
 
-impl DevCommands {
-	fn act(&mut self) {
+impl Act for DevCommands {
+	fn act(&mut self) -> Result<(), Box<dyn Error>> {
 		match self {
 			Self::Lex(lex) => lex.act(),
 			Self::Parse(parse) => parse.act(),

@@ -1,13 +1,7 @@
 use ast::{types::*, P};
 use lexer::rich::LiteralKind;
-use session::{Ident, Span, Symbol};
+use session::{sym, Ident, Span};
 use thin_vec::thin_vec;
-
-macro_rules! sym {
-	($lit:literal) => {
-		Symbol::intern($lit)
-	};
-}
 
 #[allow(clippy::too_many_lines)]
 fn _paradigm_example_ast() -> Api {
@@ -168,12 +162,12 @@ fn _paradigm_example_ast() -> Api {
 							symbol: sym!("dashboard"),
 							span: Span::DUMMY,
 						},
-						kind: ItemKind::Path(Path {
+						kind: ItemKind::Path(PathItem {
 							kind: PathKind::Simple(Ident {
 								symbol: sym!("dashboard"),
 								span: Span::DUMMY,
 							}),
-							items: thin_vec![Item {
+							items: thin_vec![P(Item {
 								attrs: thin_vec![],
 								ident: Ident {
 									symbol: sym!(""),
@@ -228,7 +222,20 @@ fn _paradigm_example_ast() -> Api {
 												symbol: sym!("Authorization"),
 												span: Span::DUMMY,
 											},
-											ty: P(Type("".into())),
+											ty: P(Ty {
+												kind: TyKind::Path(Path {
+													segments: thin_vec![PathSegment {
+														ident: Ident {
+															symbol: sym!("String"),
+															span: Span::DUMMY,
+														},
+														id: NodeId::DUMMY,
+													}],
+													span: Span::DUMMY,
+												}),
+												id: NodeId::DUMMY,
+												span: Span::DUMMY,
+											}),
 											id: NodeId::DUMMY,
 											span: Span::DUMMY,
 										}),
@@ -246,7 +253,20 @@ fn _paradigm_example_ast() -> Api {
 												symbol: sym!("X-Model"),
 												span: Span::DUMMY,
 											},
-											ty: P(Type("".into())),
+											ty: P(Ty {
+												kind: TyKind::Path(Path {
+													segments: thin_vec![PathSegment {
+														ident: Ident {
+															symbol: sym!("String"),
+															span: Span::DUMMY,
+														},
+														id: NodeId::DUMMY,
+													}],
+													span: Span::DUMMY,
+												}),
+												id: NodeId::DUMMY,
+												span: Span::DUMMY,
+											}),
 											id: NodeId::DUMMY,
 											span: Span::DUMMY,
 										}),
@@ -254,7 +274,7 @@ fn _paradigm_example_ast() -> Api {
 								}),
 								id: NodeId::DUMMY,
 								span: Span::DUMMY,
-							}],
+							})],
 						}),
 						id: NodeId::DUMMY,
 						span: Span::DUMMY,

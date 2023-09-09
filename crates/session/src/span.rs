@@ -1,6 +1,6 @@
 use miette::SourceSpan;
 
-use crate::source_map::BytePos;
+use crate::{source_map::BytePos, SourceFile};
 use std::{cmp, fmt};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -25,6 +25,19 @@ impl Span {
 		Self {
 			start: cmp::min(self.start, span.start),
 			end: cmp::max(self.end, span.end),
+		}
+	}
+
+	#[must_use]
+	pub fn len(&self) -> BytePos {
+		self.end - self.start
+	}
+
+	#[must_use]
+	pub fn relative_to(&self, file: &SourceFile) -> Self {
+		Self {
+			start: self.start - file.start_pos,
+			end: self.end - file.start_pos,
 		}
 	}
 }

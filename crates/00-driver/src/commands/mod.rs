@@ -1,3 +1,5 @@
+use std::error::Error;
+
 mod dev;
 
 #[derive(Debug, clap::Parser)]
@@ -6,9 +8,9 @@ pub(crate) struct Args {
 	pub(crate) command: Commands,
 }
 
-impl Args {
-	pub(crate) fn act(&mut self) {
-		self.command.act();
+impl Act for Args {
+	fn act(&mut self) -> Result<(), Box<dyn Error>> {
+		self.command.act()
 	}
 }
 
@@ -17,10 +19,14 @@ pub(crate) enum Commands {
 	Dev(dev::Dev),
 }
 
-impl Commands {
-	fn act(&mut self) {
+impl Act for Commands {
+	fn act(&mut self) -> Result<(), Box<dyn Error>> {
 		match self {
 			Self::Dev(dev) => dev.act(),
 		}
 	}
+}
+
+pub(crate) trait Act {
+	fn act(&mut self) -> Result<(), Box<dyn Error>>;
 }

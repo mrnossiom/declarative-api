@@ -20,7 +20,7 @@ impl<'a> Parser<'a> {
 
 		loop {
 			let attr = if self.check(&TokenKind::At) {
-				Some(self.parse_attr(style)?)
+				Some(self.parse_attr()?)
 			} else if let TokenKind::DocComment(style, sym) = self.token.kind {
 				let _span = debug_span!("parse_doc_attr").entered();
 
@@ -30,17 +30,20 @@ impl<'a> Parser<'a> {
 				None
 			};
 
-			if let Some(attr) = attr {
-				if attr.style == style {
-					attrs.push(attr);
-				} else {
+			if let Some(mut attr) = attr {
+				if attr.style != style {
 					// Emit and recover
 					self.diag().emit(WrongAttrStyle {
 						attr: attr.span,
 						style,
 						parsed_style: attr.style,
 					});
+
+					attr.style = style;
 				}
+
+				// Emit wrong attr style to recover
+				attrs.push(attr);
 			} else {
 				break;
 			}
@@ -50,19 +53,36 @@ impl<'a> Parser<'a> {
 	}
 
 	#[instrument(level = "DEBUG", skip(self))]
-	fn parse_attr(&mut self, style: AttrStyle) -> PResult<Attribute> {
+	fn parse_attr(&mut self) -> PResult<Attribute> {
 		let lo = self.token.span;
 
 		self.expect(&TokenKind::At)?;
 
-		let parsed_style = if self.eat(&TokenKind::Bang) {
+		let style = if self.eat(&TokenKind::Bang) {
 			AttrStyle::Inner
 		} else {
 			AttrStyle::OuterOrInline
 		};
 
-		// TODO: eat attr content
+		let ident = self.parse_ident()?;
+		if self.eat(&TokenKind::Colon) {
+			// Parse `@key: <value>`
+			let expr = self.parse_expr()?;
 
-		Ok(Self::make_normal_attr(parsed_style, self.span(lo)))
+			Ok(Self::make_meta_attr(
+				ident,
+				Some(expr),
+				style,
+				self.span(lo),
+			))
+		} else if self.token.is_open_delim() {
+			// Parse `@key(<tokens>)`
+			let (delim, tokens) = self.parse_delimited()?;
+
+			Ok(Self::make_normal_attr(delim, tokens, style, self.span(lo)))
+		} else {
+			// Parse `@key`
+			Ok(Self::make_meta_attr(ident, None, style, self.span(lo)))
+		}
 	}
 }

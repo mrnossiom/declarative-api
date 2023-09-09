@@ -1,16 +1,18 @@
+use crate::commands::Act;
 use parser::Parser;
 use session::Session;
-use std::path::PathBuf;
+use std::{error::Error, path::PathBuf};
 
 #[derive(Debug, clap::Parser)]
 pub(crate) struct Parse {
 	file: PathBuf,
 }
 
-impl Parse {
-	pub(crate) fn act(&mut self) {
+impl Act for Parse {
+	fn act(&mut self) -> Result<(), Box<dyn Error>> {
 		let session = Session::default();
-		let file = session.parse.source_map.load_file(&self.file).unwrap();
+		let _anon = session.parse.source_map.load_anon("22".into());
+		let file = session.parse.source_map.load_file(&self.file)?;
 
 		let mut parser = Parser::from_source(&session.parse, &file);
 
@@ -18,5 +20,7 @@ impl Parse {
 			Ok(root) => println!("{root:?}"),
 			Err(err) => session.parse.diagnostic.emit_diagnostic(err),
 		}
+
+		Ok(())
 	}
 }

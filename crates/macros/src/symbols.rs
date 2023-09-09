@@ -19,7 +19,7 @@ impl Parse for Symbol {
 			Err(_) => None,
 		};
 
-		Ok(Symbol { name, value })
+		Ok(Self { name, value })
 	}
 }
 
@@ -37,10 +37,10 @@ impl Parse for Input {
 			braced!(content in input);
 			let keywords = Punctuated::parse_terminated(&content)?;
 
-			symbols.push((ident, keywords))
+			symbols.push((ident, keywords));
 		}
 
-		Ok(Input { groups: symbols })
+		Ok(Self { groups: symbols })
 	}
 }
 
@@ -110,12 +110,12 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
 		let mut current_symbols_stream = quote! {};
 
 		// Generate the listed symbols.
-		for symbol in symbols.iter() {
+		for symbol in &symbols {
 			let name = &symbol.name;
-			let value = match &symbol.value {
-				Some(value) => value.value(),
-				None => name.to_string(),
-			};
+			let value = symbol
+				.value
+				.as_ref()
+				.map_or_else(|| name.to_string(), LitStr::value);
 
 			check_dup(symbol.name.span(), &value, &mut errors);
 			check_order(symbol.name.span(), &name.to_string(), &mut errors);

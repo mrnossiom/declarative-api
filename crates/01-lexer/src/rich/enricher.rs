@@ -9,7 +9,7 @@ use tracing::instrument;
 /// same time into [`rich::Token`](crate::rich::Token)s that are self-explanatory. The latter doesn't include
 /// tokens that don't add information to the generator such as whitespace or comments.
 pub struct Enricher<'a> {
-	session: &'a ParseSession,
+	_session: &'a ParseSession,
 	source: &'a str,
 	cursor: poor::Cursor<'a>,
 	start_pos: BytePos,
@@ -22,7 +22,7 @@ impl<'a> Enricher<'a> {
 	#[must_use]
 	pub fn from_source(session: &'a ParseSession, source: &'a SourceFile) -> Self {
 		Self {
-			session,
+			_session: session,
 			source: &source.source,
 			cursor: poor::Cursor::from_source(&source.source),
 			start_pos: source.start_pos,
@@ -77,7 +77,12 @@ impl<'a> Enricher<'a> {
 					continue;
 				}
 
-				poor::TokenKind::InvalidIdent | poor::TokenKind::Unknown => todo!(),
+				poor::TokenKind::InvalidIdent | poor::TokenKind::Unknown => {
+					todo!(
+						"handle invalid ident and unknown tokens {}",
+						self.str_from(start)
+					)
+				}
 
 				poor::TokenKind::Semi => TokenKind::Semi,
 				poor::TokenKind::Comma => TokenKind::Comma,
@@ -199,24 +204,18 @@ impl<'a> IntoIterator for Enricher<'a> {
 mod tests {
 	use super::*;
 	use crate::tests::{ATTR, EXAMPLE, URLS};
-	use session::symbols::attrs;
-
-	macro_rules! sym {
-		($lit:literal) => {
-			Symbol::intern($lit)
-		};
-	}
+	use session::{sym, symbols::attrs};
 
 	macro_rules! tokens {
 		($expr:ident, $(($ty:expr, [$lo:literal, $hi:literal])),+) => {
-			let psession = ParseSession::default();
-			let source = psession.source_map.add_source($expr.into());
-			let mut tokens = Enricher::from_source(&psession, &source).into_iter();
+			let p_sess = ParseSession::default();
+			let source = p_sess.source_map.load_anon($expr.into());
+			let mut tokens = Enricher::from_source(&p_sess, &source).into_iter();
 
 			$(
 				assert_eq!(
 					tokens.next(),
-					Some(Token::new($ty, Span::from_bounds(BytePos($lo), BytePos($hi))))
+					Some(Token::new($ty, session::sp!($lo, $hi)))
 				);
 			)+
 			assert_eq!(tokens.next(), None);
@@ -226,7 +225,7 @@ mod tests {
 	#[test]
 	fn can_enrich_example_file() {
 		let parse_sess = ParseSession::default();
-		let source = parse_sess.source_map.add_source(EXAMPLE.into());
+		let source = parse_sess.source_map.load_anon(EXAMPLE.into());
 
 		let rich_tokens = Enricher::from_source(&parse_sess, &source)
 			.into_iter()
@@ -238,7 +237,6 @@ mod tests {
 	#[test]
 	fn parse_attr() {
 		use crate::rich::TokenKind::*;
-		use session::Span;
 
 		tokens!(
 			ATTR,
@@ -252,7 +250,6 @@ mod tests {
 	#[test]
 	fn parse_array_like() {
 		use crate::rich::{Delimiter::*, LiteralKind::*, TokenKind::*};
-		use session::Span;
 
 		tokens![
 			URLS,

@@ -1,6 +1,7 @@
+use crate::commands::Act;
 use lexer::{poor::Cursor, rich::Enricher};
 use session::Session;
-use std::path::PathBuf;
+use std::{error::Error, path::PathBuf};
 
 #[derive(Debug, clap::Parser)]
 pub(crate) struct Lex {
@@ -10,10 +11,10 @@ pub(crate) struct Lex {
 	rich: bool,
 }
 
-impl Lex {
-	pub(crate) fn act(&mut self) {
+impl Act for Lex {
+	fn act(&mut self) -> Result<(), Box<dyn Error>> {
 		let session = Session::default();
-		let file = session.parse.source_map.load_file(&self.file).unwrap();
+		let file = session.parse.source_map.load_file(&self.file)?;
 
 		if self.rich {
 			Enricher::from_source(&session.parse, &file)
@@ -28,5 +29,7 @@ impl Lex {
 				.inspect(|item| println!("{item}"))
 				.count();
 		}
+
+		Ok(())
 	}
 }

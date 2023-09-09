@@ -29,6 +29,11 @@ impl Token {
 	pub fn is_keyword(&self, kw: Symbol) -> bool {
 		self.ident().map_or(false, |id| id.symbol == kw)
 	}
+
+	#[must_use]
+	pub const fn is_open_delim(&self) -> bool {
+		matches!(&self.kind, TokenKind::OpenDelim(_))
+	}
 }
 
 impl fmt::Display for Token {

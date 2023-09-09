@@ -1,12 +1,28 @@
-use std::rc::Rc;
+#![warn(
+	// clippy::missing_docs_in_private_items,
+	clippy::unwrap_used,
+	clippy::nursery,
+	clippy::pedantic,
+	clippy::todo,
+	clippy::dbg_macro,
+)]
+#![allow(
+	clippy::redundant_pub_crate,
+	clippy::enum_glob_use,
+	clippy::module_name_repetitions
+)]
+
+use std::sync::Arc;
 
 mod diagnostics;
+mod macros;
 mod source_map;
 mod span;
 #[path = "symbols.rs"]
 mod symbols_;
 
-pub use diagnostics::{Diagnostic, DiagnosticSource, DiagnosticsHandler, IntoDiagnostic};
+pub use diagnostics::{Diagnostic, DiagnosticsHandler, IntoDiagnostic};
+// pub use macros::{ident, sp, sym};
 pub use source_map::{BytePos, SourceFile, SourceFileHash, SourceFileId, SourceMap};
 pub use span::Span;
 pub use symbols_::{Ident, Symbol};
@@ -25,16 +41,52 @@ pub struct Session {
 #[derive(Debug)]
 pub struct ParseSession {
 	pub diagnostic: DiagnosticsHandler,
-	pub source_map: Rc<SourceMap>,
+	pub source_map: Arc<SourceMap>,
 }
 
 impl Default for ParseSession {
 	fn default() -> Self {
-		let source_map = Rc::<SourceMap>::default();
+		let source_map = Arc::<SourceMap>::default();
 
 		Self {
 			diagnostic: DiagnosticsHandler::new(source_map.clone()),
 			source_map,
 		}
 	}
+}
+
+// --- Macros ---
+// Needs to be top level to be used in other crates
+
+#[macro_export]
+macro_rules! sym {
+	($sym:literal) => {
+		$crate::Symbol::intern($sym)
+	};
+}
+
+#[macro_export]
+macro_rules! ident {
+	($name:literal, $start:literal, $end:literal) => {
+		ident!(
+			$name,
+			$crate::Span {
+				start: $crate::BytePos($start),
+				end: $crate::BytePos($end),
+			}
+		)
+	};
+	($name:literal, $span:expr) => {
+		$crate::Ident::new($crate::Symbol::intern($name), $span)
+	};
+}
+
+#[macro_export]
+macro_rules! sp {
+	($start:literal, $end:literal) => {
+		$crate::Span {
+			start: $crate::BytePos($start),
+			end: $crate::BytePos($end),
+		}
+	};
 }
