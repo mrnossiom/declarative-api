@@ -9,8 +9,8 @@ edition = "2021"
 macros = { workspace = true }
 tracing = { workspace = true }
 
-miette = { workspace = true }
+ariadne = { workspace = true }
 parking_lot = { workspace = true }
-thiserror = { workspace = true }
 
 typed-arena = "2.0.2"
+negative-impl = "0.1.4"

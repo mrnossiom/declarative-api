@@ -23,7 +23,7 @@ scope dashboard {
 			## # Safety
 			## This is a comment
 			## This is a second line of comment
-			Authorization long_string "The API Key of the User of the User" @prefix: Api-Key
+			Authorization long_string "The API Key of the User of the User" @prefix: "Api-Key"
 			# ^ ident     ^ type      ^ sugar for description attr          ^ prefix attr
 
 			X-Model string "The Model of the User"
@@ -31,14 +31,14 @@ scope dashboard {
 
 		path metrics {
 			path {user_id} {
-				{
+				query {
 					user_id int "User ID: The ID of the User we want to query"
 				}
 
 				GET {
 					query {
 						## Je suis un commentaire de documentation (d'une paire clé, valeur)
-						data string "Query date" @format: date
+						data string "Query date" @format: "date"
 					}
 
 					200 {

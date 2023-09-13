@@ -1,6 +1,6 @@
 use ast::{types::*, P};
 use lexer::rich::LiteralKind;
-use session::{sym, Ident, Span};
+use session::{ident, sym, Ident, Span};
 use thin_vec::thin_vec;
 
 #[allow(clippy::too_many_lines)]
@@ -35,10 +35,7 @@ fn _paradigm_example_ast() -> Api {
 					fields: thin_vec![
 						P(PropertyDef {
 							attrs: thin_vec![],
-							ident: Ident {
-								symbol: sym!("name"),
-								span: Span::DUMMY
-							},
+							ident: ident!("name", Span::DUMMY),
 							expr: P(Expr {
 								attrs: thin_vec![],
 								kind: ExprKind::Literal(LiteralKind::Str, sym!("Wiro's API")),
@@ -50,10 +47,7 @@ fn _paradigm_example_ast() -> Api {
 						}),
 						P(PropertyDef {
 							attrs: thin_vec![],
-							ident: Ident {
-								symbol: sym!("description"),
-								span: Span::DUMMY
-							},
+							ident: ident!("description", Span::DUMMY),
 							expr: P(Expr {
 								attrs: thin_vec![],
 								kind: ExprKind::Literal(
@@ -68,10 +62,7 @@ fn _paradigm_example_ast() -> Api {
 						}),
 						P(PropertyDef {
 							attrs: thin_vec![],
-							ident: Ident {
-								symbol: sym!("version"),
-								span: Span::DUMMY
-							},
+							ident: ident!("version", Span::DUMMY),
 							expr: P(Expr {
 								attrs: thin_vec![],
 								kind: ExprKind::Literal(LiteralKind::Str, sym!("1.0.0")),
@@ -83,10 +74,7 @@ fn _paradigm_example_ast() -> Api {
 						}),
 						P(PropertyDef {
 							attrs: thin_vec![],
-							ident: Ident {
-								symbol: sym!("name"),
-								span: Span::DUMMY
-							},
+							ident: ident!("name", Span::DUMMY),
 							expr: P(Expr {
 								attrs: thin_vec![],
 								kind: ExprKind::Array(thin_vec![
@@ -126,10 +114,7 @@ fn _paradigm_example_ast() -> Api {
 						}),
 					],
 				}),
-				ident: Ident {
-					symbol: sym!(""),
-					span: Span::DUMMY,
-				},
+				ident: ident!("", Span::DUMMY),
 				id: NodeId::DUMMY,
 				span: Span::DUMMY,
 			}),
@@ -140,39 +125,24 @@ fn _paradigm_example_ast() -> Api {
 					id: AttrId::make_id(),
 					span: Span::DUMMY,
 				}],
-				ident: Ident {
-					symbol: sym!("builder"),
-					span: Span::DUMMY,
-				},
+				ident: ident!("builder", Span::DUMMY),
 				kind: ItemKind::Scope(ScopeKind::Unloaded),
 				id: NodeId::DUMMY,
 				span: Span::DUMMY,
 			}),
 			P(Item {
 				attrs: thin_vec![],
-				ident: Ident {
-					symbol: sym!("dashboard"),
-					span: Span::DUMMY,
-				},
+				ident: ident!("dashboard", Span::DUMMY),
 				kind: ItemKind::Scope(ScopeKind::Loaded {
 					inline: true,
 					items: thin_vec![P(Item {
 						attrs: thin_vec![],
-						ident: Ident {
-							symbol: sym!("dashboard"),
-							span: Span::DUMMY,
-						},
+						ident: ident!("dashboard", Span::DUMMY),
 						kind: ItemKind::Path(PathItem {
-							kind: PathKind::Simple(Ident {
-								symbol: sym!("dashboard"),
-								span: Span::DUMMY,
-							}),
+							kind: PathKind::Simple(ident!("dashboard", Span::DUMMY)),
 							items: thin_vec![P(Item {
 								attrs: thin_vec![],
-								ident: Ident {
-									symbol: sym!(""),
-									span: Span::DUMMY,
-								},
+								ident: ident!("", Span::DUMMY),
 								kind: ItemKind::Headers(Headers {
 									headers: thin_vec![
 										P(FieldDef {
@@ -199,29 +169,44 @@ fn _paradigm_example_ast() -> Api {
 													id: AttrId::make_id(),
 													span: Span::DUMMY,
 												},
-												// @description("The API Key of the User")
+												// @description: "The API Key of the User"
 												Attribute {
-													kind: AttrKind::Normal(NormalAttr {
-														item: AttrItem {},
+													kind: AttrKind::Meta(MetaAttr {
+														ident: ident!("description", Span::DUMMY),
+														expr: Some(P(Expr {
+															attrs: thin_vec![],
+															kind: ExprKind::Literal(
+																LiteralKind::Str,
+																sym!("The API Key of the User")
+															),
+															id: NodeId::DUMMY,
+															span: Span::DUMMY,
+														}))
 													}),
 													style: AttrStyle::OuterOrInline,
 													id: AttrId::make_id(),
 													span: Span::DUMMY,
 												},
-												// @prefix("Api-Key")
+												// @prefix: "Api-Key"
 												Attribute {
-													kind: AttrKind::Normal(NormalAttr {
-														item: AttrItem {},
+													kind: AttrKind::Meta(MetaAttr {
+														ident: ident!("prefix", Span::DUMMY),
+														expr: Some(P(Expr {
+															attrs: thin_vec![],
+															kind: ExprKind::Literal(
+																LiteralKind::Str,
+																sym!("Api-Key")
+															),
+															id: NodeId::DUMMY,
+															span: Span::DUMMY,
+														}))
 													}),
 													style: AttrStyle::OuterOrInline,
 													id: AttrId::make_id(),
 													span: Span::DUMMY,
 												},
 											],
-											ident: Ident {
-												symbol: sym!("Authorization"),
-												span: Span::DUMMY,
-											},
+											ident: ident!("Authorization", Span::DUMMY),
 											ty: P(Ty {
 												kind: TyKind::Path(Path {
 													segments: thin_vec![PathSegment {
@@ -240,26 +225,29 @@ fn _paradigm_example_ast() -> Api {
 											span: Span::DUMMY,
 										}),
 										P(FieldDef {
-											// @description("The Model of the User")
+											// @description: "The Model of the User"
 											attrs: thin_vec![Attribute {
-												kind: AttrKind::Normal(NormalAttr {
-													item: AttrItem {},
+												kind: AttrKind::Meta(MetaAttr {
+													ident: ident!("description", Span::DUMMY),
+													expr: Some(P(Expr {
+														attrs: thin_vec![],
+														kind: ExprKind::Literal(
+															LiteralKind::Str,
+															sym!("The Model of the User")
+														),
+														id: NodeId::DUMMY,
+														span: Span::DUMMY,
+													}))
 												}),
 												style: AttrStyle::OuterOrInline,
 												id: AttrId::make_id(),
 												span: Span::DUMMY,
 											}],
-											ident: Ident {
-												symbol: sym!("X-Model"),
-												span: Span::DUMMY,
-											},
+											ident: ident!("X-Model", Span::DUMMY),
 											ty: P(Ty {
 												kind: TyKind::Path(Path {
 													segments: thin_vec![PathSegment {
-														ident: Ident {
-															symbol: sym!("String"),
-															span: Span::DUMMY,
-														},
+														ident: ident!("String", Span::DUMMY),
 														id: NodeId::DUMMY,
 													}],
 													span: Span::DUMMY,

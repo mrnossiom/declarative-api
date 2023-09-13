@@ -4,7 +4,6 @@ use ast::{
 	P,
 };
 use lexer::rich::{Delimiter, TokenKind};
-use session::IntoDiagnostic;
 use thin_vec::thin_vec;
 use tracing::instrument;
 
@@ -26,7 +25,7 @@ impl<'a> Parser<'a> {
 				parsed: self.token.kind.clone(),
 				expected: TokenKind::At,
 			}
-			.into_diag());
+			.into());
 		};
 
 		Ok(Self::make_ty(kind, self.span(lo)))

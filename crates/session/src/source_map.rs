@@ -1,19 +1,36 @@
-use crate::Span;
-use miette::{MietteError, MietteSpanContents, SourceCode, SourceSpan, SpanContents};
+use ariadne::{Cache, Source};
 use parking_lot::RwLock;
 use std::{
-	collections::{hash_map::DefaultHasher, HashMap, VecDeque},
+	cell::RefCell,
+	collections::{hash_map::DefaultHasher, HashMap},
 	fmt, fs,
 	hash::{Hash, Hasher},
-	io,
-	mem::transmute,
+	io, mem,
 	ops::{Add, AddAssign, Deref, DerefMut, Sub},
 	path::{Path, PathBuf},
-	sync::{
-		atomic::{AtomicU32, Ordering},
-		Arc,
-	},
+	rc::Rc,
+	sync::atomic::{AtomicU32, Ordering},
 };
+
+thread_local! {
+	static SOURCE_MAP: RefCell<Option<Rc<SourceMap>>> = RefCell::<Option<Rc<SourceMap>>>::default();
+}
+
+// TODO: lame name, find another
+#[inline]
+pub fn with_source_map<R, F>(f: F) -> Option<R>
+where
+	F: FnOnce(&Rc<SourceMap>) -> R,
+{
+	SOURCE_MAP.with(|sm| sm.borrow().as_ref().map(f))
+}
+
+pub fn add_source_map_context<T, F: FnOnce() -> T>(source_map: Rc<SourceMap>, f: F) -> T {
+	SOURCE_MAP.with(|sm| *sm.borrow_mut() = Some(source_map));
+	let value = f();
+	SOURCE_MAP.with(|sm| sm.borrow_mut().take());
+	value
+}
 
 #[derive(Debug, Default)]
 pub struct SourceMap {
@@ -27,7 +44,7 @@ pub struct SourceMap {
 impl SourceMap {
 	/// # Errors
 	/// Returns an error if the file cannot be read.
-	pub fn load_file(&self, path: &Path) -> io::Result<Arc<SourceFile>> {
+	pub fn load_file(&self, path: &Path) -> io::Result<Rc<SourceFile>> {
 		let filename = FileName::new_real(path.to_owned());
 		let source = fs::read_to_string(path)?;
 
@@ -35,14 +52,14 @@ impl SourceMap {
 	}
 
 	#[must_use]
-	pub fn load_anon(&self, source: String) -> Arc<SourceFile> {
+	pub fn load_anon(&self, source: String) -> Rc<SourceFile> {
 		let filename = FileName::new_anon(&source);
 
 		self.new_source_file(filename, source)
 	}
 
 	#[must_use]
-	fn new_source_file(&self, filename: FileName, source: String) -> Arc<SourceFile> {
+	fn new_source_file(&self, filename: FileName, source: String) -> Rc<SourceFile> {
 		self.try_new_source_file(filename, source)
 			.expect("SourceMap can only contain up to 4GiB of sources, this limit seems to have been exceeded")
 	}
@@ -51,7 +68,7 @@ impl SourceMap {
 		&self,
 		filename: FileName,
 		source: String,
-	) -> Result<Arc<SourceFile>, OffsetOverflowError> {
+	) -> Result<Rc<SourceFile>, OffsetOverflowError> {
 		let file_id = SourceFileId::new(&filename);
 
 		let source_file = if let Some(sf) = self.source_file_by_id(&file_id) {
@@ -59,7 +76,9 @@ impl SourceMap {
 		} else {
 			let start_pos = self.allocate_space(source.len())?;
 
-			let source_file = Arc::new(SourceFile::new(filename, source, start_pos));
+			// TODO: find a way to function without this clone
+			let a_src = ariadne::Source::from(source.clone());
+			let source_file = Rc::new(SourceFile::new(filename, source, start_pos));
 
 			debug_assert_eq!(SourceFileId::from_source_file(&source_file), file_id);
 
@@ -67,6 +86,9 @@ impl SourceMap {
 
 			files.sources.push(source_file.clone());
 			files.file_id_to_source.insert(file_id, source_file.clone());
+
+			// Specific to ariadne
+			files.a_sources.push(a_src);
 
 			source_file
 		};
@@ -96,44 +118,49 @@ impl SourceMap {
 		}
 	}
 
-	fn source_file_by_id(&self, id: &SourceFileId) -> Option<Arc<SourceFile>> {
+	fn source_file_by_id(&self, id: &SourceFileId) -> Option<Rc<SourceFile>> {
 		self.files.read().file_id_to_source.get(id).cloned()
 	}
 }
 
 impl SourceMap {
-	pub fn lookup_source_file(&self, pos: BytePos) -> Arc<SourceFile> {
+	pub fn lookup_source_file(&self, pos: BytePos) -> Rc<SourceFile> {
 		let index = self.lookup_source_file_index(pos);
 		self.files.read().sources[index].clone()
 	}
 
-	fn lookup_source_file_index(&self, pos: BytePos) -> usize {
-		self.files
+	pub fn lookup_source_file_index(&self, pos: BytePos) -> FileIdx {
+		let idx = self
+			.files
 			.read()
 			.sources
-			.0
+			.inner()
 			.binary_search_by_key(&pos, |sf| sf.start_pos)
-			.unwrap_or_else(|p| p - 1)
+			.unwrap_or_else(|p| p - 1);
+
+		FileIdx::new(idx)
+	}
+
+	pub(crate) fn to_cache_hack(&self) -> impl Cache<FileIdx> + '_ {
+		SourceMapCacheHack(self)
 	}
 }
 
-impl SourceCode for SourceMap {
-	fn read_span<'a>(
-		&'a self,
-		span: &SourceSpan,
-		context_lines_before: usize,
-		context_lines_after: usize,
-	) -> Result<Box<dyn SpanContents<'a> + 'a>, MietteError> {
-		let span = Span::from(span);
+struct SourceMapCacheHack<'a>(&'a SourceMap);
 
-		let sf = self.lookup_source_file(span.start);
-
-		let span = sf.read_span(span, context_lines_before, context_lines_after)?;
+impl<'a> Cache<FileIdx> for SourceMapCacheHack<'a> {
+	fn fetch(&mut self, id: &FileIdx) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
+		let source_file = &self.0.files.read().a_sources[id];
 
 		// TODO: check safety
-		let span = unsafe { transmute::<MietteSpanContents<'_>, MietteSpanContents<'a>>(span) };
+		let source_file = unsafe { mem::transmute::<&Source, &Source>(source_file) };
 
-		Ok(Box::new(span))
+		Ok(source_file)
+	}
+
+	fn display<'b>(&self, id: &'b FileIdx) -> Option<Box<dyn fmt::Display + 'b>> {
+		let name = self.0.files.read().sources[id].name.clone();
+		Some(Box::new(name))
 	}
 }
 
@@ -143,9 +170,9 @@ struct OffsetOverflowError;
 
 #[derive(Debug, Default)]
 pub struct SourceMapFiles {
-	// Could be Rc but needs to be Arc for SourceCode impl
-	pub sources: MonotonicVec<Arc<SourceFile>>,
-	file_id_to_source: HashMap<SourceFileId, Arc<SourceFile>>,
+	pub sources: monotonic::FilesVec<Rc<SourceFile>>,
+	pub a_sources: monotonic::FilesVec<ariadne::Source>,
+	file_id_to_source: HashMap<SourceFileId, Rc<SourceFile>>,
 }
 
 /// A single source in the [`SourceMap`].
@@ -156,7 +183,7 @@ pub struct SourceFile {
 	/// (e.g., `<anon>`).
 	pub name: FileName,
 	/// The complete source code.
-	pub source: Arc<String>,
+	pub source: Rc<String>,
 	/// The source code's hash.
 	pub source_hash: SourceFileHash,
 
@@ -173,123 +200,11 @@ impl SourceFile {
 
 		Self {
 			name,
-			// FIXME(mrnossiom): Could be Rc but needs to be Arc for SourceCode impl
-			source: Arc::new(source),
+			source: Rc::new(source),
 			source_hash,
 			start_pos,
 			end_pos,
 		}
-	}
-
-	fn read_span(
-		&self,
-		global_span: Span,
-		context_lines_before: usize,
-		context_lines_after: usize,
-	) -> Result<MietteSpanContents, MietteError> {
-		let input = self.source.as_bytes();
-		let span = global_span.relative_to(self);
-
-		let mut offset: usize = 0;
-		let mut line_count: usize = 0;
-
-		let mut start_line: usize = 0;
-		let mut start_column: usize = 0;
-
-		let mut current_line_start: usize = 0;
-		let mut before_lines_starts: VecDeque<usize> = VecDeque::new();
-
-		let mut end_lines: usize = 0;
-
-		let mut post_span = false;
-		let mut post_span_got_newline = false;
-
-		let mut iter = input.iter().copied().peekable();
-
-		while let Some(char) = iter.next() {
-			if matches!(char, b'\r' | b'\n') {
-				// On newline increment
-				line_count += 1;
-
-				// Offset by one byte if we're on a CRLF line ending.
-				if char == b'\r' && iter.next_if_eq(&b'\n').is_some() {
-					offset += 1;
-				}
-
-				// If before the start of the span.
-				if offset < span.start.as_usize() {
-					// Reset the column start.
-					start_column = 0;
-
-					// Register a newline that is before the span.
-					before_lines_starts.push_back(current_line_start);
-
-					// If we've collected more lines than we need, pop the first
-					if before_lines_starts.len() > context_lines_before {
-						before_lines_starts.pop_front();
-
-						// Track the numbers of lines skipped to show the first line of the source read
-						start_line += 1;
-					}
-				} else if offset >= (span.start + span.len()).as_usize().saturating_sub(1) {
-					// We're after the end of the span, but haven't necessarily
-					// started collecting end lines yet (we might still be
-					// collecting context lines).
-					if post_span {
-						start_column = 0;
-						if post_span_got_newline {
-							end_lines += 1;
-						} else {
-							post_span_got_newline = true;
-						}
-						if end_lines >= context_lines_after {
-							offset += 1;
-							break;
-						}
-					}
-				}
-
-				current_line_start = offset + 1;
-			} else if offset < span.start.as_usize() {
-				start_column += 1;
-			}
-
-			if offset >= (span.start + span.len()).as_usize().saturating_sub(1) {
-				post_span = true;
-
-				if end_lines >= context_lines_after {
-					offset += 1;
-					break;
-				}
-			}
-
-			offset += 1;
-		}
-
-		if (span.start + span.len()).as_usize().saturating_sub(1) > offset {
-			return Err(MietteError::OutOfBounds);
-		}
-
-		let starting_offset = before_lines_starts.front().copied().unwrap_or_else(|| {
-			if context_lines_before == 0 {
-				span.start.as_usize()
-			} else {
-				0
-			}
-		});
-
-		Ok(MietteSpanContents::new_named(
-			self.name.to_string(),
-			&input[starting_offset..offset],
-			(0, 3).into(),
-			start_line,
-			if context_lines_before == 0 {
-				start_column
-			} else {
-				0
-			},
-			line_count,
-		))
 	}
 }
 
@@ -373,7 +288,7 @@ impl SourceFileHash {
 	}
 }
 
-#[derive(Debug, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub enum FileName {
 	/// Real file path
 	Real(PathBuf),
@@ -402,25 +317,58 @@ impl fmt::Display for FileName {
 	}
 }
 
-#[derive(Debug)]
-pub struct MonotonicVec<T>(Vec<T>);
+pub use monotonic::{FileIdx, FilesVec};
 
-impl<T> Default for MonotonicVec<T> {
-	fn default() -> Self {
-		Self(Vec::default())
+mod monotonic {
+	use negative_impl::negative_impl;
+	use std::ops::Index;
+
+	#[derive(Debug, Clone, PartialEq, Eq)]
+	pub struct FileIdx(usize);
+
+	// `FileIdx` refers to thread local indexes
+	#[negative_impl]
+	impl !Send for FileIdx {}
+
+	impl FileIdx {
+		#[must_use]
+		pub const fn new(idx: usize) -> Self {
+			Self(idx)
+		}
 	}
-}
 
-impl<T> MonotonicVec<T> {
-	fn push(&mut self, value: T) {
-		self.0.push(value);
+	#[derive(Debug)]
+	pub struct FilesVec<T>(Vec<T>);
+
+	impl<T> Default for FilesVec<T> {
+		fn default() -> Self {
+			Self(Vec::default())
+		}
 	}
-}
 
-impl<T> Deref for MonotonicVec<T> {
-	type Target = Vec<T>;
+	impl<T> FilesVec<T> {
+		pub(super) fn push(&mut self, value: T) {
+			self.0.push(value);
+		}
 
-	fn deref(&self) -> &Self::Target {
-		&self.0
+		pub(super) const fn inner(&self) -> &Vec<T> {
+			&self.0
+		}
+	}
+
+	impl<T> Index<FileIdx> for FilesVec<T> {
+		type Output = T;
+
+		fn index(&self, index: FileIdx) -> &Self::Output {
+			&self.0[index.0]
+		}
+	}
+
+	impl<T> Index<&FileIdx> for FilesVec<T> {
+		type Output = T;
+
+		fn index(&self, index: &FileIdx) -> &Self::Output {
+			&self.0[index.0]
+		}
 	}
 }

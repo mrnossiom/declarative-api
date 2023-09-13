@@ -3,7 +3,7 @@ use crate::{
 	PResult,
 };
 use lexer::rich::{Delimiter, Enricher, Token, TokenKind};
-use session::{DiagnosticsHandler, Ident, IntoDiagnostic, ParseSession, SourceFile, Symbol};
+use session::{DiagnosticsHandler, Ident, ParseSession, SourceFile, Symbol};
 use std::mem;
 use thin_vec::ThinVec;
 use tracing::instrument;
@@ -82,7 +82,7 @@ impl<'a> Parser<'a> {
 					parsed: self.token.kind.clone(),
 					expected: tok.clone(),
 				}
-				.into_diag())
+				.into())
 			}
 		} else if &self.token.kind == tok {
 			self.bump();
@@ -97,7 +97,7 @@ impl<'a> Parser<'a> {
 				parsed: self.token.kind.clone(),
 				expected: tok.clone(),
 			}
-			.into_diag())
+			.into())
 		}
 	}
 
@@ -121,7 +121,7 @@ impl<'a> Parser<'a> {
 				parsed: self.token.kind.clone(),
 				expected: kw,
 			}
-			.into_diag())
+			.into())
 		}
 	}
 
@@ -210,10 +210,10 @@ impl<'a> Parser<'a> {
 		let delim_kind = match self.token.kind {
 			TokenKind::OpenDelim(delim) => {
 				self.bump();
-				Ok(delim)
+				delim
 			}
 			_ => todo!("recover"),
-		}?;
+		};
 
 		let mut nesting = 0;
 

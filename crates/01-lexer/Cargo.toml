@@ -10,7 +10,7 @@ session = { workspace = true }
 macros = { workspace = true }
 tracing = { workspace = true }
 
-miette = { workspace = true }
+ariadne = { workspace = true }
 parking_lot = { workspace = true }
 
 unic-emoji-char = "0.9.0"

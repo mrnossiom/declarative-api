@@ -184,14 +184,14 @@ impl<'a> Parser<'a> {
 mod tests {
 	use crate::Parser;
 	use ast::types::PathKind::{self, *};
-	use session::{ident, Session};
+	use session::{ident, ParseSession};
 	use std::error::Error;
 	use thin_vec::thin_vec;
 
 	fn expect_path_item(source: &str, expected: &PathKind) -> Result<(), Box<dyn Error>> {
-		let session = Session::default();
-		let source = session.parse.source_map.load_anon(source.into());
-		let mut p = Parser::from_source(&session.parse, &source);
+		let session = ParseSession::default();
+		let source = session.source_map.load_anon(source.into());
+		let mut p = Parser::from_source(&session, &source);
 
 		let kind = p.parse_path_item_kind()?;
 

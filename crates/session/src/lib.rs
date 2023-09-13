@@ -12,8 +12,6 @@
 	clippy::module_name_repetitions
 )]
 
-use std::sync::Arc;
-
 mod diagnostics;
 mod macros;
 mod source_map;
@@ -21,9 +19,14 @@ mod span;
 #[path = "symbols.rs"]
 mod symbols_;
 
-pub use diagnostics::{Diagnostic, DiagnosticsHandler, IntoDiagnostic};
+use std::rc::Rc;
+
+pub use diagnostics::{Diagnostic, DiagnosticsHandler};
 // pub use macros::{ident, sp, sym};
-pub use source_map::{BytePos, SourceFile, SourceFileHash, SourceFileId, SourceMap};
+pub use source_map::{
+	add_source_map_context, with_source_map, BytePos, SourceFile, SourceFileHash, SourceFileId,
+	SourceMap,
+};
 pub use span::Span;
 pub use symbols_::{Ident, Symbol};
 
@@ -41,12 +44,12 @@ pub struct Session {
 #[derive(Debug)]
 pub struct ParseSession {
 	pub diagnostic: DiagnosticsHandler,
-	pub source_map: Arc<SourceMap>,
+	pub source_map: Rc<SourceMap>,
 }
 
 impl Default for ParseSession {
 	fn default() -> Self {
-		let source_map = Arc::<SourceMap>::default();
+		let source_map = Rc::<SourceMap>::default();
 
 		Self {
 			diagnostic: DiagnosticsHandler::new(source_map.clone()),

@@ -1,15 +1,18 @@
-use crate::SourceMap;
-use miette::Severity;
-use parking_lot::Mutex;
-use std::{error::Error, fmt::Display, ops::Deref, sync::Arc};
+use std::fmt;
+use std::{error::Error, rc::Rc};
 
-#[derive(Debug)]
+use crate::SourceMap;
+use crate::Span;
+use ariadne::{Report, ReportKind};
+use parking_lot::Mutex;
+
+#[derive(Debug, Default)]
 pub struct DiagnosticsHandler {
 	inner: Mutex<InnerHandler>,
 }
 
 impl DiagnosticsHandler {
-	pub fn new(source_map: Arc<SourceMap>) -> Self {
+	pub fn new(source_map: Rc<SourceMap>) -> Self {
 		let inner = InnerHandler {
 			source_map,
 			error_count: 0,
@@ -26,21 +29,14 @@ impl DiagnosticsHandler {
 		self.inner.lock().emit_diagnostic(diag);
 	}
 
-	pub fn emit<'a>(&self, diag: impl IntoDiagnostic<'a>) {
-		self.emit_diagnostic(diag.into_diag());
-	}
-
-	// TODO: change to `pub(crate)`
-	#[must_use]
-	pub fn builder(diag: impl miette::Diagnostic + Send + Sync + 'static) -> Diagnostic {
-		// TODO: use named source to display file name
-		Diagnostic(miette::Report::new(diag))
+	pub fn emit(&self, diag: impl Into<Diagnostic>) {
+		self.emit_diagnostic(diag.into());
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct InnerHandler {
-	source_map: Arc<SourceMap>,
+	source_map: Rc<SourceMap>,
 
 	error_count: u32,
 	warn_count: u32,
@@ -49,17 +45,18 @@ struct InnerHandler {
 
 impl InnerHandler {
 	fn emit_diagnostic(&mut self, diag: Diagnostic) {
-		match diag.severity().unwrap_or_default() {
-			Severity::Error => self.error_count += 1,
-			Severity::Warning => self.warn_count += 1,
-			Severity::Advice => self.advice_count += 1,
+		match diag.0.kind {
+			ReportKind::Error => self.error_count += 1,
+			ReportKind::Warning => self.warn_count += 1,
+			ReportKind::Advice => self.advice_count += 1,
+			ReportKind::Custom(_, _) => {}
 		};
 
 		// TODO: check if span is valid
 
 		// TODO: this doesn't work with labels in different files, or with more than one file (which is even more annoying)
 
-		println!("{:?}", diag.0.with_source_code(self.source_map.clone()));
+		diag.0.eprint(self.source_map.to_cache_hack()).unwrap();
 	}
 }
 
@@ -74,28 +71,22 @@ impl Drop for InnerHandler {
 }
 
 #[derive(Debug)]
-pub struct Diagnostic(miette::Report);
+pub struct Diagnostic(Report<'static, Span>);
 
-impl Deref for Diagnostic {
-	type Target = miette::Report;
-
-	fn deref(&self) -> &Self::Target {
-		&self.0
-	}
-}
-
-impl Display for Diagnostic {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		self.0.fmt(f)
+impl fmt::Display for Diagnostic {
+	fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		todo!()
 	}
 }
 
 impl Error for Diagnostic {
-	fn source(&self) -> Option<&(dyn Error + 'static)> {
-		self.0.source()
+	fn cause(&self) -> Option<&dyn Error> {
+		None
 	}
 }
 
-pub trait IntoDiagnostic<'a> {
-	fn into_diag(self) -> Diagnostic;
+impl From<Report<'static, Span>> for Diagnostic {
+	fn from(value: Report<'static, Span>) -> Self {
+		Self(value)
+	}
 }

@@ -1,6 +1,6 @@
 use crate::commands::Act;
 use parser::Parser;
-use session::Session;
+use session::{add_source_map_context, Session};
 use std::{error::Error, path::PathBuf};
 
 #[derive(Debug, clap::Parser)]
@@ -11,15 +11,20 @@ pub(crate) struct Parse {
 impl Act for Parse {
 	fn act(&mut self) -> Result<(), Box<dyn Error>> {
 		let session = Session::default();
-		let _anon = session.parse.source_map.load_anon("22".into());
+		let _anon = session
+			.parse
+			.source_map
+			.load_anon((0..100).map(|int| int.to_string()).collect());
 		let file = session.parse.source_map.load_file(&self.file)?;
 
-		let mut parser = Parser::from_source(&session.parse, &file);
+		add_source_map_context(session.parse.source_map.clone(), || {
+			let mut parser = Parser::from_source(&session.parse, &file);
 
-		match parser.parse_root() {
-			Ok(root) => println!("{root:?}"),
-			Err(err) => session.parse.diagnostic.emit_diagnostic(err),
-		}
+			match parser.parse_root() {
+				Ok(root) => println!("{root:?}"),
+				Err(err) => session.parse.diagnostic.emit_diagnostic(err),
+			}
+		});
 
 		Ok(())
 	}

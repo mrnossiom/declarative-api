@@ -12,9 +12,14 @@
 	clippy::module_name_repetitions
 )]
 
+use synstructure::decl_derive;
+
+mod diagnostics;
 mod symbols;
 
 #[proc_macro]
 pub fn symbols(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 	symbols::symbols(input.into()).into()
 }
+
+decl_derive!([IntoDiagnostic, attributes(diag)] => diagnostics::diagnostics);

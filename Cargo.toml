@@ -3,20 +3,18 @@ members = ["crates/*"]
 resolver = "2"
 
 [workspace.dependencies]
-driver = { path = "crates/00-driver" }
 lexer = { path = "crates/01-lexer" }
 parser = { path = "crates/02-parser" }
 ast = { path = "crates/03-ast" }
-passes = { path = "crates/04-passes" }
-ast-lowering = { path = "crates/05-ast-lowering" }
 hir = { path = "crates/06-hir" }
 hir-lowering = { path = "crates/07-hir-lowering" }
-docgen = { path = "crates/08-docgen" }
 session = { path = "crates/session" }
 macros = { path = "crates/macros" }
 
-miette = "5.10.0"
+ariadne = "0.3.0"
 parking_lot = "0.12.1"
 thin-vec = "0.2.12"
-thiserror = "1.0.44"
 tracing = "0.1.37"
+
+[patch.crates-io]
+ariadne = { git = "https://github.com/MrNossiom/ariadne", branch = "main" }

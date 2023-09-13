@@ -136,7 +136,7 @@ impl<'a> Parser<'a> {
 mod tests {
 	use crate::Parser;
 	use ast::types::{AttrStyle, NodeId, Path, PathSegment, TyKind};
-	use session::{ident, sp, sym, Session};
+	use session::{ident, sp, sym, ParseSession};
 	use std::error::Error;
 	use thin_vec::thin_vec;
 
@@ -146,15 +146,15 @@ mod tests {
 ## # Safety
 ## This is a comment
 ## This is a second line of comment
-Authorization long_string "The API Key of the User of the User" @prefix: Api-Key
+Authorization long_string "The API Key of the User of the User" @prefix: "Api-Key"
 # ^ ident     ^ type      ^ sugar for description attr          ^ prefix attr
 
 X-Model string "The Model of the User"
 "#;
 
-		let session = Session::default();
-		let source = session.parse.source_map.load_anon(src.into());
-		let mut p = Parser::from_source(&session.parse, &source);
+		let session = ParseSession::default();
+		let source = session.source_map.load_anon(src.into());
+		let mut p = Parser::from_source(&session, &source);
 
 		let fields = p.parse_field_defs()?;
 

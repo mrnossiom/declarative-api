@@ -1,6 +1,7 @@
-use miette::SourceSpan;
-
-use crate::{source_map::BytePos, SourceFile};
+use crate::{
+	source_map::{with_source_map, BytePos, FileIdx},
+	SourceFile,
+};
 use std::{cmp, fmt};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -34,6 +35,19 @@ impl Span {
 	}
 
 	#[must_use]
+	pub const fn offset(&self) -> BytePos {
+		// TODO: check is valid
+
+		self.start
+	}
+
+	#[must_use]
+	pub fn file_idx(&self) -> FileIdx {
+		with_source_map(|sm| sm.lookup_source_file_index(self.start))
+			.expect("to be in a source map context")
+	}
+
+	#[must_use]
 	pub fn relative_to(&self, file: &SourceFile) -> Self {
 		Self {
 			start: self.start - file.start_pos,
@@ -64,17 +78,30 @@ impl fmt::Display for Span {
 	}
 }
 
-impl From<&SourceSpan> for Span {
-	fn from(value: &SourceSpan) -> Self {
-		Self {
-			start: BytePos(value.offset() as u32),
-			end: BytePos((value.offset() as u32) + (value.len() as u32)),
-		}
-	}
-}
+impl ariadne::Span for Span {
+	type SourceId = FileIdx;
 
-impl From<Span> for SourceSpan {
-	fn from(sp: Span) -> Self {
-		(sp.start.0 as usize, (sp.end - sp.start).0 as usize).into()
+	fn source(&self) -> &Self::SourceId {
+		let idx = with_source_map(|sm| sm.lookup_source_file_index(self.start).clone()).unwrap();
+
+		let idx = Box::leak(Box::new(idx));
+
+		idx
+	}
+
+	fn start(&self) -> usize {
+		let idx = self.source();
+
+		let start_pos = with_source_map(|sm| sm.files.read().sources[idx].start_pos).unwrap();
+
+		(self.start - start_pos).as_usize()
+	}
+
+	fn end(&self) -> usize {
+		let idx = self.source();
+
+		let start_pos = with_source_map(|sm| sm.files.read().sources[idx].start_pos).unwrap();
+
+		(self.end - start_pos).as_usize()
 	}
 }

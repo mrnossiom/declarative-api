@@ -11,8 +11,7 @@ lexer = { workspace = true }
 parser = { workspace = true }
 session = { workspace = true }
 
-miette = { workspace = true, features = ["fancy"] }
-thiserror = { workspace = true }
+ariadne = { workspace = true }
 tracing = { workspace = true }
 
 clap = { version = "4.3.21", features = ["derive"] }
