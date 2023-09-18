@@ -142,7 +142,7 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 				#color_bindings
 
 				// TODO
-				Report::build(ReportKind::#severity, #main_span.file_idx(), #main_span.offset().as_usize())
+				Report::build(ReportKind::#severity, #main_span.file_idx(), #main_span.offset().to_usize())
 					.with_code(#error_code)
 					.with_message(format!(#message))
 					#(.with_label(#quoted_labels))*

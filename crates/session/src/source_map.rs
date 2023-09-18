@@ -6,10 +6,14 @@ use std::{
 	fmt, fs,
 	hash::{Hash, Hasher},
 	io, mem,
-	ops::{Add, AddAssign, Deref, DerefMut, Sub},
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::atomic::{AtomicU32, Ordering},
+};
+
+pub use self::{
+	monotonic::{FileIdx, FilesVec},
+	pos::{BytePos, CharPos},
 };
 
 thread_local! {
@@ -208,58 +212,6 @@ impl SourceFile {
 	}
 }
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct BytePos(pub u32);
-
-impl BytePos {
-	#[must_use]
-	pub const fn as_usize(self) -> usize {
-		self.0 as usize
-	}
-}
-
-impl fmt::Display for BytePos {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		fmt::Display::fmt(&self.0, f)
-	}
-}
-
-impl Add for BytePos {
-	type Output = Self;
-
-	fn add(self, rhs: Self) -> Self::Output {
-		Self(self.0 + rhs.0)
-	}
-}
-
-impl AddAssign for BytePos {
-	fn add_assign(&mut self, rhs: Self) {
-		self.0 += rhs.0;
-	}
-}
-
-impl Sub for BytePos {
-	type Output = Self;
-
-	fn sub(self, rhs: Self) -> Self::Output {
-		Self(self.0 - rhs.0)
-	}
-}
-
-impl Deref for BytePos {
-	type Target = u32;
-
-	fn deref(&self) -> &Self::Target {
-		&self.0
-	}
-}
-
-impl DerefMut for BytePos {
-	fn deref_mut(&mut self) -> &mut Self::Target {
-		&mut self.0
-	}
-}
-
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SourceFileId(u64);
 
@@ -317,8 +269,6 @@ impl fmt::Display for FileName {
 	}
 }
 
-pub use monotonic::{FileIdx, FilesVec};
-
 mod monotonic {
 	use negative_impl::negative_impl;
 	use std::ops::Index;
@@ -370,5 +320,133 @@ mod monotonic {
 		fn index(&self, index: &FileIdx) -> &Self::Output {
 			&self.0[index.0]
 		}
+	}
+}
+
+mod pos {
+	use core::{
+		fmt,
+		ops::{Add, Sub},
+	};
+
+	/// Implements binary operators "&T op U", "T op &U", "&T op &U"
+	/// based on "T op U" where T and U are expected to be `Copy`able
+	macro_rules! forward_ref_binop {
+		(impl $imp:ident, $method:ident for $t:ty, $u:ty) => {
+			impl<'a> $imp<$u> for &'a $t {
+				type Output = <$t as $imp<$u>>::Output;
+
+				#[inline]
+				fn $method(self, other: $u) -> <$t as $imp<$u>>::Output {
+					$imp::$method(*self, other)
+				}
+			}
+
+			impl<'a> $imp<&'a $u> for $t {
+				type Output = <$t as $imp<$u>>::Output;
+
+				#[inline]
+				fn $method(self, other: &'a $u) -> <$t as $imp<$u>>::Output {
+					$imp::$method(self, *other)
+				}
+			}
+
+			impl<'a, 'b> $imp<&'a $u> for &'b $t {
+				type Output = <$t as $imp<$u>>::Output;
+
+				#[inline]
+				fn $method(self, other: &'a $u) -> <$t as $imp<$u>>::Output {
+					$imp::$method(*self, *other)
+				}
+			}
+		};
+	}
+
+	macro_rules! impl_pos {
+		(
+			$(
+				$(#[$attr:meta])*
+				$vis:vis struct $ident:ident($inner_vis:vis $inner_ty:ty);
+			)*
+		) => {
+			$(
+				$(#[$attr])*
+				$vis struct $ident($inner_vis $inner_ty);
+
+				impl $ident {
+					#[must_use]
+					#[inline(always)]
+					pub const fn from_usize(n: usize) -> $ident {
+						$ident(n as $inner_ty)
+					}
+
+					#[must_use]
+					#[inline(always)]
+					pub const fn to_usize(self) -> usize {
+						self.0 as usize
+					}
+
+					#[must_use]
+					#[inline(always)]
+					pub const fn from_u32(n: u32) -> $ident {
+						$ident(n as $inner_ty)
+					}
+
+					#[must_use]
+					#[inline(always)]
+					pub const fn to_u32(self) -> u32 {
+						self.0 as u32
+					}
+				}
+
+				impl fmt::Display for $ident {
+					fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+						self.0.fmt(f)
+					}
+				}
+
+				impl core::ops::Add for $ident {
+					type Output = $ident;
+
+					#[inline(always)]
+					fn add(self, rhs: $ident) -> $ident {
+						$ident(self.0 + rhs.0)
+					}
+				}
+
+				forward_ref_binop! { impl Add, add for $ident, $ident }
+
+				impl core::ops::Sub for $ident {
+					type Output = $ident;
+
+					#[inline(always)]
+					fn sub(self, rhs: $ident) -> $ident {
+						$ident(self.0 - rhs.0)
+					}
+				}
+
+				forward_ref_binop! { impl Sub, sub for $ident, $ident }
+			)*
+		};
+	}
+
+	impl_pos! {
+		/// A byte offset.
+		///
+		/// This is used in the
+		/// This is kept small because an AST contains a lot of them.
+		/// They also the limit the amount of sources that can be imported (≈ 4GiB). Find more information on [`SourceMap::allocate_space`]
+		#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
+		pub struct BytePos(pub u32);
+
+		/// A character offset.
+		///
+		/// Because of multibyte UTF-8 characters, a byte offset
+		/// is not equivalent to a character offset. The [`SourceMap`] will convert [`BytePos`]
+		/// values to `CharPos` values as necessary.
+		///
+		/// It's a `usize` because it's easier to use with string slices
+		#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
+		pub struct CharPos(pub usize);
 	}
 }

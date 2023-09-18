@@ -105,13 +105,13 @@ impl ariadne::Span for Span {
 		let idx = self.source();
 		let start_pos = with_source_map(|sm| sm.files.read().sources[idx].start_pos).unwrap();
 
-		(self.start - start_pos).as_usize()
+		(self.start - start_pos).to_usize()
 	}
 
 	fn end(&self) -> usize {
 		let idx = self.source();
 		let start_pos = with_source_map(|sm| sm.files.read().sources[idx].start_pos).unwrap();
 
-		(self.end - start_pos).as_usize()
+		(self.end - start_pos).to_usize()
 	}
 }
