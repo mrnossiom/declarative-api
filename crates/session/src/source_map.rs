@@ -16,7 +16,6 @@ thread_local! {
 	static SOURCE_MAP: RefCell<Option<Rc<SourceMap>>> = RefCell::<Option<Rc<SourceMap>>>::default();
 }
 
-// TODO: lame name, find another
 #[inline]
 pub fn with_source_map<R, F>(f: F) -> Option<R>
 where
@@ -196,7 +195,8 @@ pub struct SourceFile {
 impl SourceFile {
 	fn new(name: FileName, source: String, start_pos: BytePos) -> Self {
 		let source_hash = SourceFileHash::new(&source);
-		let end_pos = start_pos + BytePos(source.len() as u32);
+		let end_pos =
+			start_pos + BytePos(u32::try_from(source.len()).expect("source to be less than 4GB"));
 
 		Self {
 			name,

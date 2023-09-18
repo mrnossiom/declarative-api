@@ -76,7 +76,7 @@ impl<'a> Parser<'a> {
 		Attribute {
 			kind: AttrKind::DocComment(content),
 			style,
-			id: AttrId::make_id(),
+			id: AttrId::make_one(),
 			span,
 		}
 	}
@@ -100,7 +100,7 @@ impl<'a> Parser<'a> {
 		Attribute {
 			kind: AttrKind::Normal(normal),
 			style,
-			id: AttrId::make_id(),
+			id: AttrId::make_one(),
 			span,
 		}
 	}
@@ -114,7 +114,7 @@ impl<'a> Parser<'a> {
 		Attribute {
 			kind: AttrKind::Meta(MetaAttr { ident, expr }),
 			style,
-			id: AttrId::make_id(),
+			id: AttrId::make_one(),
 			span,
 		}
 	}

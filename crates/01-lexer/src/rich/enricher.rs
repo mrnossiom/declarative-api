@@ -39,9 +39,9 @@ impl<'a> Enricher<'a> {
 		let mut has_whitespace_before = false;
 
 		loop {
-			let token = self.cursor.advance_token();
+			let token = self.cursor.next_token();
 			let start = self.pos;
-			self.pos += BytePos(token.length);
+			self.pos = self.pos + BytePos(token.length);
 
 			let kind = match token.kind {
 				poor::TokenKind::Ident => {

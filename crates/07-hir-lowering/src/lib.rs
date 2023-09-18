@@ -289,7 +289,7 @@ fn parse_children<T: Parse>(
 	parser_variables: &types::ParserVariables,
 	intermediate_representation: &mut types::Ir,
 ) {
-	for child in children.iter() {
+	for child in children {
 		child.parse(parser_variables.clone(), intermediate_representation);
 	}
 }

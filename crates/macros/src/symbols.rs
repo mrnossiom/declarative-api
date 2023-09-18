@@ -85,12 +85,13 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
 		let mut keys = HashMap::<String, Span>::default();
 		let mut prev_key: Option<(Span, String)> = None;
 
-		let mut check_dup = |span: Span, str: &str, errors: &mut Errors| {
-			if let Some(prev_span) = keys.get(str) {
-				errors.error(span, format!("Symbol `{str}` is duplicated"));
+		let mut check_dup = |span: Span, str_: &str, errors: &mut Errors| {
+			#[allow(clippy::nursery)]
+			if let Some(prev_span) = keys.get(str_) {
+				errors.error(span, format!("Symbol `{str_}` is duplicated"));
 				errors.error(*prev_span, "location of previous definition".to_string());
 			} else {
-				keys.insert(str.to_string(), span);
+				keys.insert(str_.to_string(), span);
 			}
 		};
 

@@ -12,19 +12,19 @@ fn _paradigm_example_ast() -> Api {
 					" This Api is a test for the documentation generator of the api"
 				)),
 				style: AttrStyle::Inner,
-				id: AttrId::make_id(),
+				id: AttrId::make_one(),
 				span: Span::DUMMY,
 			},
 			Attribute {
 				kind: AttrKind::DocComment(sym!(" This is a second line of comment")),
 				style: AttrStyle::Inner,
-				id: AttrId::make_id(),
+				id: AttrId::make_one(),
 				span: Span::DUMMY,
 			},
 			Attribute {
 				kind: AttrKind::DocComment(sym!(" This is a third line of comment")),
 				style: AttrStyle::Inner,
-				id: AttrId::make_id(),
+				id: AttrId::make_one(),
 				span: Span::DUMMY,
 			},
 		],
@@ -122,7 +122,7 @@ fn _paradigm_example_ast() -> Api {
 				attrs: thin_vec![Attribute {
 					kind: AttrKind::DocComment(sym!(" Imports the `builder.dapi` file")),
 					style: AttrStyle::OuterOrInline,
-					id: AttrId::make_id(),
+					id: AttrId::make_one(),
 					span: Span::DUMMY,
 				}],
 				ident: ident!("builder", Span::DUMMY),
@@ -150,7 +150,7 @@ fn _paradigm_example_ast() -> Api {
 												Attribute {
 													kind: AttrKind::DocComment(sym!(" # Safety")),
 													style: AttrStyle::OuterOrInline,
-													id: AttrId::make_id(),
+													id: AttrId::make_one(),
 													span: Span::DUMMY,
 												},
 												Attribute {
@@ -158,7 +158,7 @@ fn _paradigm_example_ast() -> Api {
 														" This is a comment"
 													)),
 													style: AttrStyle::OuterOrInline,
-													id: AttrId::make_id(),
+													id: AttrId::make_one(),
 													span: Span::DUMMY,
 												},
 												Attribute {
@@ -166,7 +166,7 @@ fn _paradigm_example_ast() -> Api {
 														" This is a second line of comment"
 													)),
 													style: AttrStyle::OuterOrInline,
-													id: AttrId::make_id(),
+													id: AttrId::make_one(),
 													span: Span::DUMMY,
 												},
 												// @description: "The API Key of the User"
@@ -184,7 +184,7 @@ fn _paradigm_example_ast() -> Api {
 														}))
 													}),
 													style: AttrStyle::OuterOrInline,
-													id: AttrId::make_id(),
+													id: AttrId::make_one(),
 													span: Span::DUMMY,
 												},
 												// @prefix: "Api-Key"
@@ -202,7 +202,7 @@ fn _paradigm_example_ast() -> Api {
 														}))
 													}),
 													style: AttrStyle::OuterOrInline,
-													id: AttrId::make_id(),
+													id: AttrId::make_one(),
 													span: Span::DUMMY,
 												},
 											],
@@ -240,7 +240,7 @@ fn _paradigm_example_ast() -> Api {
 													}))
 												}),
 												style: AttrStyle::OuterOrInline,
-												id: AttrId::make_id(),
+												id: AttrId::make_one(),
 												span: Span::DUMMY,
 											}],
 											ident: ident!("X-Model", Span::DUMMY),

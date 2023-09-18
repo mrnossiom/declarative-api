@@ -243,11 +243,10 @@ impl<'a> Parser<'a> {
 mod tests {
 	use crate::Parser;
 	use lexer::rich::{Delimiter, TokenKind};
-	use session::{sym, ParseSession};
-	use std::error::Error;
+	use session::{sym, Diagnostic, ParseSession};
 
 	#[test]
-	fn parse_delimited() -> Result<(), Box<dyn Error>> {
+	fn parse_delimited() -> Result<(), Diagnostic> {
 		use TokenKind::*;
 
 		// Like in `@key(bar, baz)`

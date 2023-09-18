@@ -135,13 +135,13 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
 	use crate::Parser;
-	use ast::types::{AttrStyle, NodeId, Path, PathSegment, TyKind};
-	use session::{ident, sp, sym, ParseSession};
-	use std::error::Error;
+	use ast::types::{AttrId, AttrStyle, NodeId, Path, PathSegment, TyKind};
+	use pretty_assertions::assert_eq;
+	use session::{ident, sp, sym, Diagnostic, ParseSession};
 	use thin_vec::thin_vec;
 
 	#[test]
-	fn parse_field_defs() -> Result<(), Box<dyn Error>> {
+	fn parse_field_defs() -> Result<(), Diagnostic> {
 		let src = r#"
 ## # Safety
 ## This is a comment
@@ -158,6 +158,8 @@ X-Model string "The Model of the User"
 
 		let fields = p.parse_field_defs()?;
 
+		AttrId::reset();
+
 		assert_eq!(fields.len(), 2);
 
 		assert_eq!(
@@ -166,25 +168,25 @@ X-Model string "The Model of the User"
 				thin_vec![Parser::make_doc_attr(
 					sym!(" # Safety"),
 					AttrStyle::OuterOrInline,
-					sp!(0, 0)
+					sp!(1, 12)
 				)],
-				ident!("Authorization", 0, 13),
+				ident!("Authorization", 70, 83),
 				Parser::make_ty(
 					TyKind::Path(Path {
 						segments: thin_vec![PathSegment {
-							ident: ident!("long_string", 15, 26),
+							ident: ident!("long_string", 84, 95),
 							id: NodeId::DUMMY
 						}],
-						span: sp!(0, 13),
+						span: sp!(96, 133),
 					}),
-					sp!(0, 13)
+					sp!(84, 95)
 				),
-				sp!(0, 20)
+				sp!(1, 133)
 			)
 		);
 
 		assert_eq!(
-			fields[0],
+			fields[1],
 			Parser::make_field_def(
 				thin_vec![],
 				ident!("X-Model", 0, 13),

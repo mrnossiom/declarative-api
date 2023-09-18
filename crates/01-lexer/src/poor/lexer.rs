@@ -12,7 +12,7 @@ use unicode_xid::UnicodeXID;
 
 impl<'a> Cursor<'a> {
 	#[instrument(level = "TRACE", skip(self))]
-	pub(crate) fn advance_token(&mut self) -> Token {
+	pub(crate) fn next_token(&mut self) -> Token {
 		let Some(first_char) = self.bump() else {
 			return Token::new(Eof, 0);
 		};

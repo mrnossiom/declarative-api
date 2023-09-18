@@ -1,10 +1,8 @@
-use std::fmt;
-use std::{error::Error, rc::Rc};
-
 use crate::SourceMap;
 use crate::Span;
 use ariadne::{Report, ReportKind};
 use parking_lot::Mutex;
+use std::rc::Rc;
 
 #[derive(Debug, Default)]
 pub struct DiagnosticsHandler {
@@ -25,12 +23,12 @@ impl DiagnosticsHandler {
 		}
 	}
 
-	pub fn emit_diagnostic(&self, diag: Diagnostic) {
+	pub fn emit_diagnostic(&self, diag: &Diagnostic) {
 		self.inner.lock().emit_diagnostic(diag);
 	}
 
 	pub fn emit(&self, diag: impl Into<Diagnostic>) {
-		self.emit_diagnostic(diag.into());
+		self.emit_diagnostic(&diag.into());
 	}
 }
 
@@ -44,7 +42,7 @@ struct InnerHandler {
 }
 
 impl InnerHandler {
-	fn emit_diagnostic(&mut self, diag: Diagnostic) {
+	fn emit_diagnostic(&mut self, diag: &Diagnostic) {
 		match diag.0.kind {
 			ReportKind::Error => self.error_count += 1,
 			ReportKind::Warning => self.warn_count += 1,
@@ -56,7 +54,9 @@ impl InnerHandler {
 
 		// TODO: this doesn't work with labels in different files, or with more than one file (which is even more annoying)
 
-		diag.0.eprint(self.source_map.to_cache_hack()).unwrap();
+		if let Err(err) = diag.0.eprint(self.source_map.to_cache_hack()) {
+			tracing::error!("failed to print diagnostic: {}", err);
+		};
 	}
 }
 
@@ -71,22 +71,10 @@ impl Drop for InnerHandler {
 }
 
 #[derive(Debug)]
-pub struct Diagnostic(Report<'static, Span>);
-
-impl fmt::Display for Diagnostic {
-	fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		todo!()
-	}
-}
-
-impl Error for Diagnostic {
-	fn cause(&self) -> Option<&dyn Error> {
-		None
-	}
-}
+pub struct Diagnostic(Box<Report<'static, Span>>);
 
 impl From<Report<'static, Span>> for Diagnostic {
 	fn from(value: Report<'static, Span>) -> Self {
-		Self(value)
+		Self(Box::new(value))
 	}
 }

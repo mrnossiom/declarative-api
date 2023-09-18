@@ -105,7 +105,7 @@ impl<'a> Iterator for Iter<'a> {
 	type Item = Token;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		let token = self.0.advance_token();
+		let token = self.0.next_token();
 
 		if token.kind.is_eof() {
 			None

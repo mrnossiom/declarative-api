@@ -184,11 +184,10 @@ impl<'a> Parser<'a> {
 mod tests {
 	use crate::Parser;
 	use ast::types::PathKind::{self, *};
-	use session::{ident, ParseSession};
-	use std::error::Error;
+	use session::{ident, Diagnostic, ParseSession};
 	use thin_vec::thin_vec;
 
-	fn expect_path_item(source: &str, expected: &PathKind) -> Result<(), Box<dyn Error>> {
+	fn expect_path_item(source: &str, expected: &PathKind) -> Result<(), Diagnostic> {
 		let session = ParseSession::default();
 		let source = session.source_map.load_anon(source.into());
 		let mut p = Parser::from_source(&session, &source);
@@ -201,20 +200,20 @@ mod tests {
 	}
 
 	#[test]
-	fn parse_path_items_simple() -> Result<(), Box<dyn Error>> {
+	fn parse_path_items_simple() -> Result<(), Diagnostic> {
 		expect_path_item("var", &Simple(ident!("var", 0, 3)))?;
 
 		Ok(())
 	}
 
 	#[test]
-	fn parse_path_items_variable() -> Result<(), Box<dyn Error>> {
+	fn parse_path_items_variable() -> Result<(), Diagnostic> {
 		expect_path_item("{var}", &Variable(ident!("var", 1, 4)))?;
 		Ok(())
 	}
 
 	#[test]
-	fn parse_path_items_complex_mixed() -> Result<(), Box<dyn Error>> {
+	fn parse_path_items_complex_mixed() -> Result<(), Diagnostic> {
 		expect_path_item(
 			"var1/{var2}",
 			&Complex(thin_vec![
@@ -227,7 +226,7 @@ mod tests {
 	}
 
 	#[test]
-	fn parse_path_items_complex_long() -> Result<(), Box<dyn Error>> {
+	fn parse_path_items_complex_long() -> Result<(), Diagnostic> {
 		expect_path_item(
 			"var1/var2/var3/var4",
 			&Complex(thin_vec![

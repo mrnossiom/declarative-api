@@ -14,3 +14,6 @@ macros = { workspace = true }
 ariadne = { workspace = true }
 thin-vec = { workspace = true }
 tracing = { workspace = true }
+
+[dev-dependencies]
+pretty_assertions = "1.4.0"

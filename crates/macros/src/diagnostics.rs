@@ -66,6 +66,16 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 					Meta::List(_) => return Err(syn::Error::new_spanned(&meta, "label can have a display string like so `label = \"expected {style}\"` but not a list")),
 				};
 
+				match &field.ty {
+					syn::Type::Path(path) if path.path.is_ident("Span") => {}
+					_ => {
+						return Err(syn::Error::new_spanned(
+							&field.ty,
+							"a label can only be of type `session::Span`",
+						))
+					}
+				}
+
 				let label_desc = match expr {
 					Some(Expr::Lit(ExprLit {
 						lit: Lit::Str(lit), ..
@@ -122,6 +132,7 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 	s.underscore_const(true);
 	Ok(s.gen_impl(quote! {
 		use ::ariadne::{ColorGenerator, Config, Fmt, Label, Report, ReportKind, LabelAttach};
+		use ::session::Diagnostic;
 
 		gen impl Into<Diagnostic> for @Self {
 			fn into(self) -> Diagnostic {

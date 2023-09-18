@@ -1,6 +1,5 @@
-use crate::P;
-
 use super::{Expr, Path};
+use crate::P;
 use lexer::rich::{Delimiter, Token};
 use session::{Ident, Span, Symbol};
 use std::{
@@ -77,11 +76,16 @@ pub enum AttrKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AttrId(u32);
 
-impl AttrId {
-	pub fn make_id() -> Self {
-		static NEXT_ID: AtomicU32 = AtomicU32::new(0);
+static ATTR_NEXT_ID: AtomicU32 = AtomicU32::new(0);
 
-		Self(NEXT_ID.fetch_add(1, Ordering::Relaxed))
+impl AttrId {
+	pub fn make_one() -> Self {
+		Self(ATTR_NEXT_ID.fetch_add(1, Ordering::Relaxed))
+	}
+
+	// TODO: this is only used in tests
+	pub fn reset() {
+		ATTR_NEXT_ID.store(0, Ordering::Relaxed);
 	}
 }
 

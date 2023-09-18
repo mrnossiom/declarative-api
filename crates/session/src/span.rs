@@ -41,6 +41,10 @@ impl Span {
 		self.start
 	}
 
+	/// Returns the file index of the source file this span is in.
+	///
+	/// # Panics
+	/// When used in a context where a source map is not available, this function will panic.
 	#[must_use]
 	pub fn file_idx(&self) -> FileIdx {
 		with_source_map(|sm| sm.lookup_source_file_index(self.start))
@@ -72,8 +76,17 @@ impl fmt::Debug for Span {
 impl fmt::Display for Span {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
-			&Self::DUMMY => write!(f, "DUMMY"),
-			Self { start, end } => write!(f, "{start} -> {end}"),
+			&Self::DUMMY => write!(f, "a dummy span"),
+
+			Self { start, end } => {
+				let (start, end) = with_source_map(|sm| {
+					let start_pos = sm.lookup_source_file(*start).start_pos;
+					(*start - start_pos, *end - start_pos)
+				})
+				.unwrap_or((*start, *end));
+
+				write!(f, "a span from {start} to {end}")
+			}
 		}
 	}
 }
@@ -82,16 +95,14 @@ impl ariadne::Span for Span {
 	type SourceId = FileIdx;
 
 	fn source(&self) -> &Self::SourceId {
-		let idx = with_source_map(|sm| sm.lookup_source_file_index(self.start).clone()).unwrap();
+		let idx = with_source_map(|sm| sm.lookup_source_file_index(self.start)).unwrap();
 
-		let idx = Box::leak(Box::new(idx));
-
-		idx
+		// TODO: find an other way
+		Box::leak(Box::new(idx))
 	}
 
 	fn start(&self) -> usize {
 		let idx = self.source();
-
 		let start_pos = with_source_map(|sm| sm.files.read().sources[idx].start_pos).unwrap();
 
 		(self.start - start_pos).as_usize()
@@ -99,7 +110,6 @@ impl ariadne::Span for Span {
 
 	fn end(&self) -> usize {
 		let idx = self.source();
-
 		let start_pos = with_source_map(|sm| sm.files.read().sources[idx].start_pos).unwrap();
 
 		(self.end - start_pos).as_usize()

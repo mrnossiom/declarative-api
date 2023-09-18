@@ -1,6 +1,5 @@
-use std::str::FromStr;
-
 use crate::{types, utils, Parse};
+use std::str::FromStr;
 
 #[test]
 #[allow(clippy::too_many_lines)]

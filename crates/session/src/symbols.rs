@@ -133,7 +133,7 @@ impl SymbolInterner {
 			return name;
 		}
 
-		let name = Symbol::new(this.strings.len() as u32);
+		let name = Symbol::new(u32::try_from(this.strings.len()).unwrap());
 
 		let id = this.arena.alloc_str(sym);
 
