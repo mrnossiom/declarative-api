@@ -80,8 +80,10 @@ impl Symbol {
 	/// it works out ok.
 	#[must_use]
 	pub fn as_str(&self) -> &str {
-		SYMBOL_INTERNER
-			.with(|interner| unsafe { mem::transmute::<&str, &str>(interner.get(*self)) })
+		SYMBOL_INTERNER.with(|interner| unsafe {
+			// SAFETY: Interner is long-lived whereas symbols references are dropped when file-gen has been completed
+			mem::transmute::<&str, &str>(interner.get(*self))
+		})
 	}
 }
 
@@ -109,6 +111,24 @@ impl Ident {
 	}
 }
 
+impl fmt::Display for Ident {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "an ident {} ({})", self.symbol, self.span)
+	}
+}
+
+impl AsRef<Span> for Ident {
+	fn as_ref(&self) -> &Span {
+		&self.span
+	}
+}
+
+impl From<Ident> for Span {
+	fn from(val: Ident) -> Self {
+		val.span
+	}
+}
+
 struct SymbolInterner(Mutex<InnerSymbolInterner>);
 
 struct InnerSymbolInterner {
@@ -133,11 +153,14 @@ impl SymbolInterner {
 			return name;
 		}
 
-		let name = Symbol::new(u32::try_from(this.strings.len()).unwrap());
+		let id = u32::try_from(this.strings.len())
+			.expect("Wow, you've just inserted 2^32 symbols into 4 GiB of source code");
+		let name = Symbol::new(id);
 
 		let id = this.arena.alloc_str(sym);
 
 		// TODO: check safety
+		// SAFETY: ?
 		let id = unsafe { &*(id as *mut str).cast_const() };
 
 		this.names.insert(id, name);

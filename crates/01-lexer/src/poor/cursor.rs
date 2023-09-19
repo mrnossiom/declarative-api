@@ -54,7 +54,7 @@ impl<'a> Cursor<'a> {
 	/// When used in a file that is over 4GiB
 	pub(super) fn pos_within_token(&self) -> u32 {
 		u32::try_from(self.len_remaining - self.chars.as_str().len())
-			.expect("does not seem very real that source code goes this big")
+			.expect("loaded sources can't go over 4 GiB")
 	}
 
 	/// Resets the number of bytes consumed to 0.

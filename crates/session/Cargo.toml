@@ -14,3 +14,4 @@ parking_lot = { workspace = true }
 
 typed-arena = "2.0.2"
 negative-impl = "0.1.4"
+unicode-width = "0.1.10"

@@ -11,6 +11,7 @@ use std::{
 	sync::atomic::{AtomicU32, Ordering},
 };
 
+use self::analyse::{analyze_source_file, MultiByteChar, NonNarrowChar};
 pub use self::{
 	monotonic::{FileIdx, FilesVec},
 	pos::{BytePos, CharPos},
@@ -80,9 +81,10 @@ impl SourceMap {
 			let start_pos = self.allocate_space(source.len())?;
 
 			// TODO: find a way to function without this clone
-			let a_src = ariadne::Source::from(source.clone());
+			let diagnostic_source = ariadne::Source::from(source.clone());
 			let source_file = Rc::new(SourceFile::new(filename, source, start_pos));
 
+			// Check we haven't altered in any way the file
 			debug_assert_eq!(SourceFileId::from_source_file(&source_file), file_id);
 
 			let mut files = self.files.write();
@@ -91,7 +93,7 @@ impl SourceMap {
 			files.file_id_to_source.insert(file_id, source_file.clone());
 
 			// Specific to ariadne
-			files.a_sources.push(a_src);
+			files.diagnostic_sources.push(diagnostic_source);
 
 			source_file
 		};
@@ -153,9 +155,10 @@ struct SourceMapCacheHack<'a>(&'a SourceMap);
 
 impl<'a> Cache<FileIdx> for SourceMapCacheHack<'a> {
 	fn fetch(&mut self, id: &FileIdx) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
-		let source_file = &self.0.files.read().a_sources[id];
+		let source_file = &self.0.files.read().diagnostic_sources[id];
 
 		// TODO: check safety
+		// SAFETY: ?
 		let source_file = unsafe { mem::transmute::<&Source, &Source>(source_file) };
 
 		Ok(source_file)
@@ -174,7 +177,7 @@ struct OffsetOverflowError;
 #[derive(Debug, Default)]
 pub struct SourceMapFiles {
 	pub sources: monotonic::FilesVec<Rc<SourceFile>>,
-	pub a_sources: monotonic::FilesVec<ariadne::Source>,
+	pub diagnostic_sources: monotonic::FilesVec<ariadne::Source>,
 	file_id_to_source: HashMap<SourceFileId, Rc<SourceFile>>,
 }
 
@@ -190,6 +193,10 @@ pub struct SourceFile {
 	/// The source code's hash.
 	pub source_hash: SourceFileHash,
 
+	pub lines: Vec<BytePos>,
+	pub multi_bytes_chars: Vec<MultiByteChar>,
+	pub non_narrow_chars: Vec<NonNarrowChar>,
+
 	/// The start position of this source in the `SourceMap`.
 	pub start_pos: BytePos,
 	/// The end position of this source in the `SourceMap`.
@@ -199,13 +206,20 @@ pub struct SourceFile {
 impl SourceFile {
 	fn new(name: FileName, source: String, start_pos: BytePos) -> Self {
 		let source_hash = SourceFileHash::new(&source);
-		let end_pos =
-			start_pos + BytePos(u32::try_from(source.len()).expect("source to be less than 4GB"));
+		let end_pos = start_pos
+			+ BytePos(u32::try_from(source.len()).expect("source must be less than 4 GiB"));
+
+		let (lines, multi_bytes_chars, non_narrow_chars) = analyze_source_file(&source, start_pos);
 
 		Self {
 			name,
 			source: Rc::new(source),
 			source_hash,
+
+			lines,
+			multi_bytes_chars,
+			non_narrow_chars,
+
 			start_pos,
 			end_pos,
 		}
@@ -331,7 +345,7 @@ mod pos {
 
 	/// Implements binary operators "&T op U", "T op &U", "&T op &U"
 	/// based on "T op U" where T and U are expected to be `Copy`able
-	macro_rules! forward_ref_binop {
+	macro_rules! forward_ref_bin_op {
 		(impl $imp:ident, $method:ident for $t:ty, $u:ty) => {
 			impl<'a> $imp<$u> for &'a $t {
 				type Output = <$t as $imp<$u>>::Output;
@@ -414,7 +428,7 @@ mod pos {
 					}
 				}
 
-				forward_ref_binop! { impl Add, add for $ident, $ident }
+				forward_ref_bin_op! { impl Add, add for $ident, $ident }
 
 				impl core::ops::Sub for $ident {
 					type Output = $ident;
@@ -425,7 +439,7 @@ mod pos {
 					}
 				}
 
-				forward_ref_binop! { impl Sub, sub for $ident, $ident }
+				forward_ref_bin_op! { impl Sub, sub for $ident, $ident }
 			)*
 		};
 	}
@@ -448,5 +462,163 @@ mod pos {
 		/// It's a `usize` because it's easier to use with string slices
 		#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 		pub struct CharPos(pub usize);
+	}
+}
+
+mod analyse {
+	use crate::BytePos;
+	use unicode_width::UnicodeWidthChar;
+
+	/// Identifies an offset of a multi-byte character in a `SourceFile`.
+	#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+	pub struct MultiByteChar {
+		/// The absolute offset of the character in the `SourceMap`.
+		pub pos: BytePos,
+		/// The number of bytes, `>= 2`.
+		pub bytes: u8,
+	}
+
+	/// Identifies an offset of a non-narrow character in a `SourceFile`.
+	#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+	pub enum NonNarrowChar {
+		/// Represents a zero-width character.
+		ZeroWidth(BytePos),
+		/// Represents a wide (full-width) character.
+		Wide(BytePos),
+		/// Represents a tab character, represented visually with a width of 4 characters.
+		Tab(BytePos),
+	}
+
+	impl NonNarrowChar {
+		fn new(pos: BytePos, width: usize) -> Self {
+			match width {
+				0 => Self::ZeroWidth(pos),
+				2 => Self::Wide(pos),
+				4 => Self::Tab(pos),
+				_ => panic!("width {width} given for non-narrow character"),
+			}
+		}
+
+		/// Returns the absolute offset of the character in the `SourceMap`.
+		pub const fn pos(self) -> BytePos {
+			match self {
+				Self::ZeroWidth(p) | Self::Wide(p) | Self::Tab(p) => p,
+			}
+		}
+
+		/// Returns the width of the character, 0 (zero-width) or 2 (wide).
+		pub const fn width(self) -> usize {
+			match self {
+				Self::ZeroWidth(_) => 0,
+				Self::Wide(_) => 2,
+				Self::Tab(_) => 4,
+			}
+		}
+	}
+
+	/// Finds all newlines, multi-byte characters, and non-narrow characters in a
+	/// [`SourceFile`].
+	///
+	/// This function will use an SSE2 enhanced implementation if hardware support
+	/// is detected at runtime.
+	pub fn analyze_source_file(
+		src: &str,
+		source_file_start_pos: BytePos,
+	) -> (Vec<BytePos>, Vec<MultiByteChar>, Vec<NonNarrowChar>) {
+		let mut lines = vec![source_file_start_pos];
+		let mut multi_byte_chars = vec![];
+		let mut non_narrow_chars = vec![];
+
+		analyze_source_file_(
+			src,
+			source_file_start_pos,
+			&mut lines,
+			&mut multi_byte_chars,
+			&mut non_narrow_chars,
+		);
+
+		// The code above optimistically registers a new line *after* each \n
+		// it encounters. If that point is already outside the source_file, remove
+		// it again.
+		if let Some(&last_line_start) = lines.last() {
+			let source_file_end = source_file_start_pos + BytePos::from_usize(src.len());
+			assert!(source_file_end >= last_line_start);
+			if last_line_start == source_file_end {
+				lines.pop();
+			}
+		}
+
+		(lines, multi_byte_chars, non_narrow_chars)
+	}
+
+	// `scan_len` determines the number of bytes in `src` to scan. Note that the
+	// function can read past `scan_len` if a multi-byte character start within the
+	// range but extends past it. The overflow is returned by the function.
+	fn analyze_source_file_(
+		src: &str,
+		output_offset: BytePos,
+		lines: &mut Vec<BytePos>,
+		multi_byte_chars: &mut Vec<MultiByteChar>,
+		non_narrow_chars: &mut Vec<NonNarrowChar>,
+	) -> usize {
+		let mut i = 0;
+		let src_bytes = src.as_bytes();
+
+		while i < src.len() {
+			let byte = unsafe {
+				// SAFETY: We verified that i < src.len()
+				*src_bytes.get_unchecked(i)
+			};
+
+			// How much to advance in order to get to the next UTF-8 char in the
+			// string.
+			let mut char_len = 1;
+
+			if byte < 32 {
+				// This is an ASCII control character, it could be one of the cases
+				// that are interesting to us.
+
+				let pos = BytePos::from_usize(i) + output_offset;
+
+				match byte {
+					b'\n' => lines.push(pos + BytePos(1)),
+					b'\t' => non_narrow_chars.push(NonNarrowChar::Tab(pos)),
+					_ => non_narrow_chars.push(NonNarrowChar::ZeroWidth(pos)),
+				}
+			} else if byte >= 127 {
+				// slow path: This is either ASCII control character "DEL"
+				// or the beginning of a multibyte char. Just decode to `char`.
+				let c = src[i..]
+					.chars()
+					.next()
+					.expect("the loop ensures that there is at least one char");
+
+				// Always return a number in 1..=4
+				char_len = c.len_utf8();
+
+				let pos = BytePos::from_usize(i) + output_offset;
+
+				if char_len > 1 {
+					let mbc = MultiByteChar {
+						pos,
+						// `len_utf8` returns a number between 1 and 4 inclusive
+						#[allow(clippy::cast_possible_truncation)]
+						bytes: char_len as u8,
+					};
+					multi_byte_chars.push(mbc);
+				}
+
+				// Assume control characters are zero width.
+				let char_width = UnicodeWidthChar::width(c).unwrap_or(0);
+
+				if char_width != 1 {
+					non_narrow_chars.push(NonNarrowChar::new(pos, char_width));
+				}
+			}
+
+			i += char_len;
+		}
+
+		i - src.len()
 	}
 }

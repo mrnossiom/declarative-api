@@ -5,11 +5,13 @@ use crate::{
 use session::{BytePos, ParseSession, SourceFile, Span, Symbol};
 use tracing::instrument;
 
+use super::errors;
+
 /// Transforms [`poor::Token`]s that are only relevant when reading the source file at the
 /// same time into [`rich::Token`](crate::rich::Token)s that are self-explanatory. The latter doesn't include
 /// tokens that don't add information to the generator such as whitespace or comments.
 pub struct Enricher<'a> {
-	_session: &'a ParseSession,
+	session: &'a ParseSession,
 	source: &'a str,
 	cursor: poor::Cursor<'a>,
 	start_pos: BytePos,
@@ -22,7 +24,7 @@ impl<'a> Enricher<'a> {
 	#[must_use]
 	pub fn from_source(session: &'a ParseSession, source: &'a SourceFile) -> Self {
 		Self {
-			_session: session,
+			session,
 			source: &source.source,
 			cursor: poor::Cursor::from_source(&source.source),
 			start_pos: source.start_pos,
@@ -42,6 +44,8 @@ impl<'a> Enricher<'a> {
 			let token = self.cursor.next_token();
 			let start = self.pos;
 			self.pos = self.pos + BytePos(token.length);
+
+			let span = Span::from_bounds(start, self.pos);
 
 			let kind = match token.kind {
 				poor::TokenKind::Ident => {
@@ -77,11 +81,20 @@ impl<'a> Enricher<'a> {
 					continue;
 				}
 
-				poor::TokenKind::InvalidIdent | poor::TokenKind::Unknown => {
-					todo!(
-						"handle invalid ident and unknown tokens {}",
-						self.str_from(start)
-					)
+				poor::TokenKind::InvalidIdent => {
+					self.session.diagnostic.emit(errors::InvalidIdent { span });
+
+					// TODO: enhance recovery by emitting a wrong identifier or helping the user to change it
+
+					has_whitespace_before = true;
+					continue;
+				}
+
+				poor::TokenKind::Unknown => {
+					self.session.diagnostic.emit(errors::Unknown { span });
+
+					has_whitespace_before = true;
+					continue;
 				}
 
 				poor::TokenKind::Semi => TokenKind::Semi,
@@ -118,7 +131,6 @@ impl<'a> Enricher<'a> {
 				poor::TokenKind::Eof => TokenKind::Eof,
 			};
 
-			let span = Span::from_bounds(start, self.pos);
 			return (Token::new(kind, span), has_whitespace_before);
 		}
 	}

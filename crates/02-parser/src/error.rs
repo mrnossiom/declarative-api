@@ -9,10 +9,9 @@ use session::{Diagnostic, Span, Symbol};
 pub type PResult<T> = Result<T, Diagnostic>;
 
 #[derive(Debug, IntoDiagnostic)]
-#[diag(severity(Error))]
-#[diag(msg("we expected an {style} attribute but found a {parsed_style} attribute"))]
+#[message("we expected an {style} attribute but found a {parsed_style} attribute")]
 pub struct WrongAttrStyle {
-	#[diag(label = "expected {style}")]
+	#[label("expected {style}")]
 	pub attr: Span,
 
 	pub style: AttrStyle,
@@ -20,9 +19,9 @@ pub struct WrongAttrStyle {
 }
 
 #[derive(Debug, IntoDiagnostic)]
-#[diag(msg("we expected a {expected} but found {parsed}"))]
+#[message("we expected a {expected} but found {parsed}")]
 pub struct UnexpectedToken {
-	#[diag(label = "expected {expected}")]
+	#[label("expected {expected}")]
 	pub token: Span,
 
 	pub parsed: TokenKind,
@@ -30,9 +29,9 @@ pub struct UnexpectedToken {
 }
 
 #[derive(Debug, IntoDiagnostic)]
-#[diag(msg("we expected a {expected} but found {parsed}"))]
+#[message("we expected a {expected} but found {parsed}")]
 pub struct UnexpectedTokenInsteadOfKeyword {
-	#[diag(label = "expected {expected}")]
+	#[label("expected {expected}")]
 	pub token: Span,
 
 	pub parsed: TokenKind,
