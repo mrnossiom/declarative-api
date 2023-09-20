@@ -39,7 +39,7 @@ pub fn add_source_map_context<T, F: FnOnce() -> T>(source_map: Rc<SourceMap>, f:
 #[derive(Debug, Default)]
 pub struct SourceMap {
 	/// The address space below this value is currently used by the files in the source map.
-	/// Using `u32`s in [`Span`] means that we cannot load more than 4GiB of sources
+	/// Using `u32`s in [`Span`](crate::Span) means that we cannot load more than 4GiB of sources
 	used_space: AtomicU32,
 
 	pub files: RwLock<SourceMapFiles>,
@@ -80,8 +80,7 @@ impl SourceMap {
 		} else {
 			let start_pos = self.allocate_space(source.len())?;
 
-			// TODO: find a way to function without this clone
-			let diagnostic_source = ariadne::Source::from(source.clone());
+			let diagnostic_source = ariadne::Source::from(&source);
 			let source_file = Rc::new(SourceFile::new(filename, source, start_pos));
 
 			// Check we haven't altered in any way the file
@@ -129,6 +128,23 @@ impl SourceMap {
 }
 
 impl SourceMap {
+	pub fn lookup_byte_pos(&self, pos: BytePos) -> CharPos {
+		let source_file = self.lookup_source_file(pos);
+
+		let mut extra_bytes = 0;
+
+		for mbc in &source_file.multi_byte_chars {
+			if mbc.pos > pos {
+				// We exit when we exceed our byte position
+				break;
+			}
+
+			extra_bytes += mbc.bytes as usize - 1;
+		}
+
+		CharPos::from_usize(pos.to_usize() - source_file.start_pos.to_usize() - extra_bytes)
+	}
+
 	pub fn lookup_source_file(&self, pos: BytePos) -> Rc<SourceFile> {
 		let index = self.lookup_source_file_index(pos);
 		self.files.read().sources[index].clone()
@@ -194,7 +210,7 @@ pub struct SourceFile {
 	pub source_hash: SourceFileHash,
 
 	pub lines: Vec<BytePos>,
-	pub multi_bytes_chars: Vec<MultiByteChar>,
+	pub multi_byte_chars: Vec<MultiByteChar>,
 	pub non_narrow_chars: Vec<NonNarrowChar>,
 
 	/// The start position of this source in the `SourceMap`.
@@ -209,7 +225,7 @@ impl SourceFile {
 		let end_pos = start_pos
 			+ BytePos(u32::try_from(source.len()).expect("source must be less than 4 GiB"));
 
-		let (lines, multi_bytes_chars, non_narrow_chars) = analyze_source_file(&source, start_pos);
+		let (lines, multi_byte_chars, non_narrow_chars) = analyze_source_file(&source, start_pos);
 
 		Self {
 			name,
@@ -217,7 +233,7 @@ impl SourceFile {
 			source_hash,
 
 			lines,
-			multi_bytes_chars,
+			multi_byte_chars,
 			non_narrow_chars,
 
 			start_pos,
@@ -449,14 +465,15 @@ mod pos {
 		///
 		/// This is used in the
 		/// This is kept small because an AST contains a lot of them.
-		/// They also the limit the amount of sources that can be imported (≈ 4GiB). Find more information on [`SourceMap::allocate_space`]
+		/// They also the limit the amount of sources that can be imported (≈ 4GiB).
+		/// Find more information on [`SourceMap::allocate_space`](crate::SourceMap)
 		#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
 		pub struct BytePos(pub u32);
 
 		/// A character offset.
 		///
 		/// Because of multibyte UTF-8 characters, a byte offset
-		/// is not equivalent to a character offset. The [`SourceMap`] will convert [`BytePos`]
+		/// is not equivalent to a character offset. The [`SourceMap`](crate::SourceMap) will convert [`BytePos`]
 		/// values to `CharPos` values as necessary.
 		///
 		/// It's a `usize` because it's easier to use with string slices
@@ -517,7 +534,7 @@ mod analyse {
 	}
 
 	/// Finds all newlines, multi-byte characters, and non-narrow characters in a
-	/// [`SourceFile`].
+	/// [`SourceFile`](super::SourceFile).
 	///
 	/// This function will use an SSE2 enhanced implementation if hardware support
 	/// is detected at runtime.

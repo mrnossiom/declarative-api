@@ -1,3 +1,8 @@
+//! Declarative API entry point.
+//!
+//! It offers multiple abstractions to run the compiler process and the end-generator.
+//! A CLI is provided for development purposes but also for the end-user.
+
 #![warn(
 	// clippy::missing_docs_in_private_items,
 	clippy::unwrap_used,
@@ -5,6 +10,7 @@
 	clippy::pedantic,
 	clippy::todo,
 	clippy::dbg_macro,
+	rustdoc::all,
 )]
 #![allow(
 	clippy::redundant_pub_crate,

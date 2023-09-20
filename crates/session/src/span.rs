@@ -95,23 +95,21 @@ impl ariadne::Span for Span {
 	type SourceId = FileIdx;
 
 	fn source(&self) -> &Self::SourceId {
-		let idx = with_source_map(|sm| sm.lookup_source_file_index(self.start)).unwrap();
+		let idx = self.file_idx();
 
-		// TODO: find an other way
+		// TODO: check safety
 		Box::leak(Box::new(idx))
 	}
 
 	fn start(&self) -> usize {
-		let idx = self.source();
-		let start_pos = with_source_map(|sm| sm.files.read().sources[idx].start_pos).unwrap();
-
-		(self.start - start_pos).to_usize()
+		with_source_map(|sm| sm.lookup_byte_pos(self.start))
+			.unwrap()
+			.to_usize()
 	}
 
 	fn end(&self) -> usize {
-		let idx = self.source();
-		let start_pos = with_source_map(|sm| sm.files.read().sources[idx].start_pos).unwrap();
-
-		(self.end - start_pos).to_usize()
+		with_source_map(|sm| sm.lookup_byte_pos(self.end))
+			.unwrap()
+			.to_usize()
 	}
 }

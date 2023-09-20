@@ -1,3 +1,7 @@
+//! Data associated with a compilation session
+//!
+//! e.g. session context with diagnostics and source map
+
 #![warn(
 	// clippy::missing_docs_in_private_items,
 	clippy::unwrap_used,
@@ -5,6 +9,7 @@
 	clippy::pedantic,
 	clippy::todo,
 	clippy::dbg_macro,
+	rustdoc::all,
 )]
 #![allow(
 	clippy::redundant_pub_crate,

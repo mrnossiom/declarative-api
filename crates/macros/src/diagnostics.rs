@@ -329,7 +329,10 @@ impl Label {
 		};
 
 		Ok(Self {
-			ident: field.ident.unwrap(),
+			ident: field
+				.clone()
+				.ident
+				.ok_or_else(|| syn::Error::new_spanned(&field, "expected a named field"))?,
 			message,
 			ty: field.ty,
 			primary,

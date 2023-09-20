@@ -1,3 +1,7 @@
+//! Macros to simplify some bits of code.
+//!
+//! These are mainly proc-macros and Derive macros.
+
 #![warn(
 	// clippy::missing_docs_in_private_items,
 	clippy::unwrap_used,
@@ -5,6 +9,7 @@
 	clippy::pedantic,
 	clippy::todo,
 	clippy::dbg_macro,
+	rustdoc::all,
 )]
 #![allow(
 	clippy::redundant_pub_crate,
