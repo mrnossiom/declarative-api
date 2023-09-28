@@ -22,6 +22,27 @@ use synstructure::decl_derive;
 mod diagnostics;
 mod symbols;
 
+/// Generates `mod`s of symbols and a fresh symbol static array.
+///
+/// # Example
+/// ```rs
+/// symbols! { FRESH_SYMBOLS,
+///     tag {
+///         Sym: "pattern",
+///         Sym2: "pattern2",
+///
+///         - // Separate parts of the group with a dash
+///         Sym3: "pattern3",
+///         Sym4: "pattern4",
+///     }
+///
+///     tag2 {
+///         Sym5: "pattern5",
+///     }
+/// }
+/// ```
+///
+/// this will generate two modules `tag` and `tag2` with already initialized symbols.
 #[proc_macro]
 pub fn symbols(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 	symbols::symbols(input.into()).into()

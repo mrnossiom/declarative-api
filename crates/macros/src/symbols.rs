@@ -2,9 +2,17 @@
 
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use std::collections::HashMap;
-use syn::parse::{Parse, ParseStream, Result};
-use syn::{braced, punctuated::Punctuated, Ident, LitStr, Token};
+use std::{cell::RefCell, collections::HashMap};
+use syn::{
+	braced,
+	parse::{Parse, ParseStream, Result},
+	Ident, LitStr, Token,
+};
+
+enum SymbolGroupElement {
+	Symbol(Symbol),
+	Minus(Token![-]),
+}
 
 struct Symbol {
 	name: Ident,
@@ -23,24 +31,60 @@ impl Parse for Symbol {
 	}
 }
 
-#[derive(Default)]
 struct Input {
-	groups: Vec<(Ident, Punctuated<Symbol, Token![,]>)>,
+	static_ident: Ident,
+	groups: Vec<(Ident, Vec<SymbolGroupElement>)>,
+}
+
+impl Default for Input {
+	fn default() -> Self {
+		Self {
+			static_ident: Ident::new("FRESH_SYMBOLS", Span::call_site()),
+			groups: vec![],
+		}
+	}
 }
 
 impl Parse for Input {
 	fn parse(input: ParseStream<'_>) -> Result<Self> {
-		let mut symbols = vec![];
+		let static_ident = input.parse()?;
+		input.parse::<Token![,]>()?;
+
+		let mut groups = vec![];
 
 		while let Ok(ident) = input.parse::<Ident>() {
 			let content;
 			braced!(content in input);
-			let keywords = Punctuated::parse_terminated(&content)?;
 
-			symbols.push((ident, keywords));
+			let mut symbols = vec![];
+
+			loop {
+				if content.is_empty() {
+					break;
+				}
+
+				if let Ok(minus) = content.parse::<Token![-]>() {
+					// This is use to break ordering of symbols.
+					symbols.push(SymbolGroupElement::Minus(minus));
+				};
+
+				// First parse a symbol `Sym: "pat"`
+				symbols.push(SymbolGroupElement::Symbol(Symbol::parse(&content)?));
+
+				if content.is_empty() {
+					break;
+				}
+
+				let _punctuation: Token![,] = content.parse()?;
+			}
+
+			groups.push((ident, symbols));
 		}
 
-		Ok(Self { groups: symbols })
+		Ok(Self {
+			static_ident,
+			groups,
+		})
 	}
 }
 
@@ -69,7 +113,10 @@ pub fn symbols(input: TokenStream) -> TokenStream {
 fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
 	let mut errors = Errors::default();
 
-	let Input { groups } = syn::parse2(input).unwrap_or_else(|e| {
+	let Input {
+		groups,
+		static_ident,
+	} = syn::parse2(input).unwrap_or_else(|e| {
 		// This allows us to display errors at the proper span, while minimizing
 		// unrelated errors caused by bailing out (and not generating code).
 		errors.list.push(e);
@@ -81,22 +128,23 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
 	let mut prefill_stream = quote! {};
 	let mut counter = 0u32;
 
+	let mut keys = HashMap::<String, Span>::default();
+
+	let mut check_dup = |span: Span, str_: &str, errors: &mut Errors| {
+		#[allow(clippy::nursery)]
+		if let Some(prev_span) = keys.get(str_) {
+			errors.error(span, format!("Symbol `{str_}` is duplicated"));
+			errors.error(*prev_span, "location of previous definition".to_string());
+		} else {
+			keys.insert(str_.to_string(), span);
+		}
+	};
+
 	for (ident, symbols) in groups {
-		let mut keys = HashMap::<String, Span>::default();
-		let mut prev_key: Option<(Span, String)> = None;
+		let prev_key: RefCell<Option<(Span, String)>> = RefCell::default();
 
-		let mut check_dup = |span: Span, str_: &str, errors: &mut Errors| {
-			#[allow(clippy::nursery)]
-			if let Some(prev_span) = keys.get(str_) {
-				errors.error(span, format!("Symbol `{str_}` is duplicated"));
-				errors.error(*prev_span, "location of previous definition".to_string());
-			} else {
-				keys.insert(str_.to_string(), span);
-			}
-		};
-
-		let mut check_order = |span: Span, str: &str, errors: &mut Errors| {
-			if let Some((prev_span, ref prev_str)) = prev_key {
+		let check_order = |span: Span, str: &str, errors: &mut Errors| {
+			if let Some((prev_span, ref prev_str)) = *prev_key.borrow_mut() {
 				if str < prev_str {
 					errors.error(span, format!("Symbol `{str}` must precede `{prev_str}`"));
 					errors.error(
@@ -105,13 +153,22 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
 					);
 				}
 			}
-			prev_key = Some((span, str.to_string()));
+
+			*prev_key.borrow_mut() = Some((span, str.to_string()));
 		};
 
 		let mut current_symbols_stream = quote! {};
 
 		// Generate the listed symbols.
 		for symbol in &symbols {
+			let symbol = match symbol {
+				SymbolGroupElement::Symbol(symbol) => symbol,
+				SymbolGroupElement::Minus(_) => {
+					*prev_key.borrow_mut() = None;
+					continue;
+				}
+			};
+
 			let name = &symbol.name;
 			let value = symbol
 				.value
@@ -139,15 +196,8 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
 	}
 
 	let output = quote! {
+		static #static_ident: &[&str] = &[#prefill_stream];
 		#symbols_stream
-
-		impl SymbolInterner {
-			pub(crate) fn fresh() -> Self {
-				Self::prefill(&[
-					#prefill_stream
-				])
-			}
-		}
 	};
 
 	(output, errors.list)

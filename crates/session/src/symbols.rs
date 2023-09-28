@@ -10,17 +10,20 @@ use tracing::instrument;
 use typed_arena::Arena;
 
 thread_local! {
-	static SYMBOL_INTERNER: SymbolInterner = SymbolInterner::fresh();
+	static SYMBOL_INTERNER: SymbolInterner = SymbolInterner::prefill(FRESH_SYMBOLS);
 }
 
-symbols! {
+symbols! { FRESH_SYMBOLS,
 	kw {
+		- // Non-constructible symbols that are used as markers
+		Empty: "",
+		PathRoot: "{{root}}",
+
+		- // Keywords
 		Auth: "auth",
 		Body: "body",
-		// should be at the top, but we have to fix ordering first
-		Empty: "",
+		Code: "code",
 		Enum: "enum",
-		False: "false",
 		Headers: "headers",
 		Meta: "meta",
 		Model: "model",
@@ -28,22 +31,31 @@ symbols! {
 		Path: "path",
 		Query: "query",
 		Scope: "scope",
-		True: "true",
+		Verb: "verb",
+
+		- // Bool literals
+		False: "false",
+		True: "true"
 	}
 
 	attrs {
-		Deprecated: "deprecated",
-		Description: "description",
-		Doc: "doc",
-		Format: "format",
-		Type: "type",
+		deprecated,
+		description,
+		doc,
+		format,
+		r#type: "type",
 	}
 
 	remarkable {
+		- // HTTP methods
+		Connect: "CONNECT",
 		Delete: "DELETE",
 		Get: "GET",
+		Head: "HEAD",
+		Options: "OPTIONS",
 		Post: "POST",
 		Put: "PUT",
+		Trace: "TRACE",
 	}
 }
 
@@ -54,7 +66,7 @@ impl fmt::Debug for Symbol {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			&kw::Empty => write!(f, "Symbol(Empty)"),
-			Self(id) => write!(f, r#"Symbol({} "{}")"#, id, self.as_str()),
+			Self(id) => write!(f, r#"Symbol({}, "{}")"#, id, self.as_str()),
 		}
 	}
 }
@@ -113,7 +125,11 @@ impl Ident {
 
 impl fmt::Display for Ident {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "an ident {} ({})", self.symbol, self.span)
+		if f.alternate() {
+			write!(f, "an ident {} {}", self.symbol, self.span)
+		} else {
+			write!(f, "an ident {}", self.symbol)
+		}
 	}
 }
 

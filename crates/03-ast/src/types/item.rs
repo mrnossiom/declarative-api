@@ -3,6 +3,8 @@ use crate::P;
 use session::{Ident, Span};
 use thin_vec::ThinVec;
 
+use super::Expr;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Item {
 	pub attrs: AttrVec,
@@ -17,6 +19,7 @@ pub struct Item {
 pub enum ItemKind {
 	Meta(Metadata),
 
+	Auth(Auth),
 	Scope(ScopeKind),
 	Path(PathItem),
 	Model(Model),
@@ -24,17 +27,42 @@ pub enum ItemKind {
 	Headers(Headers),
 	Verb(Verb),
 	StatusCode(StatusCode),
+	Body(Body),
+	Params(Params),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Auth {
+	// TODO: find a way to construct auth types
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Body {
+	pub ty: P<Ty>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Params {
+	pub properties: ThinVec<P<FieldDef>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Verb {
+	// TODO: change to custom verb type
 	pub method: Ident,
 	pub items: ThinVec<P<Item>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StatusCode {
-	pub code: u16,
+	// TODO: change for more advanced expression
+	// e.g.
+	// ```dapi
+	// code 200 {}
+	// code 5xx {}
+	// code IM_A_TEAPOT {}
+	// ```
+	pub code: P<Expr>,
 	pub items: ThinVec<P<Item>>,
 }
 
@@ -70,6 +98,7 @@ pub enum PathKind {
 	Simple(Ident),
 	Variable(Ident),
 	Complex(ThinVec<Self>),
+	Current,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

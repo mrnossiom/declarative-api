@@ -79,7 +79,8 @@ impl<'a> Cursor<'a> {
 
 	#[instrument(level = "TRACE", skip(self))]
 	fn line_comment(&mut self) -> TokenKind {
-		debug_assert!(self.prev() == '#' && (self.first() == '#' || self.first() == ' '));
+		#[cfg(debug_assertions)]
+		assert!(self.prev() == '#' && (self.first() == '#' || self.first() == ' '));
 		self.bump();
 
 		let style = match self.first() {
@@ -94,14 +95,18 @@ impl<'a> Cursor<'a> {
 
 	#[instrument(level = "TRACE", skip(self))]
 	fn whitespace(&mut self) -> TokenKind {
-		debug_assert!(is_whitespace(self.prev()));
+		#[cfg(debug_assertions)]
+		assert!(is_whitespace(self.prev()));
+
 		self.eat_while(is_whitespace);
 		Whitespace
 	}
 
 	#[instrument(level = "TRACE", skip(self))]
 	fn ident(&mut self) -> TokenKind {
-		debug_assert!(is_id_start(self.prev()));
+		#[cfg(debug_assertions)]
+		assert!(is_id_start(self.prev()));
+
 		// Start is already eaten, eat the rest of identifier.
 		self.eat_while(is_id_continue);
 		// Known prefixes must have been handled earlier. So if
@@ -128,7 +133,9 @@ impl<'a> Cursor<'a> {
 	/// if string is terminated.
 	#[instrument(level = "TRACE", skip(self))]
 	fn double_quoted_string(&mut self) -> bool {
-		debug_assert!(self.prev() == '"');
+		#[cfg(debug_assertions)]
+		assert!(self.prev() == '"');
+
 		while let Some(c) = self.bump() {
 			match c {
 				'"' => {

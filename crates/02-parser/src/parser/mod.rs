@@ -78,9 +78,8 @@ impl<'a> Parser<'a> {
 			} else {
 				// todo!("recover from unexpected token {}", self.token)
 				Err(UnexpectedToken {
-					token: self.token.span,
-					parsed: self.token.kind.clone(),
-					expected: tok.clone(),
+					parsed: self.token.clone(),
+					expected: *tok,
 				}
 				.into())
 			}
@@ -93,14 +92,14 @@ impl<'a> Parser<'a> {
 			// TODO: pass `expected_tokens`
 
 			Err(UnexpectedToken {
-				token: self.token.span,
-				parsed: self.token.kind.clone(),
-				expected: tok.clone(),
+				parsed: self.token.clone(),
+				expected: *tok,
 			}
 			.into())
 		}
 	}
 
+	#[track_caller]
 	fn expect_braced<T>(&mut self, mut p: impl FnMut(&mut Self) -> PResult<T>) -> PResult<T> {
 		self.expect(&TokenKind::OpenDelim(Delimiter::Brace))?;
 		let parsed = p(self)?;
@@ -117,8 +116,7 @@ impl<'a> Parser<'a> {
 			Ok(())
 		} else {
 			Err(UnexpectedTokenInsteadOfKeyword {
-				token: self.token.span,
-				parsed: self.token.kind.clone(),
+				parsed: self.token.clone(),
 				expected: kw,
 			}
 			.into())
@@ -141,7 +139,7 @@ impl<'a> Parser<'a> {
 		let is_present = &self.token.kind == tok;
 
 		if !is_present {
-			self.expected_tokens.push(tok.clone());
+			self.expected_tokens.push(*tok);
 		}
 
 		is_present

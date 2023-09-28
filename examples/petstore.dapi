@@ -16,11 +16,12 @@ scope pet {
 		# plz god give me idea of syntax
 	}
 
-	enum Status {
-		Available "available"
-		Pending "pending"
-		Sold "sold"
-	}
+	# TODO: define struct syntax
+	# enum Status {
+	# 	Available "available"
+	# 	Pending "pending"
+	# 	Sold "sold"
+	# }
 
 	model Category {
 		id int
@@ -37,9 +38,9 @@ scope pet {
 		category Category
 		name string
 		## The optional string following the type is sugar for @desc("...")
-		photoUrls string[] "Photos to be displayed on the selling page carousel"
+		photoUrls [string] "Photos to be displayed on the selling page carousel"
 		## Maybe inline?
-		tags Tags[]
+		tags [Tags]
 		status Status
 	}
 
@@ -47,63 +48,63 @@ scope pet {
 		path . {
 			## Add a new pet to the store
 			# sugar -> @doc(" Add a new pet to the store")
-			POST {
+			verb POST {
 				# Maybe this should be a Media Type (ex-MIME)
-				body Pet @type: "json"
+				# body Pet @type: "json"
 
-				200 {}
+				code 200 {}
 
 				## Invalid input
-				405 {}
+				code 405 {}
 			}
 
 			## Update an existing pet
-			PUT {
+			verb PUT {
 				body Pet @type: "json"
 
-				200 {}
+				code 200 {}
 
 				## Invalid ID supplied
-				400 {}
+				code 400 {}
 				## Pet not found
-				404 {}
+				code 404 {}
 				## Validation execption
-				405 {}
+				code 405 {}
 			}
 		}
 
 		path findByStatus {
 			## Finds Pets by status
-			GET {
+			verb GET {
 				query {
 					# `status` param is a required array of `Status`
 					# sugar -> Array<Status>
-					status Status[] "Statuses to filter by"
+					status [Status] "Statuses to filter by"
 				}
 
-				200 {
+				code 200 {
 					body Pet @type: "json"
 				}
 
 				## Invalid status value
-				400 {}
+				code 400 {}
 			}
 		}
 
 		path findByTags {
 			## Finds Pets by tags
 			@deprecated
-			GET {
+			verb GET {
 				query {
-					tags Tags[] "Tags to filter by"
+					tags [Tags] "Tags to filter by"
 				}
 
-				200 {
+				code 200 {
 					body Pet @type: "json"
 				}
 
 				## Invalid tag value
-				400 {}
+				code 400 {}
 			}
 		}
 
@@ -113,34 +114,35 @@ scope pet {
 			}
 
 			## Find pet by ID
-			GET {
-				200 {}
+			verb GET {
+				code 200 {}
 
 				## Invalid ID supplied
-				400 {}
+				code 400 {}
 				## Pet not found
-				404 {}
+				code 404 {}
 			}
 
 			## Update a pet in the store with form data
-			POST {
-				body @type: "form" {
-					name string "Updated name of the pet"
-					status Status "Updated status of the pet"
-				}
+			verb POST {
+				@type: "form"
+				body NextIsInlineTy # {
+				# name string "Updated name of the pet"
+				# status Status "Updated status of the pet"
+				# }
 
 				# Invalid input
-				405 {}
+				code 405 {}
 			}
 
 			## Delete a pet
-			DELETE {
-				auth BasicApiKey
+			verb DELETE {
+				auth BasicApiKey;
 
 				## Invalid ID supplied
-				400 {}
+				code 400 {}
 				## Pet not found
-				404 {}
+				code 404 {}
 			}
 		}
 	}
@@ -160,16 +162,16 @@ scope store {
 	path store {
 		path inventory {
 			## Return pet inventory by status
-			GET {
-				200 {
+			verb GET {
+				code 200 {
 					## Returns a map of status codes to quantities
 					# use a `any` type, but that would mean to create the devil in the language itself
 					body any @type: "json"
 
 					# or maybe mapped object litterals? like TypeScript?
-					body @type: "json" {
-						[int]: int
-					}
+					# body @type: "json" {
+					# 	[int]: int
+					# }
 				}
 			}
 		}
@@ -177,13 +179,13 @@ scope store {
 		path order {
 			path . {
 				## Place an order for a pet
-				POST {
+				verb POST {
 					body Order @type: "json"
 
-					200 {}
+					code 200 {}
 
 					## Invalid order
-					400 {}
+					code 400 {}
 				}
 			}
 
@@ -193,25 +195,25 @@ scope store {
 				}
 
 				## Find purchase order by ID
-				GET {
-					200 {
+				verb GET {
+					code 200 {
 						body Order @type: "json"
 					}
 
 					## Invalid ID supplied
-					400 {}
+					code 400 {}
 
 					## Order not found
-					404 {}
+					code 404 {}
 				}
 
 				## Delete purchase order by ID
-				DELETE {
+				verb DELETE {
 					## Invalid ID supplied
-					400 {}
+					code 400 {}
 
 					## Order not found
-					404 {}
+					code 404 {}
 				}
 			}
 		}
@@ -235,7 +237,7 @@ scope user {
 		path . {
 			## Create user
 			## This can only be done by a logged-in user
-			POST {
+			verb POST {
 				body User @type: "json"
 			}
 		}
@@ -243,20 +245,20 @@ scope user {
 		path createWithArray {
 			## Create multilple users with the input array
 			## This can only be done by a logged-in user
-			POST {
-				body User[] @type: "json"
+			verb POST {
+				body [User] @type: "json"
 			}
 		}
 
 		path login {
 			## Log user into the system
-			GET {
+			verb GET {
 				query {
 					username string
 					password string
 				}
 
-				200 {
+				code 200 {
 					## Return the authentication token
 					body string @type: "json"
 
@@ -269,7 +271,7 @@ scope user {
 		}
 		path logout {
 			## Log out of current user session
-			GET {}
+			verb GET {}
 		}
 
 		path {username} {
@@ -278,31 +280,31 @@ scope user {
 			}
 
 			## Get user by username
-			GET {
-				200 {
+			verb GET {
+				code 200 {
 					body User @type: "json"
 				}
 
 				## Invalid username supplied
-				400 {}
+				code 400 {}
 				## User not found
-				404 {}
+				code 404 {}
 			}
 			## Update user
-			PUT {
+			verb PUT {
 				body User @type: "json"
 
 				## Invalid username supplied
-				400 {}
+				code 400 {}
 				## User not found
-				404 {}
+				code 404 {}
 			}
 			## Delete user
-			DELETE {
+			verb DELETE {
 				## Invalid username supplied
-				400 {}
+				code 400 {}
 				## User not found
-				404 {}
+				code 404 {}
 			}
 		}
 	}

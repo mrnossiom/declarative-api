@@ -1,13 +1,16 @@
-use crate::{PResult, Parser};
+use crate::{error::InvalidVerb, PResult, Parser};
 use ast::{
 	types::{
-		Api, AttrVec, Headers, Item, ItemKind, Metadata, NodeId, PathItem, PathKind, Query,
-		ScopeKind, Verb,
+		Api, AttrVec, Auth, Body, Headers, Item, ItemKind, Metadata, Model, NodeId, Params,
+		PathItem, PathKind, Query, ScopeKind, StatusCode, Verb,
 	},
 	P,
 };
 use lexer::rich::{Delimiter, OpKind, TokenKind};
-use session::{symbols::kw, Ident};
+use session::{
+	symbols::{kw, remarkable},
+	Ident,
+};
 use thin_vec::{thin_vec, ThinVec};
 
 impl<'a> Parser<'a> {
@@ -30,7 +33,7 @@ impl<'a> Parser<'a> {
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self, attrs))]
-	fn parse_scope(&mut self, attrs: &mut AttrVec) -> PResult<(Ident, ItemKind)> {
+	fn parse_scope(&mut self, attrs: &mut AttrVec) -> PResult<(Ident, ScopeKind)> {
 		self.expect_keyword(kw::Scope)?;
 
 		let ident = self.parse_ident()?;
@@ -39,17 +42,16 @@ impl<'a> Parser<'a> {
 			ScopeKind::Unloaded
 		} else {
 			let lo = self.token.span;
-
 			let items = self.expect_braced(|p| p.parse_scope_content(Some(attrs)))?;
 
 			ScopeKind::Loaded {
 				items,
 				inline: true,
-				span: lo.to(self.prev_token.span),
+				span: self.span(lo),
 			}
 		};
 
-		Ok((ident, ItemKind::Scope(scope)))
+		Ok((ident, scope))
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self, attrs))]
@@ -96,28 +98,60 @@ impl<'a> Parser<'a> {
 
 		let lo = self.token.span;
 
+		// TODO: check keywords with case insensitive
+
 		let (ident, kind) = if self.check_keyword(kw::Scope) {
-			// `scope { <items> }`
+			// `scope <ident> { <items> }`
 			let (ident, kind) = self.parse_scope(&mut attrs)?;
-			(Some(ident), kind)
+			(Some(ident), ItemKind::Scope(kind))
 		} else if self.check_keyword(kw::Path) {
-			// `path { <items> }`
-			(None, self.parse_path_item()?)
+			// `path <path> { <items> }`
+			let path = self.parse_path_item()?;
+			(None, ItemKind::Path(path))
 		} else if self.check_keyword(kw::Meta) {
 			// `meta { <properties> }`
-			// TODO: change or emit warn about misplaces metadata
-			(None, self.parse_metadata()?.kind.clone())
+			// TODO: change or emit warn about misplaced metadata
+			let metadata = self.parse_metadata()?.kind.clone();
+			(None, metadata)
 		} else if self.check_keyword(kw::Headers) {
 			// `headers { <fields> }`
-			(None, self.parse_headers()?)
+			let headers = self.parse_headers()?;
+			(None, ItemKind::Headers(headers))
 		} else if self.check_keyword(kw::Query) {
 			// `query { <fields> }`
-			(None, self.parse_query()?)
-		} else if self.check_ident() {
-			// HTTP verbs (e.g. `GET`, `POST`)
+			let query = self.parse_query()?;
+			(None, ItemKind::Query(query))
+		} else if self.check_keyword(kw::Code) {
+			// `code <code lit> { <items> }`
+			let item = self.parse_code_item()?;
+			(None, ItemKind::StatusCode(item))
+		} else if self.check_keyword(kw::Model) {
+			// `model <ident> { <def_fields> }`
+			let (ident, item) = self.parse_model()?;
+			(Some(ident), ItemKind::Model(item))
+		} else if self.check_keyword(kw::Auth) {
+			// TODO: define `auth` syntax
+			// `auth <ident> { <auth_fields> }`
+			let (ident, item) = self.parse_auth()?;
+			(Some(ident), ItemKind::Auth(item))
+		} else if self.check_keyword(kw::Verb) {
+			// `verb <http_verb_ident> { <items> }`
 			let (ident, verb) = self.parse_verb()?;
-			(Some(ident), verb)
+			(Some(ident), ItemKind::Verb(verb))
+		} else if self.check_keyword(kw::Body) {
+			// `body <ty>`
+			let body = self.parse_body()?;
+			(None, ItemKind::Body(body))
+		} else if self.check_keyword(kw::Params) {
+			// `params { <field_defs> }`
+			let params = self.parse_params()?;
+			(None, ItemKind::Params(params))
 		} else {
+			// TODO: this ignores when we parsed attributes but then drop them
+			// this make unattached attributes unsound
+			// we need to solve solve the problem of inline attributes first
+			// need to talk with @OnTake
+
 			return Ok(None);
 		};
 
@@ -125,11 +159,11 @@ impl<'a> Parser<'a> {
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self))]
-	fn parse_path_item(&mut self) -> PResult<ItemKind> {
+	fn parse_path_item(&mut self) -> PResult<PathItem> {
 		self.expect_keyword(kw::Path)?;
 		let kind = self.parse_path_item_kind()?;
 		let items = self.expect_braced(Self::parse_items)?;
-		Ok(ItemKind::Path(PathItem { kind, items }))
+		Ok(PathItem { kind, items })
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self))]
@@ -138,6 +172,8 @@ impl<'a> Parser<'a> {
 			let ident = self.parse_ident()?;
 			self.expect(&TokenKind::CloseDelim(Delimiter::Brace))?;
 			PathKind::Variable(ident)
+		} else if self.eat(&TokenKind::Dot) {
+			PathKind::Current
 		} else {
 			let ident = self.parse_ident()?;
 
@@ -149,7 +185,9 @@ impl<'a> Parser<'a> {
 
 			match self.parse_path_item_kind()? {
 				PathKind::Complex(vec) => parts.extend(vec),
-				pk @ (PathKind::Simple(..) | PathKind::Variable(..)) => parts.push(pk),
+				pk @ (PathKind::Simple(..) | PathKind::Variable(..) | PathKind::Current) => {
+					parts.push(pk);
+				}
 			}
 
 			Ok(PathKind::Complex(parts))
@@ -159,24 +197,86 @@ impl<'a> Parser<'a> {
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self))]
-	fn parse_headers(&mut self) -> PResult<ItemKind> {
+	fn parse_headers(&mut self) -> PResult<Headers> {
 		self.expect_keyword(kw::Headers)?;
 		let headers = self.expect_braced(Self::parse_field_defs)?;
-		Ok(ItemKind::Headers(Headers { headers }))
+		Ok(Headers { headers })
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self))]
-	fn parse_query(&mut self) -> PResult<ItemKind> {
+	fn parse_query(&mut self) -> PResult<Query> {
 		self.expect_keyword(kw::Query)?;
 		let fields = self.expect_braced(Self::parse_field_defs)?;
-		Ok(ItemKind::Query(Query { fields }))
+		Ok(Query { fields })
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self))]
-	fn parse_verb(&mut self) -> PResult<(Ident, ItemKind)> {
+	fn parse_code_item(&mut self) -> PResult<StatusCode> {
+		self.expect_keyword(kw::Code)?;
+		let code = self.parse_expr()?;
+		let items = self.expect_braced(Self::parse_items)?;
+		Ok(StatusCode { code, items })
+	}
+
+	#[tracing::instrument(level = "DEBUG", skip(self))]
+	fn parse_verb(&mut self) -> PResult<(Ident, Verb)> {
+		self.expect_keyword(kw::Verb)?;
 		let method = self.parse_ident()?;
 		let items = self.expect_braced(Self::parse_items)?;
-		Ok((method, ItemKind::Verb(Verb { method, items })))
+
+		{
+			// TODO: this is an experimental lint
+			// this should be in a lint passes
+			// also custom verbs are allowed
+
+			use remarkable::{Connect, Delete, Get, Head, Options, Post, Put, Trace};
+			if ![Connect, Delete, Get, Head, Options, Post, Put, Trace].contains(&method.symbol) {
+				return Err(InvalidVerb { found: method }.into());
+			}
+		}
+
+		Ok((method, Verb { method, items }))
+	}
+
+	#[tracing::instrument(level = "DEBUG", skip(self))]
+	fn parse_model(&mut self) -> PResult<(Ident, Model)> {
+		self.expect_keyword(kw::Model)?;
+		let method = self.parse_ident()?;
+		let fields = self.expect_braced(Self::parse_field_defs)?;
+		Ok((method, Model { fields }))
+	}
+
+	#[tracing::instrument(level = "DEBUG", skip(self))]
+	fn parse_auth(&mut self) -> PResult<(Ident, Auth)> {
+		self.expect_keyword(kw::Auth)?;
+		let auth_name = self.parse_ident()?;
+
+		let _kind = if self.eat(&TokenKind::Semi) {
+			// `auth BasicAuth;`
+
+			// TODO: use kind
+		} else {
+			// `auth BasicAuth { <field_defs> }`
+
+			// TODO
+			let _fields = self.expect_braced(Self::parse_field_defs)?;
+		};
+
+		Ok((auth_name, Auth {}))
+	}
+
+	#[tracing::instrument(level = "DEBUG", skip(self))]
+	fn parse_body(&mut self) -> PResult<Body> {
+		self.expect_keyword(kw::Body)?;
+		let ty = self.parse_ty()?;
+		Ok(Body { ty })
+	}
+
+	#[tracing::instrument(level = "DEBUG", skip(self))]
+	fn parse_params(&mut self) -> PResult<Params> {
+		self.expect_keyword(kw::Params)?;
+		let properties = self.expect_braced(Self::parse_field_defs)?;
+		Ok(Params { properties })
 	}
 }
 

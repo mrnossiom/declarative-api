@@ -27,8 +27,8 @@ impl<'a> Enricher<'a> {
 			session,
 			source: &source.source,
 			cursor: poor::Cursor::from_source(&source.source),
-			start_pos: source.start_pos,
-			pos: source.start_pos,
+			start_pos: source.offset,
+			pos: source.offset,
 		}
 	}
 
@@ -253,7 +253,7 @@ mod tests {
 		tokens!(
 			ATTR,
 			(At, [0, 1]),
-			(Ident(attrs::Format), [1, 7]),
+			(Ident(attrs::format), [1, 7]),
 			(Colon, [7, 8]),
 			(Ident(Symbol::intern("date")), [9, 13])
 		);

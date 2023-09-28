@@ -132,38 +132,38 @@ impl TokenKind {
 impl fmt::Display for TokenKind {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
-			Self::LineComment(None) => write!(f, "line comment"),
-			Self::LineComment(Some(DocStyle::Inner)) => write!(f, "inner line comment"),
-			Self::LineComment(Some(DocStyle::Outer)) => write!(f, "outer line comment"),
-			Self::Whitespace => write!(f, "whitespace"),
+			Self::LineComment(None) => write!(f, "a line comment"),
+			Self::LineComment(Some(DocStyle::Inner)) => write!(f, "an inner line comment"),
+			Self::LineComment(Some(DocStyle::Outer)) => write!(f, "an outer line comment"),
+			Self::Whitespace => write!(f, "a whitespace"),
 
-			Self::Ident => write!(f, "ident"),
-			Self::InvalidIdent => write!(f, "invalid ident"),
-			Self::Literal(LiteralKind::Number) => write!(f, "number literal"),
-			Self::Literal(LiteralKind::Str { terminated: true }) => write!(f, "string literal"),
+			Self::Ident => write!(f, "an ident"),
+			Self::InvalidIdent => write!(f, "an invalid ident"),
+			Self::Literal(LiteralKind::Number) => write!(f, "a literal number"),
+			Self::Literal(LiteralKind::Str { terminated: true }) => write!(f, "a string literal"),
 			Self::Literal(LiteralKind::Str { terminated: false }) => {
-				write!(f, "non-terminated string literal")
+				write!(f, "a non-terminated string literal")
 			}
 
-			Self::Semi => write!(f, ";"),
-			Self::Comma => write!(f, ","),
-			Self::Dot => write!(f, "."),
+			Self::Semi => write!(f, "a semi `;`"),
+			Self::Comma => write!(f, "a comma `,`"),
+			Self::Dot => write!(f, "a dot `.`"),
 
-			Self::OpenParenthesis => write!(f, "("),
-			Self::CloseParenthesis => write!(f, ")"),
-			Self::OpenBrace => write!(f, "{{"),
-			Self::CloseBrace => write!(f, "}}"),
-			Self::OpenBracket => write!(f, "["),
-			Self::CloseBracket => write!(f, "]"),
+			Self::OpenParenthesis => write!(f, "an opening paren `(`"),
+			Self::CloseParenthesis => write!(f, "a closing paren `)`"),
+			Self::OpenBrace => write!(f, "an opening brace `{{`"),
+			Self::CloseBrace => write!(f, "a closing brace `}}`"),
+			Self::OpenBracket => write!(f, "an opening bracket `[`"),
+			Self::CloseBracket => write!(f, "a closing bracket `]`"),
 
-			Self::At => write!(f, "@"),
-			Self::Pound => write!(f, "#"),
-			Self::Tilde => write!(f, "~"),
-			Self::Question => write!(f, "?"),
-			Self::Colon => write!(f, ":"),
-			Self::Dollar => write!(f, "$"),
-			Self::Eq => write!(f, "="),
-			Self::Bang => write!(f, "!"),
+			Self::At => write!(f, "an at sign `@`"),
+			Self::Pound => write!(f, "a pound sign `#`"),
+			Self::Tilde => write!(f, "a tilde `~`"),
+			Self::Question => write!(f, "a question mark `?`"),
+			Self::Colon => write!(f, "a colon `:`"),
+			Self::Dollar => write!(f, "a dollar sign `$`"),
+			Self::Eq => write!(f, "an equal sign `=`"),
+			Self::Bang => write!(f, "a bang sign `!`"),
 
 			Self::Lt => write!(f, ">"),
 			Self::Gt => write!(f, "<"),
@@ -176,9 +176,9 @@ impl fmt::Display for TokenKind {
 			Self::Caret => write!(f, "^"),
 			Self::Percent => write!(f, "%"),
 
-			Self::Unknown => write!(f, "unknown"),
+			Self::Unknown => write!(f, "an unknown token"),
 
-			Self::Eof => write!(f, "<EOF>"),
+			Self::Eof => write!(f, "an end of file token"),
 		}
 	}
 }

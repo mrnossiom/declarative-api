@@ -35,31 +35,29 @@ scope dashboard {
 					user_id int "User ID: The ID of the User we want to query"
 				}
 
-				GET {
+				verb GET {
 					query {
 						## Je suis un commentaire de documentation (d'une paire clé, valeur)
 						data string "Query date" @format: "date"
 					}
 
-					200 {
-						body {
-							metrics
-						}
+					code 200 {
+						body Ty
+						# metrics
 					}
 				}
 			}
 
 			path users {
-				GET {
-					200 {
-						body {
-							user
-						}
+				verb GET {
+					code 200 {
+						# body {
+						# 	# user
+						# }
 					}
 
-					404 {
-						body {
-						}
+					code 404 {
+						# body {}
 					}
 				}
 			}

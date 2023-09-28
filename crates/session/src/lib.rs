@@ -76,13 +76,7 @@ macro_rules! sym {
 #[macro_export]
 macro_rules! ident {
 	($name:literal, $start:literal, $end:literal) => {
-		ident!(
-			$name,
-			$crate::Span {
-				start: $crate::BytePos($start),
-				end: $crate::BytePos($end),
-			}
-		)
+		ident!($name, $crate::sp!($start, $end))
 	};
 	($name:literal, $span:expr) => {
 		$crate::Ident::new($crate::Symbol::intern($name), $span)
@@ -92,9 +86,6 @@ macro_rules! ident {
 #[macro_export]
 macro_rules! sp {
 	($start:literal, $end:literal) => {
-		$crate::Span {
-			start: $crate::BytePos($start),
-			end: $crate::BytePos($end),
-		}
+		$crate::Span::from_bounds($crate::BytePos($start), $crate::BytePos($end))
 	};
 }

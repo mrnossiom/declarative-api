@@ -14,24 +14,12 @@ mod tests {
 	fn make_ident() {
 		assert_eq!(
 			ident!("var", 0, 3),
-			Ident::new(
-				Symbol::intern("var"),
-				Span {
-					start: BytePos(0),
-					end: BytePos(3),
-				}
-			)
+			Ident::new(Symbol::intern("var"), sp!(0, 3))
 		);
 	}
 
 	#[test]
 	fn make_span() {
-		assert_eq!(
-			sp!(0, 1),
-			Span {
-				start: BytePos(0),
-				end: BytePos(1),
-			}
-		);
+		assert_eq!(sp!(0, 1), Span::from_bounds(BytePos(0), BytePos(1)));
 	}
 }

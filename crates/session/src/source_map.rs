@@ -142,7 +142,7 @@ impl SourceMap {
 			extra_bytes += mbc.bytes as usize - 1;
 		}
 
-		CharPos::from_usize(pos.to_usize() - source_file.start_pos.to_usize() - extra_bytes)
+		CharPos::from_usize(pos.to_usize() - source_file.offset.to_usize() - extra_bytes)
 	}
 
 	pub fn lookup_source_file(&self, pos: BytePos) -> Rc<SourceFile> {
@@ -156,7 +156,7 @@ impl SourceMap {
 			.read()
 			.sources
 			.inner()
-			.binary_search_by_key(&pos, |sf| sf.start_pos)
+			.binary_search_by_key(&pos, |sf| sf.offset)
 			.unwrap_or_else(|p| p - 1);
 
 		FileIdx::new(idx)
@@ -214,7 +214,7 @@ pub struct SourceFile {
 	pub non_narrow_chars: Vec<NonNarrowChar>,
 
 	/// The start position of this source in the `SourceMap`.
-	pub start_pos: BytePos,
+	pub offset: BytePos,
 	/// The end position of this source in the `SourceMap`.
 	pub end_pos: BytePos,
 }
@@ -236,7 +236,7 @@ impl SourceFile {
 			multi_byte_chars,
 			non_narrow_chars,
 
-			start_pos,
+			offset: start_pos,
 			end_pos,
 		}
 	}
@@ -267,6 +267,12 @@ impl SourceFileHash {
 		let mut hasher = DefaultHasher::new();
 		source.hash(&mut hasher);
 		Self(hasher.finish())
+	}
+}
+
+impl fmt::Display for SourceFileHash {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{:X}", self.0)
 	}
 }
 
@@ -358,6 +364,8 @@ mod pos {
 		fmt,
 		ops::{Add, Sub},
 	};
+
+	use crate::with_source_map;
 
 	/// Implements binary operators "&T op U", "T op &U", "&T op &U"
 	/// based on "T op U" where T and U are expected to be `Copy`able
@@ -479,6 +487,23 @@ mod pos {
 		/// It's a `usize` because it's easier to use with string slices
 		#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 		pub struct CharPos(pub usize);
+	}
+
+	impl BytePos {
+		/// Returns the
+		///
+		/// # Panics
+		/// When used in a context where a source map is not available, this function will panic.
+		#[must_use]
+		pub fn to_char_pos(self) -> CharPos {
+			self.try_to_char_pos()
+				.expect("to be in a source map context")
+		}
+
+		#[must_use]
+		pub fn try_to_char_pos(self) -> Option<CharPos> {
+			with_source_map(|sm| sm.lookup_byte_pos(self))
+		}
 	}
 }
 

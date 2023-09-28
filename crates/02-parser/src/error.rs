@@ -1,10 +1,7 @@
-// TODO
-#![allow(unused_variables)]
-
 use ast::types::AttrStyle;
-use lexer::rich::TokenKind;
+use lexer::rich::{Token, TokenKind};
 use macros::IntoDiagnostic;
-use session::{Diagnostic, Span, Symbol};
+use session::{Diagnostic, Ident, Span, Symbol};
 
 pub type PResult<T> = Result<T, Diagnostic>;
 
@@ -22,18 +19,24 @@ pub struct WrongAttrStyle {
 #[message("we expected a {expected} but found {parsed}")]
 pub struct UnexpectedToken {
 	#[label("expected {expected}")]
-	pub token: Span,
+	pub parsed: Token,
 
-	pub parsed: TokenKind,
 	pub expected: TokenKind,
 }
 
 #[derive(Debug, IntoDiagnostic)]
 #[message("we expected a {expected} but found {parsed}")]
 pub struct UnexpectedTokenInsteadOfKeyword {
-	#[label("expected {expected}")]
-	pub token: Span,
+	#[label("expected {expected} keyword")]
+	pub parsed: Token,
 
-	pub parsed: TokenKind,
 	pub expected: Symbol,
+}
+
+#[derive(Debug, IntoDiagnostic)]
+#[severity(Warning)]
+#[message("we expected an HTTP verb from the spec but found {found}")]
+pub struct InvalidVerb {
+	#[label("this is supposed to be a valid verb")]
+	pub found: Ident,
 }

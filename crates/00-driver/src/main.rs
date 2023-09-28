@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 				.with_default_directive(LevelFilter::INFO.into())
 				.from_env()?,
 		)
-		.with_span_events(FmtSpan::ENTER)
+		.with_span_events(FmtSpan::ENTER | FmtSpan::EXIT)
 		.with_file(true)
 		.with_line_number(true)
 		.with_target(false)

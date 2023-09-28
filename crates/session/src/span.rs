@@ -6,39 +6,42 @@ use std::{cmp, fmt};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Span {
-	pub start: BytePos,
-	pub end: BytePos,
+	low: BytePos,
+	high: BytePos,
 }
 
 impl Span {
 	pub const DUMMY: Self = Self {
-		start: BytePos(u32::MAX),
-		end: BytePos(u32::MAX),
+		low: BytePos(u32::MAX),
+		high: BytePos(u32::MAX),
 	};
 
 	#[must_use]
-	pub const fn from_bounds(start: BytePos, end: BytePos) -> Self {
-		Self { start, end }
+	pub const fn from_bounds(low: BytePos, high: BytePos) -> Self {
+		Self { low, high }
+	}
+
+	#[must_use]
+	pub const fn low(&self) -> BytePos {
+		self.low
+	}
+
+	#[must_use]
+	pub const fn high(&self) -> BytePos {
+		self.high
 	}
 
 	#[must_use]
 	pub fn to(&self, span: Self) -> Self {
 		Self {
-			start: cmp::min(self.start, span.start),
-			end: cmp::max(self.end, span.end),
+			low: cmp::min(self.low, span.low),
+			high: cmp::max(self.high, span.high),
 		}
 	}
 
 	#[must_use]
 	pub fn len(&self) -> BytePos {
-		self.end - self.start
-	}
-
-	#[must_use]
-	pub const fn offset(&self) -> BytePos {
-		// TODO: check is valid
-
-		self.start
+		self.high - self.low
 	}
 
 	/// Returns the file index of the source file this span is in.
@@ -47,16 +50,8 @@ impl Span {
 	/// When used in a context where a source map is not available, this function will panic.
 	#[must_use]
 	pub fn file_idx(&self) -> FileIdx {
-		with_source_map(|sm| sm.lookup_source_file_index(self.start))
+		with_source_map(|sm| sm.lookup_source_file_index(self.low))
 			.expect("to be in a source map context")
-	}
-
-	#[must_use]
-	pub fn relative_to(&self, file: &SourceFile) -> Self {
-		Self {
-			start: self.start - file.start_pos,
-			end: self.end - file.start_pos,
-		}
 	}
 }
 
@@ -64,10 +59,10 @@ impl fmt::Debug for Span {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			&Self::DUMMY => write!(f, "Span(DUMMY)"),
-			Self { start, end } => f
+			Self { low, high } => f
 				.debug_struct("Span")
-				.field("start", &start)
-				.field("end", &end)
+				.field("start", &low)
+				.field("end", &high)
 				.finish(),
 		}
 	}
@@ -78,12 +73,12 @@ impl fmt::Display for Span {
 		match self {
 			&Self::DUMMY => write!(f, "a dummy span"),
 
-			Self { start, end } => {
+			Self { low, high } => {
 				let (start, end) = with_source_map(|sm| {
-					let start_pos = sm.lookup_source_file(*start).start_pos;
-					(*start - start_pos, *end - start_pos)
+					let SourceFile { offset, .. } = *sm.lookup_source_file(*low);
+					(*low - offset, *high - offset)
 				})
-				.unwrap_or((*start, *end));
+				.unwrap_or((*low, *high));
 
 				write!(f, "a span from {start} to {end}")
 			}
@@ -97,19 +92,15 @@ impl ariadne::Span for Span {
 	fn source(&self) -> &Self::SourceId {
 		let idx = self.file_idx();
 
-		// TODO: check safety
+		// TODO: change this
 		Box::leak(Box::new(idx))
 	}
 
 	fn start(&self) -> usize {
-		with_source_map(|sm| sm.lookup_byte_pos(self.start))
-			.unwrap()
-			.to_usize()
+		self.low().to_char_pos().to_usize()
 	}
 
 	fn end(&self) -> usize {
-		with_source_map(|sm| sm.lookup_byte_pos(self.end))
-			.unwrap()
-			.to_usize()
+		self.high().to_char_pos().to_usize()
 	}
 }

@@ -1,10 +1,11 @@
-use crate::SourceMap;
-use crate::Span;
+use crate::{SourceMap, Span};
 use ariadne::{Report, ReportKind};
 use parking_lot::Mutex;
+#[cfg(debug_assertions)]
+use std::panic::Location;
 use std::rc::Rc;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct DiagnosticsHandler {
 	inner: Mutex<InnerHandler>,
 }
@@ -32,7 +33,7 @@ impl DiagnosticsHandler {
 	}
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct InnerHandler {
 	source_map: Rc<SourceMap>,
 
@@ -43,20 +44,19 @@ struct InnerHandler {
 
 impl InnerHandler {
 	fn emit_diagnostic(&mut self, diag: &Diagnostic) {
-		match diag.0.kind {
+		match diag.report.kind {
 			ReportKind::Error => self.error_count += 1,
 			ReportKind::Warning => self.warn_count += 1,
 			ReportKind::Advice => self.advice_count += 1,
 			ReportKind::Custom(_, _) => {}
 		};
 
-		// TODO: check if span is valid
-
-		// TODO: this doesn't work with labels in different files, or with more than one file (which is even more annoying)
-
-		if let Err(err) = diag.0.eprint(self.source_map.to_cache_hack()) {
+		if let Err(err) = diag.report.eprint(self.source_map.to_cache_hack()) {
 			tracing::error!("failed to print diagnostic: {}", err);
 		};
+
+		#[cfg(debug_assertions)]
+		eprintln!("error was emitted here: {}", diag.loc);
 	}
 }
 
@@ -71,10 +71,20 @@ impl Drop for InnerHandler {
 }
 
 #[derive(Debug)]
-pub struct Diagnostic(Box<Report<'static, Span>>);
+pub struct Diagnostic {
+	#[cfg(debug_assertions)]
+	loc: &'static Location<'static>,
+	report: Box<Report<'static, Span>>,
+}
 
-impl From<Report<'static, Span>> for Diagnostic {
-	fn from(value: Report<'static, Span>) -> Self {
-		Self(Box::new(value))
+impl Diagnostic {
+	#[track_caller]
+	#[must_use]
+	pub fn new(report: Report<'static, Span>) -> Self {
+		Self {
+			#[cfg(debug_assertions)]
+			loc: Location::caller(),
+			report: Box::new(report),
+		}
 	}
 }

@@ -1,5 +1,7 @@
+use fastrand::Rng;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
+use std::{collections::hash_map::DefaultHasher, hash::Hasher};
 use syn::{
 	parse::{Parse, ParseStream},
 	parse_quote, Attribute, Field, Fields, FieldsNamed, FieldsUnnamed, Ident, LitStr, Meta, Token,
@@ -87,10 +89,6 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 	let mut main_span: Option<Label> = None;
 
 	for field in &fields {
-		let constrained_ty = &field.ty;
-		let restriction = quote!(::core::fmt::Display);
-		s.add_where_predicate(parse_quote!(#constrained_ty: #restriction));
-
 		for meta in extract_diag_attrs(&field.attrs)
 			.map(|meta| FieldMeta::new(field.clone(), meta))
 			.collect::<syn::Result<Vec<_>>>()?
@@ -98,16 +96,19 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 			match meta {
 				FieldMeta::Label(label) => {
 					match &field.ty {
+						// We don't need no restriction on `Span`s since we use convert
+						// to this type and assume it implements Display
 						syn::Type::Path(path) if path.path.is_ident("Span") => {}
 						_ => {
-							let constrained_ty = &field.ty;
+							let ty = &field.ty;
+							// Restrictions
+							let display_restriction = quote!(::core::fmt::Display);
 							let as_ref_restriction = quote!(AsRef<Span>);
 							let into_restriction = quote!(Into<Span>);
 
-							s.add_where_predicate(
-								parse_quote!(#constrained_ty: #as_ref_restriction),
-							);
-							s.add_where_predicate(parse_quote!(#constrained_ty: #into_restriction));
+							s.add_where_predicate(parse_quote!(#ty: #display_restriction));
+							s.add_where_predicate(parse_quote!(#ty: #as_ref_restriction));
+							s.add_where_predicate(parse_quote!(#ty: #into_restriction));
 						}
 					}
 
@@ -136,37 +137,45 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 	// Unpack every field
 	let fields_unpacked = unpack_fields_renamed(&fields);
 
-	let color_state: [u16; 3] = [0, 0, 0].map(|_| fastrand::u16(..));
+	let mut struct_name_derived_rng = {
+		let mut hash = DefaultHasher::default();
+		hash.write(s.ast().ident.to_string().as_bytes());
+		Rng::with_seed(hash.finish())
+	};
+
 	let color_bindings = fields
 		.iter()
 		.map(|field| {
 			let ident = field.ident.as_ref().expect("field to have name");
 			let renamed = renamed(ident);
 
-			quote!(let #ident = #renamed.to_string().fg(__color.next());)
+			// We remove colors that aren't interesting (black, white, etc. and their shades)
+			// See <https://www.ditig.com/256-colors-cheat-sheet>
+			let color_id = struct_name_derived_rng.u8(9..231);
+			quote!(let #ident = #renamed.to_string().fg(Color::Fixed(#color_id));)
 		})
 		.collect::<TokenStream>();
 
 	s.underscore_const(true);
 	Ok(s.gen_impl(quote! {
-		use ::ariadne::{ColorGenerator, Config, Fmt, Label, Report, ReportKind, LabelAttach};
-		use ::session::{Diagnostic, Span};
+		use ::ariadne::{Color, Config, Fmt, Label, Report, ReportKind, LabelAttach};
+		use ::session::{with_source_map, Diagnostic, Span};
 
+		#[automatically_derived]
 		gen impl Into<Diagnostic> for @Self {
+			#[track_caller]
 			fn into(self) -> Diagnostic {
 				#fields_unpacked
-
-				let mut __color = ColorGenerator::from_state([#(#color_state),*], 0.5);
 				#color_bindings
 
-				// TODO
-				Report::build(ReportKind::#severity, #main_span.file_idx(), #main_span.offset().to_usize())
+				let report = Report::build(ReportKind::#severity, #main_span.file_idx(), #main_span.low().to_char_pos().to_usize())
 					.with_code(#error_code)
 					.with_message(format!(#message))
 					#(.with_label(#labels))*
 					.with_config(Config::default().with_label_attach(LabelAttach::Middle))
-					.finish()
-					.into()
+					.finish();
+
+				Diagnostic::new(report)
 			}
 		}
 	}))

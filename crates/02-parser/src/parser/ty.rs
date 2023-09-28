@@ -4,6 +4,7 @@ use ast::{
 	P,
 };
 use lexer::rich::{Delimiter, TokenKind};
+use session::sym;
 use thin_vec::thin_vec;
 use tracing::instrument;
 
@@ -21,9 +22,8 @@ impl<'a> Parser<'a> {
 		} else {
 			// TODO: maybe recover?
 			return Err(UnexpectedToken {
-				token: self.token.span,
-				parsed: self.token.kind.clone(),
-				expected: TokenKind::At,
+				parsed: self.token.clone(),
+				expected: TokenKind::Ident(sym!("Type")),
 			}
 			.into());
 		};
@@ -50,11 +50,8 @@ impl<'a> Parser<'a> {
 
 	fn parse_ty_array(&mut self) -> PResult<TyKind> {
 		self.expect(&TokenKind::OpenDelim(Delimiter::Bracket))?;
-
 		let ty = self.parse_ty()?;
-
-		self.expect(&TokenKind::OpenDelim(Delimiter::Bracket))?;
-
+		self.expect(&TokenKind::CloseDelim(Delimiter::Bracket))?;
 		Ok(TyKind::Array(ty))
 	}
 }

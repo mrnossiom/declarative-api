@@ -1,7 +1,12 @@
 use crate::commands::Act;
 use parser::Parser;
 use session::{add_source_map_context, Session};
-use std::{error::Error, path::PathBuf};
+use std::{
+	collections::hash_map::RandomState,
+	error::Error,
+	hash::{BuildHasher, Hasher},
+	path::PathBuf,
+};
 
 #[derive(Debug, clap::Parser)]
 pub(crate) struct Parse {
@@ -24,11 +29,20 @@ impl Act for Parse {
 			let mut parser = Parser::from_source(&session.parse, &file);
 
 			match parser.parse_root() {
-				Ok(root) => println!("{root:?}"),
+				Ok(root) => {
+					let name = format!(
+						"/tmp/dapi-{}-{:X}.ast",
+						file.source_hash,
+						RandomState::new().build_hasher().finish()
+					);
+
+					std::fs::write(&name, format!("{root:#?}"))?;
+					eprintln!("AST written to `{name}`");
+				}
 				Err(err) => session.parse.diagnostic.emit_diagnostic(&err),
 			}
-		});
 
-		Ok(())
+			Ok(())
+		})
 	}
 }
