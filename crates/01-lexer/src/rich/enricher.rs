@@ -1,11 +1,10 @@
+use super::errors;
 use crate::{
 	poor,
-	rich::{AttrStyle, Delimiter, LiteralKind, OpKind, Token, TokenKind},
+	rich::{Delimiter, DocStyle, LiteralKind, OpKind, Token, TokenKind},
 };
 use session::{BytePos, ParseSession, SourceFile, Span, Symbol};
 use tracing::instrument;
-
-use super::errors;
 
 /// Transforms [`poor::Token`]s that are only relevant when reading the source file at the
 /// same time into [`rich::Token`](crate::rich::Token)s that are self-explanatory. The latter doesn't include
@@ -60,8 +59,8 @@ impl<'a> Enricher<'a> {
 					};
 
 					let len = match style {
-						poor::DocStyle::Inner => 3, // `##!`
-						poor::DocStyle::Outer => 2, // `##`
+						DocStyle::Inner => 3, // `##!`
+						DocStyle::Outer => 2, // `##`
 					};
 
 					let content = self.str_from(start + BytePos(len));
@@ -136,12 +135,7 @@ impl<'a> Enricher<'a> {
 	}
 
 	#[instrument(level = "DEBUG")]
-	fn cook_doc_line_comment(content: &str, style: poor::DocStyle) -> (AttrStyle, Symbol) {
-		let style = match style {
-			poor::DocStyle::Inner => AttrStyle::Inner,
-			poor::DocStyle::Outer => AttrStyle::OuterOrInline,
-		};
-
+	fn cook_doc_line_comment(content: &str, style: DocStyle) -> (DocStyle, Symbol) {
 		(style, Symbol::intern(content))
 	}
 

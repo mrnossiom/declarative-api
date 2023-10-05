@@ -57,7 +57,7 @@ impl Token {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenKind {
 	// IDEA: maybe multiline
-	DocComment(AttrStyle, Symbol),
+	DocComment(DocStyle, Symbol),
 
 	/// An identifier
 	Ident(Symbol),
@@ -124,8 +124,8 @@ impl fmt::Display for TokenKind {
 				f,
 				"an {} doc comment `{sym}`",
 				match style {
-					AttrStyle::OuterOrInline => "outer",
-					AttrStyle::Inner => "inner",
+					DocStyle::Outer => "outer",
+					DocStyle::Inner => "inner",
 				}
 			),
 
@@ -240,10 +240,9 @@ impl fmt::Display for OpKind {
 ///
 /// with an optional `!` after the `@` or the `##` to signify inner.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AttrStyle {
-	/// Without a `!` bang
-	OuterOrInline,
-
-	/// With a `!` bang
+pub enum DocStyle {
+	// `##!` they document inside of scopes
 	Inner,
+	// `##` they document the item they embrace
+	Outer,
 }

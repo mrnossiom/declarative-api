@@ -16,12 +16,11 @@ scope pet {
 		# plz god give me idea of syntax
 	}
 
-	# TODO: define struct syntax
-	# enum Status {
-	# 	Available "available"
-	# 	Pending "pending"
-	# 	Sold "sold"
-	# }
+	enum Status {
+		Available "available"
+		Pending "pending"
+		Sold "sold"
+	}
 
 	model Category {
 		id int
@@ -60,7 +59,8 @@ scope pet {
 
 			## Update an existing pet
 			verb PUT {
-				body Pet @type: "json"
+				@@type: "json"
+				body Pet
 
 				code 200 {}
 
@@ -83,7 +83,8 @@ scope pet {
 				}
 
 				code 200 {
-					body Pet @type: "json"
+					@@type: "json"
+					body Pet
 				}
 
 				## Invalid status value
@@ -93,14 +94,15 @@ scope pet {
 
 		path findByTags {
 			## Finds Pets by tags
-			@deprecated
+			@@deprecated
 			verb GET {
 				query {
 					tags [Tags] "Tags to filter by"
 				}
 
 				code 200 {
-					body Pet @type: "json"
+					@@type: "json"
+					body Pet
 				}
 
 				## Invalid tag value
@@ -125,11 +127,11 @@ scope pet {
 
 			## Update a pet in the store with form data
 			verb POST {
-				@type: "form"
-				body NextIsInlineTy # {
-				# name string "Updated name of the pet"
-				# status Status "Updated status of the pet"
-				# }
+				@@type: "form"
+				body {
+					name string "Updated name of the pet"
+					status Status "Updated status of the pet"
+				}
 
 				# Invalid input
 				code 405 {}
@@ -166,7 +168,8 @@ scope store {
 				code 200 {
 					## Returns a map of status codes to quantities
 					# use a `any` type, but that would mean to create the devil in the language itself
-					body any @type: "json"
+					@@type: "json"
+					body any
 
 					# or maybe mapped object litterals? like TypeScript?
 					# body @type: "json" {
@@ -180,7 +183,8 @@ scope store {
 			path . {
 				## Place an order for a pet
 				verb POST {
-					body Order @type: "json"
+					@@type: "json"
+					body Order
 
 					code 200 {}
 
@@ -197,7 +201,8 @@ scope store {
 				## Find purchase order by ID
 				verb GET {
 					code 200 {
-						body Order @type: "json"
+						@@type: "json"
+						body Order
 					}
 
 					## Invalid ID supplied
@@ -238,7 +243,8 @@ scope user {
 			## Create user
 			## This can only be done by a logged-in user
 			verb POST {
-				body User @type: "json"
+				@@type: "json"
+				body User
 			}
 		}
 
@@ -246,7 +252,8 @@ scope user {
 			## Create multilple users with the input array
 			## This can only be done by a logged-in user
 			verb POST {
-				body [User] @type: "json"
+				@@type: "json"
+				body [User]
 			}
 		}
 
@@ -260,7 +267,8 @@ scope user {
 
 				code 200 {
 					## Return the authentication token
-					body string @type: "json"
+					@@type: "json"
+					body string
 
 					headers {
 						X-Rate-Limit int "calls per hour allowed by the user"
@@ -282,7 +290,8 @@ scope user {
 			## Get user by username
 			verb GET {
 				code 200 {
-					body User @type: "json"
+					@@type: "json"
+					body User
 				}
 
 				## Invalid username supplied
@@ -292,7 +301,8 @@ scope user {
 			}
 			## Update user
 			verb PUT {
-				body User @type: "json"
+				@@type: "json"
+				body User
 
 				## Invalid username supplied
 				code 400 {}

@@ -34,27 +34,20 @@ pub struct Attribute {
 /// Define the style of the attribute, corresponding to the optional `!`
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AttrStyle {
-	/// Without a `!` bang
-	OuterOrInline,
-
-	/// With a `!` bang
+	/// With a bang (e.g. `@!attr<next>`)
 	Inner,
+	/// With another at (e.g. `@@attr<next>`)
+	Outer,
+	/// Just one at (e.g. `@attr<next>`)
+	Inline,
 }
 
 impl fmt::Display for AttrStyle {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::Inner => write!(f, "inner"),
-			Self::OuterOrInline => write!(f, "outer or inline"),
-		}
-	}
-}
-
-impl From<lexer::rich::AttrStyle> for AttrStyle {
-	fn from(value: lexer::rich::AttrStyle) -> Self {
-		match value {
-			lexer::rich::AttrStyle::Inner => Self::Inner,
-			lexer::rich::AttrStyle::OuterOrInline => Self::OuterOrInline,
+			Self::Outer => write!(f, "outer"),
+			Self::Inline => write!(f, "inline"),
 		}
 	}
 }

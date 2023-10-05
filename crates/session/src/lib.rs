@@ -43,6 +43,7 @@ pub mod symbols {
 #[derive(Debug, Default)]
 pub struct Session {
 	pub parse: ParseSession,
+	// TODO: add timing api to time ops
 }
 
 /// Info about a parsing session.

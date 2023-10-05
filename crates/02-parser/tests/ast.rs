@@ -121,7 +121,7 @@ fn _paradigm_example_ast() -> Api {
 			P(Item {
 				attrs: thin_vec![Attribute {
 					kind: AttrKind::DocComment(sym!(" Imports the `builder.dapi` file")),
-					style: AttrStyle::OuterOrInline,
+					style: AttrStyle::Outer,
 					id: AttrId::make_one(),
 					span: Span::DUMMY,
 				}],
@@ -149,7 +149,7 @@ fn _paradigm_example_ast() -> Api {
 											attrs: thin_vec![
 												Attribute {
 													kind: AttrKind::DocComment(sym!(" # Safety")),
-													style: AttrStyle::OuterOrInline,
+													style: AttrStyle::Outer,
 													id: AttrId::make_one(),
 													span: Span::DUMMY,
 												},
@@ -157,7 +157,7 @@ fn _paradigm_example_ast() -> Api {
 													kind: AttrKind::DocComment(sym!(
 														" This is a comment"
 													)),
-													style: AttrStyle::OuterOrInline,
+													style: AttrStyle::Outer,
 													id: AttrId::make_one(),
 													span: Span::DUMMY,
 												},
@@ -165,7 +165,7 @@ fn _paradigm_example_ast() -> Api {
 													kind: AttrKind::DocComment(sym!(
 														" This is a second line of comment"
 													)),
-													style: AttrStyle::OuterOrInline,
+													style: AttrStyle::Outer,
 													id: AttrId::make_one(),
 													span: Span::DUMMY,
 												},
@@ -183,7 +183,7 @@ fn _paradigm_example_ast() -> Api {
 															span: Span::DUMMY,
 														}))
 													}),
-													style: AttrStyle::OuterOrInline,
+													style: AttrStyle::Outer,
 													id: AttrId::make_one(),
 													span: Span::DUMMY,
 												},
@@ -201,7 +201,7 @@ fn _paradigm_example_ast() -> Api {
 															span: Span::DUMMY,
 														}))
 													}),
-													style: AttrStyle::OuterOrInline,
+													style: AttrStyle::Outer,
 													id: AttrId::make_one(),
 													span: Span::DUMMY,
 												},
@@ -239,7 +239,7 @@ fn _paradigm_example_ast() -> Api {
 														span: Span::DUMMY,
 													}))
 												}),
-												style: AttrStyle::OuterOrInline,
+												style: AttrStyle::Outer,
 												id: AttrId::make_one(),
 												span: Span::DUMMY,
 											}],

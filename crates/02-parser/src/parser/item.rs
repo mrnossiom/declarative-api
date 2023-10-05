@@ -1,7 +1,7 @@
 use crate::{error::InvalidVerb, PResult, Parser};
 use ast::{
 	types::{
-		Api, AttrVec, Auth, Body, Headers, Item, ItemKind, Metadata, Model, NodeId, Params,
+		Api, AttrVec, Auth, Body, Enum, Headers, Item, ItemKind, Metadata, Model, NodeId, Params,
 		PathItem, PathKind, Query, ScopeKind, StatusCode, Verb,
 	},
 	P,
@@ -129,6 +129,10 @@ impl<'a> Parser<'a> {
 			// `model <ident> { <def_fields> }`
 			let (ident, item) = self.parse_model()?;
 			(Some(ident), ItemKind::Model(item))
+		} else if self.check_keyword(kw::Enum) {
+			// `enum <ident> { <def_fields> }`
+			let (ident, item) = self.parse_enum()?;
+			(Some(ident), ItemKind::Enum(item))
 		} else if self.check_keyword(kw::Auth) {
 			// TODO: define `auth` syntax
 			// `auth <ident> { <auth_fields> }`
@@ -149,11 +153,12 @@ impl<'a> Parser<'a> {
 		} else {
 			// TODO: this ignores when we parsed attributes but then drop them
 			// this make unattached attributes unsound
-			// we need to solve solve the problem of inline attributes first
-			// need to talk with @OnTake
 
 			return Ok(None);
 		};
+
+		// TODO
+		// attrs.extend(self.parse_inline_attrs()?);
 
 		Ok(Some(Self::make_item(attrs, kind, ident, self.span(lo))))
 	}
@@ -241,9 +246,17 @@ impl<'a> Parser<'a> {
 	#[tracing::instrument(level = "DEBUG", skip(self))]
 	fn parse_model(&mut self) -> PResult<(Ident, Model)> {
 		self.expect_keyword(kw::Model)?;
-		let method = self.parse_ident()?;
+		let name = self.parse_ident()?;
 		let fields = self.expect_braced(Self::parse_field_defs)?;
-		Ok((method, Model { fields }))
+		Ok((name, Model { fields }))
+	}
+
+	#[tracing::instrument(level = "DEBUG", skip(self))]
+	fn parse_enum(&mut self) -> PResult<(Ident, Enum)> {
+		self.expect_keyword(kw::Enum)?;
+		let name = self.parse_ident()?;
+		let variants = self.expect_braced(Self::parse_property_defs)?;
+		Ok((name, Enum { variants }))
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self))]
@@ -251,18 +264,19 @@ impl<'a> Parser<'a> {
 		self.expect_keyword(kw::Auth)?;
 		let auth_name = self.parse_ident()?;
 
-		let _kind = if self.eat(&TokenKind::Semi) {
+		let kind = if self.eat(&TokenKind::Semi) {
 			// `auth BasicAuth;`
-
-			// TODO: use kind
+			Auth::Use
 		} else {
 			// `auth BasicAuth { <field_defs> }`
 
 			// TODO
 			let _fields = self.expect_braced(Self::parse_field_defs)?;
+
+			Auth::Define {}
 		};
 
-		Ok((auth_name, Auth {}))
+		Ok((auth_name, kind))
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self))]

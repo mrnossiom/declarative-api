@@ -1,17 +1,31 @@
 use crate::{error::WrongAttrStyle, PResult, Parser};
 use ast::types::{AttrStyle, AttrVec, Attribute};
-use lexer::rich::TokenKind;
+use lexer::rich::{self, OpKind, TokenKind};
 use tracing::{debug_span, instrument};
 
 impl<'a> Parser<'a> {
+	/// Parse `<inner_attrs>`
 	#[instrument(level = "DEBUG", skip(self))]
 	pub(super) fn parse_inner_attrs(&mut self) -> PResult<AttrVec> {
 		self.parse_attrs(AttrStyle::Inner)
 	}
 
+	/// Parse `<outer_attrs>`
 	#[instrument(level = "DEBUG", skip(self))]
 	pub(super) fn parse_outer_attrs(&mut self) -> PResult<AttrVec> {
-		self.parse_attrs(AttrStyle::OuterOrInline)
+		self.parse_attrs(AttrStyle::Outer)
+	}
+
+	/// Parse `|<inline_attrs>|`
+	#[instrument(level = "DEBUG", skip(self))]
+	pub(super) fn parse_inline_attrs(&mut self) -> PResult<Option<AttrVec>> {
+		if self.eat(&TokenKind::Op(OpKind::Or)) {
+			let attrs = self.parse_attrs(AttrStyle::Inline)?;
+			self.expect(&TokenKind::Op(OpKind::Or))?;
+			Ok(Some(attrs))
+		} else {
+			Ok(None)
+		}
 	}
 
 	#[instrument(level = "DEBUG", skip(self))]
@@ -24,8 +38,13 @@ impl<'a> Parser<'a> {
 			} else if let TokenKind::DocComment(style, sym) = self.token.kind {
 				let _span = debug_span!("parse_doc_attr").entered();
 
+				let style = match style {
+					rich::DocStyle::Inner => AttrStyle::Inner,
+					rich::DocStyle::Outer => AttrStyle::Outer,
+				};
+
 				self.bump();
-				Some(Self::make_doc_attr(sym, style.into(), self.prev_token.span))
+				Some(Self::make_doc_attr(sym, style, self.prev_token.span))
 			} else {
 				None
 			};
@@ -60,8 +79,10 @@ impl<'a> Parser<'a> {
 
 		let style = if self.eat(&TokenKind::Bang) {
 			AttrStyle::Inner
+		} else if self.eat(&TokenKind::At) {
+			AttrStyle::Outer
 		} else {
-			AttrStyle::OuterOrInline
+			AttrStyle::Inline
 		};
 
 		let ident = self.parse_ident()?;

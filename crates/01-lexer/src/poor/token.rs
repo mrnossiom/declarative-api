@@ -1,3 +1,4 @@
+use crate::rich::DocStyle;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -189,12 +190,4 @@ pub enum LiteralKind {
 	Number,
 	/// ""abc"", ""abc"
 	Str { terminated: bool },
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DocStyle {
-	// `##!` they document inside of scopes
-	Inner,
-	// `##` they document the item they embrace
-	Outer,
 }

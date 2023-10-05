@@ -28,6 +28,7 @@ impl DiagnosticsHandler {
 		self.inner.lock().emit_diagnostic(diag);
 	}
 
+	#[track_caller]
 	pub fn emit(&self, diag: impl Into<Diagnostic>) {
 		self.emit_diagnostic(&diag.into());
 	}

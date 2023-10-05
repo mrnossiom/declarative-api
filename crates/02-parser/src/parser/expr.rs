@@ -126,13 +126,14 @@ impl<'a> Parser<'a> {
 					id: NodeId::DUMMY,
 					span: self.prev_token.span,
 				})),
-				AttrStyle::OuterOrInline,
+				AttrStyle::Inline,
 				self.prev_token.span,
 			));
 		}
 
-		// TODO: parse inline attrs
-		attrs.extend(ThinVec::new());
+		if let Some(inline_attrs) = self.parse_inline_attrs()? {
+			attrs.extend(inline_attrs);
+		}
 
 		Ok(Some(Self::make_field_def(attrs, ident, ty, self.span(lo))))
 	}
@@ -174,15 +175,15 @@ X-Model string "The Model of the User"
 		assert_eq!(
 			Parser::make_field_def(
 				thin_vec![
-					Parser::make_doc_attr(sym!(" # Safety"), AttrStyle::OuterOrInline, sp!(1, 12)),
+					Parser::make_doc_attr(sym!(" # Safety"), AttrStyle::Outer, sp!(1, 12)),
 					Parser::make_doc_attr(
 						sym!(" This is a comment"),
-						AttrStyle::OuterOrInline,
+						AttrStyle::Outer,
 						sp!(13, 33)
 					),
 					Parser::make_doc_attr(
 						sym!(" This is a second line of comment"),
-						AttrStyle::OuterOrInline,
+						AttrStyle::Outer,
 						sp!(34, 69)
 					),
 					Parser::make_meta_attr(
@@ -195,7 +196,7 @@ X-Model string "The Model of the User"
 							),
 							sp!(96, 133)
 						)),
-						AttrStyle::OuterOrInline,
+						AttrStyle::Outer,
 						sp!(96, 133)
 					),
 				],

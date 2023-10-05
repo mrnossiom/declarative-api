@@ -103,23 +103,18 @@ impl SourceMap {
 	fn allocate_space(&self, size: usize) -> Result<BytePos, OffsetOverflowError> {
 		let size = u32::try_from(size).map_err(|_| OffsetOverflowError)?;
 
-		loop {
-			let current = self.used_space.load(Ordering::Relaxed);
-			let next = current
-				.checked_add(size)
-				// Add one so there is some space between files. This lets us distinguish
-				// positions in the `SourceMap`, even in the presence of zero-length files.
-				.and_then(|next| next.checked_add(1))
-				.ok_or(OffsetOverflowError)?;
+		let offset = self
+			.used_space
+			.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
+				current
+					.checked_add(size)
+					// Add one so there is some space between files. This lets us distinguish
+					// positions in the `SourceMap`, even in the presence of zero-length files.
+					.and_then(|next| next.checked_add(1))
+			})
+			.map_err(|_| OffsetOverflowError)?;
 
-			if self
-				.used_space
-				.compare_exchange(current, next, Ordering::Relaxed, Ordering::Relaxed)
-				.is_ok()
-			{
-				break Ok(BytePos(current));
-			}
-		}
+		Ok(BytePos(offset))
 	}
 
 	fn source_file_by_id(&self, id: &SourceFileId) -> Option<Rc<SourceFile>> {

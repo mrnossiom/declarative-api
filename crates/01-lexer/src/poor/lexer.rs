@@ -1,11 +1,13 @@
-use crate::poor::{
-	cursor::Cursor,
-	token::{
-		DocStyle,
-		LiteralKind::*,
-		Token,
-		TokenKind::{self, *},
+use crate::{
+	poor::{
+		cursor::Cursor,
+		token::{
+			LiteralKind::*,
+			Token,
+			TokenKind::{self, *},
+		},
 	},
+	rich::DocStyle,
 };
 use tracing::instrument;
 use unicode_xid::UnicodeXID;

@@ -23,6 +23,7 @@ pub enum ItemKind {
 	Scope(ScopeKind),
 	Path(PathItem),
 	Model(Model),
+	Enum(Enum),
 	Query(Query),
 	Headers(Headers),
 	Verb(Verb),
@@ -32,8 +33,11 @@ pub enum ItemKind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Auth {
-	// TODO: find a way to construct auth types
+pub enum Auth {
+	Use,
+	Define {
+		// TODO
+	},
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -80,6 +84,11 @@ pub struct Headers {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Model {
 	pub fields: ThinVec<P<FieldDef>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Enum {
+	pub variants: ThinVec<P<PropertyDef>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -42,6 +42,8 @@ pub enum TyKind {
 	Tuple(ThinVec<P<Ty>>),
 
 	Paren(P<Ty>),
+
+	InlineModel(ThinVec<P<FieldDef>>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
