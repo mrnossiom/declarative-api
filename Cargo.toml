@@ -3,13 +3,13 @@ members = ["crates/*"]
 resolver = "2"
 
 [workspace.dependencies]
-lexer = { path = "crates/01-lexer" }
-parser = { path = "crates/02-parser" }
-ast = { path = "crates/03-ast" }
-hir = { path = "crates/06-hir" }
-hir-lowering = { path = "crates/07-hir-lowering" }
-session = { path = "crates/session" }
+ast = { path = "crates/ast" }
+hir = { path = "crates/hir" }
+hir-lowering = { path = "crates/hir-lowering" }
+lexer = { path = "crates/lexer" }
 macros = { path = "crates/macros" }
+parser = { path = "crates/parser" }
+session = { path = "crates/session" }
 
 ariadne = "0.3.0"
 parking_lot = "0.12.1"
