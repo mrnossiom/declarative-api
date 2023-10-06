@@ -1,4 +1,4 @@
-use crate::{AttrVec, FieldDef, NodeId, P};
+use crate::types::{AttrVec, FieldDef, NodeId, P};
 use lexer::rich::LiteralKind;
 use session::{Ident, Span, Symbol};
 use thin_vec::ThinVec;

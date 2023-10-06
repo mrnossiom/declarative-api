@@ -1,5 +1,5 @@
 use super::{Expr, Path};
-use crate::P;
+use crate::types::P;
 use lexer::rich::{Delimiter, Token};
 use session::{Ident, Span, Symbol};
 use std::{

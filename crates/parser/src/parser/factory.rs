@@ -1,5 +1,5 @@
 use crate::Parser;
-use ast::{
+use ast::types::{
 	AttrId, AttrKind, AttrStyle, AttrVec, Attribute, Expr, ExprKind, FieldDef, Item, ItemKind,
 	MetaAttr, NodeId, NormalAttr, Path, PathSegment, PropertyDef, Ty, TyKind, P,
 };

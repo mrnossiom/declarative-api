@@ -1,5 +1,4 @@
-use crate::types::{AttrVec, NodeId, PropertyDef, Ty};
-use crate::P;
+use crate::types::{AttrVec, NodeId, PropertyDef, Ty, P};
 use session::{Ident, Span};
 use thin_vec::ThinVec;
 

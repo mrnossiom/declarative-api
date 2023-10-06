@@ -1,4 +1,3 @@
-use crate::P;
 use session::Span;
 use thin_vec::ThinVec;
 
@@ -6,6 +5,7 @@ mod attr;
 mod expr;
 mod item;
 mod node;
+pub use crate::ptr::P;
 pub use attr::*;
 pub use expr::*;
 pub use item::*;

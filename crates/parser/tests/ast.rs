@@ -1,4 +1,4 @@
-use ast::*;
+use ast::types::*;
 use lexer::rich::LiteralKind;
 use session::{ident, sym, Ident, Span};
 use thin_vec::thin_vec;

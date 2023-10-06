@@ -1,5 +1,5 @@
 use crate::{error::InvalidVerb, PResult, Parser};
-use ast::{
+use ast::types::{
 	Api, AttrVec, Auth, Body, Enum, Headers, Item, ItemKind, Metadata, Model, NodeId, Params,
 	PathItem, PathKind, Query, ScopeKind, StatusCode, Verb, P,
 };
@@ -294,7 +294,7 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
 	use crate::Parser;
-	use ast::PathKind::{self, *};
+	use ast::types::PathKind::{self, *};
 	use session::{ident, Diagnostic, ParseSession};
 	use thin_vec::thin_vec;
 

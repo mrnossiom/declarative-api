@@ -1,5 +1,5 @@
 use crate::{error::WrongAttrStyle, PResult, Parser};
-use ast::{AttrStyle, AttrVec, Attribute};
+use ast::types::{AttrStyle, AttrVec, Attribute};
 use lexer::rich::{self, OpKind, TokenKind};
 use tracing::{debug_span, instrument};
 
