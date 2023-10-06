@@ -4,6 +4,8 @@ resolver = "2"
 
 [workspace.dependencies]
 ast = { path = "crates/ast" }
+ast-lowering = { path = "crates/ast-lowering" }
+expand = { path = "crates/expand" }
 hir = { path = "crates/hir" }
 hir-lowering = { path = "crates/hir-lowering" }
 lexer = { path = "crates/lexer" }

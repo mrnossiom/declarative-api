@@ -16,7 +16,5 @@
 )]
 
 mod ptr;
-mod types;
-
-pub use ptr::P;
-pub use types::*;
+pub mod types;
+pub mod visitor;

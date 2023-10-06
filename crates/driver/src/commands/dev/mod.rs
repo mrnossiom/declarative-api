@@ -1,6 +1,7 @@
 use super::Act;
 use std::error::Error;
 
+mod expand;
 mod lex;
 mod parse;
 
@@ -20,6 +21,7 @@ impl Act for Dev {
 pub(crate) enum DevCommands {
 	Lex(lex::Lex),
 	Parse(parse::Parse),
+	Expand(expand::Expand),
 }
 
 impl Act for DevCommands {
@@ -27,6 +29,7 @@ impl Act for DevCommands {
 		match self {
 			Self::Lex(lex) => lex.act(),
 			Self::Parse(parse) => parse.act(),
+			Self::Expand(parse) => parse.act(),
 		}
 	}
 }
