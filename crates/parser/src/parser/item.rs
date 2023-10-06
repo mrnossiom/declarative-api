@@ -1,10 +1,7 @@
 use crate::{error::InvalidVerb, PResult, Parser};
 use ast::{
-	types::{
-		Api, AttrVec, Auth, Body, Enum, Headers, Item, ItemKind, Metadata, Model, NodeId, Params,
-		PathItem, PathKind, Query, ScopeKind, StatusCode, Verb,
-	},
-	P,
+	Api, AttrVec, Auth, Body, Enum, Headers, Item, ItemKind, Metadata, Model, NodeId, Params,
+	PathItem, PathKind, Query, ScopeKind, StatusCode, Verb, P,
 };
 use lexer::rich::{Delimiter, OpKind, TokenKind};
 use session::{
@@ -297,7 +294,7 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
 	use crate::Parser;
-	use ast::types::PathKind::{self, *};
+	use ast::PathKind::{self, *};
 	use session::{ident, Diagnostic, ParseSession};
 	use thin_vec::thin_vec;
 

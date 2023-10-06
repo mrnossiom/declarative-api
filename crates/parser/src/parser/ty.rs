@@ -1,8 +1,5 @@
 use crate::{error::UnexpectedToken, PResult, Parser};
-use ast::{
-	types::{Ty, TyKind},
-	P,
-};
+use ast::{Ty, TyKind, P};
 use lexer::rich::{Delimiter, TokenKind};
 use session::sym;
 use thin_vec::thin_vec;

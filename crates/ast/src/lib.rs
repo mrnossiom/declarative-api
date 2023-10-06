@@ -16,6 +16,7 @@
 )]
 
 mod ptr;
-pub mod types;
+mod types;
 
 pub use ptr::P;
+pub use types::*;

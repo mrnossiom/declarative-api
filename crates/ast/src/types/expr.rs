@@ -1,5 +1,4 @@
-use crate::types::{AttrVec, NodeId};
-use crate::P;
+use crate::{AttrVec, FieldDef, NodeId, P};
 use lexer::rich::LiteralKind;
 use session::{Ident, Span, Symbol};
 use thin_vec::ThinVec;
@@ -61,4 +60,34 @@ pub struct PropertyDef {
 
 	pub id: NodeId,
 	pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Ty {
+	pub kind: TyKind,
+	pub id: NodeId,
+	pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TyKind {
+	/// The base type, either
+	/// - a path: `scope.Type`
+	/// - or a local type: `Type`
+	Path(Path),
+
+	/// An array of types: `[Type]`
+	Array(P<Ty>),
+
+	/// A tuple of types: `(Ty1, Ty2, Ty3)`
+	/// Can also define the unit type: `()`
+	Tuple(ThinVec<P<Ty>>),
+
+	/// A type surrounded with parentheses
+	/// e.g. `(Ty)`
+	Paren(P<Ty>),
+
+	/// A model defined inlined
+	/// e.g. `{ error string }`
+	InlineModel(ThinVec<P<FieldDef>>),
 }

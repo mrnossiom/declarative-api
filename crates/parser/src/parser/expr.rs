@@ -1,8 +1,5 @@
 use crate::{error::UnexpectedToken, PResult, Parser};
-use ast::{
-	types::{AttrStyle, Expr, ExprKind, FieldDef, NodeId, PropertyDef},
-	P,
-};
+use ast::{AttrStyle, Expr, ExprKind, FieldDef, NodeId, PropertyDef, P};
 use lexer::rich::{Delimiter, LiteralKind, TokenKind};
 use session::{
 	sym,
@@ -142,7 +139,7 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
 	use crate::Parser;
-	use ast::types::{AttrId, AttrStyle, ExprKind, NodeId, Path, PathSegment, TyKind};
+	use ast::{AttrId, AttrStyle, ExprKind, NodeId, Path, PathSegment, TyKind};
 	use lexer::rich::LiteralKind;
 	use pretty_assertions::assert_eq;
 	use session::{ident, sp, sym, Diagnostic, ParseSession};

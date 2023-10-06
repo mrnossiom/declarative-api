@@ -1,4 +1,4 @@
-use ast::types::AttrStyle;
+use ast::AttrStyle;
 use lexer::rich::{Token, TokenKind};
 use macros::IntoDiagnostic;
 use session::{Diagnostic, Ident, Span, Symbol};
