@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 ast = { workspace = true }
+parser = { workspace = true }
 session = { workspace = true }

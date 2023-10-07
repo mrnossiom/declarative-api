@@ -22,7 +22,7 @@ pub mod rich;
 
 #[cfg(test)]
 mod tests {
-	pub const EXAMPLE: &str = include_str!("../../../examples/paradigm.dapi");
+	pub const EXAMPLE: &str = include_str!("../../../examples/paradigm/paradigm.dapi");
 
 	pub const ATTR: &str = "@format: date";
 

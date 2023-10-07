@@ -61,7 +61,7 @@ impl InnerHandler {
 	}
 }
 
-// TODO: maybe log manually, not on a drop?
+// TODO: should be explicit
 impl Drop for InnerHandler {
 	fn drop(&mut self) {
 		println!(

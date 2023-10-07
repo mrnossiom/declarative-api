@@ -42,7 +42,7 @@ impl Act for Expand {
 			}
 		};
 
-		expand_ast(&mut root);
+		expand_ast(&session, &mut root);
 
 		let name = format!("{filename}.east");
 		std::fs::write(&name, format!("{root:#?}"))?;

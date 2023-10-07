@@ -14,7 +14,6 @@ meta {
 	]
 }
 
-## Imports the `builder.dapi` file
 scope builder;
 
 scope dashboard {

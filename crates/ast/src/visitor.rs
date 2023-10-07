@@ -1,7 +1,4 @@
-use crate::{
-	ptr::P,
-	types::{Api, Attribute, Expr, Item, NodeId, Path, Ty},
-};
+use crate::types::{Api, Attribute, Expr, FieldDef, Item, NodeId, Path, PropertyDef, Ty, P};
 use lexer::rich::Token;
 use session::{Ident, Span};
 use thin_vec::ThinVec;
@@ -35,15 +32,25 @@ pub trait MutVisitor: Sized {
 		noop::visit_item(self, item);
 	}
 
-	fn visit_tokens(&mut self, _tokens: &mut ThinVec<Token>) {
-		// TODO
+	fn visit_field_def(&mut self, field: &mut P<FieldDef>) {
+		noop::visit_field_def(self, field);
+	}
+	fn visit_property_def(&mut self, property: &mut P<PropertyDef>) {
+		noop::visit_property_def(self, property);
 	}
 
-	fn visit_id(&mut self, _id: &mut NodeId) {
-		// Nothing to explore further
+	// For the next functions we don't use a `_` prefix because of trait impl autocomplete
+	fn visit_tokens(&mut self, tokens: &mut ThinVec<Token>) {
+		// TODO
+		let _ = tokens;
 	}
-	fn visit_span(&mut self, _span: &mut Span) {
+	fn visit_id(&mut self, id: &mut NodeId) {
 		// Nothing to explore further
+		let _ = id;
+	}
+	fn visit_span(&mut self, span: &mut Span) {
+		// Nothing to explore further
+		let _ = span;
 	}
 }
 
@@ -51,9 +58,9 @@ pub trait MutVisitor: Sized {
 pub mod noop {
 	use super::{ns, MutVisitor};
 	use crate::types::{
-		Api, AttrKind, Attribute, Auth, Body, Enum, Expr, ExprKind, Headers, Item, ItemKind,
-		MetaAttr, Metadata, Model, NormalAttr, Params, Path, PathItem, PathSegment, Query,
-		ScopeKind, StatusCode, Ty, TyKind, Verb,
+		Api, AttrKind, Attribute, Auth, Body, Enum, Expr, ExprKind, FieldDef, Headers, Item,
+		ItemKind, MetaAttr, Metadata, Model, NormalAttr, Params, Path, PathItem, PathSegment,
+		PropertyDef, Query, ScopeKind, StatusCode, Ty, TyKind, Verb,
 	};
 	use session::Ident;
 
@@ -120,10 +127,44 @@ pub mod noop {
 
 		match kind {
 			TyKind::Array(ty) | TyKind::Paren(ty) => v.visit_ty(ty),
-			TyKind::InlineModel(model) => todo!(),
+			TyKind::InlineModel(fields) => ns::visit_thin_vec(fields, |fd| v.visit_field_def(fd)),
 			TyKind::Path(path) => v.visit_path(path),
 			TyKind::Tuple(tys) => ns::visit_thin_vec(tys, |ty| v.visit_ty(ty)),
 		}
+	}
+
+	pub fn visit_field_def<V: MutVisitor>(
+		v: &mut V,
+		FieldDef {
+			attrs,
+			id,
+			ident,
+			span,
+			ty,
+		}: &mut FieldDef,
+	) {
+		ns::visit_attrs(v, attrs);
+		v.visit_id(id);
+		v.visit_ident(ident);
+		v.visit_span(span);
+		v.visit_ty(ty);
+	}
+
+	pub fn visit_property_def<V: MutVisitor>(
+		v: &mut V,
+		PropertyDef {
+			attrs,
+			expr,
+			id,
+			ident,
+			span,
+		}: &mut PropertyDef,
+	) {
+		ns::visit_attrs(v, attrs);
+		v.visit_expr(expr);
+		v.visit_id(id);
+		v.visit_ident(ident);
+		v.visit_span(span);
 	}
 
 	pub fn visit_item<V: MutVisitor>(
@@ -131,7 +172,7 @@ pub mod noop {
 		Item {
 			attrs,
 			id,
-			ident: _,
+			ident,
 			kind,
 			span,
 		}: &mut Item,
@@ -139,21 +180,35 @@ pub mod noop {
 		ns::visit_attrs(v, attrs);
 		v.visit_id(id);
 		v.visit_span(span);
+		v.visit_ident(ident);
 
 		match kind {
 			ItemKind::Auth(auth) => match auth {
 				Auth::Define {} | Auth::Use => {}
 			},
 			ItemKind::Body(Body { ty }) => v.visit_ty(ty),
-			ItemKind::Enum(Enum { variants }) => ns::visit_thin_vec(variants, |pd| {}),
-			ItemKind::Headers(Headers { headers }) => ns::visit_thin_vec(headers, |fd| {}),
-			ItemKind::Meta(Metadata { fields }) => ns::visit_thin_vec(fields, |pd| {}),
-			ItemKind::Model(Model { fields }) => ns::visit_thin_vec(fields, |fd| {}),
-			ItemKind::Params(Params { properties }) => ns::visit_thin_vec(properties, |fd| {}),
+			ItemKind::Enum(Enum { variants }) => {
+				ns::visit_thin_vec(variants, |pd| v.visit_property_def(pd));
+			}
+			ItemKind::Headers(Headers { headers }) => {
+				ns::visit_thin_vec(headers, |fd| v.visit_field_def(fd));
+			}
+			ItemKind::Meta(Metadata { fields }) => {
+				ns::visit_thin_vec(fields, |pd| v.visit_property_def(pd));
+			}
+			ItemKind::Model(Model { fields }) => {
+				ns::visit_thin_vec(fields, |fd| v.visit_field_def(fd));
+			}
+			ItemKind::Params(Params { properties }) => {
+				ns::visit_thin_vec(properties, |fd| v.visit_field_def(fd));
+			}
 			ItemKind::Path(PathItem { items, kind }) => {
 				ns::visit_thin_vec(items, |item| v.visit_item(item));
+				ns::visit_path_kind(v, kind);
 			}
-			ItemKind::Query(Query { fields }) => ns::visit_thin_vec(fields, |fd| {}),
+			ItemKind::Query(Query { fields }) => {
+				ns::visit_thin_vec(fields, |fd| v.visit_field_def(fd));
+			}
 			ItemKind::Scope(scope) => match scope {
 				ScopeKind::Unloaded => {}
 				ScopeKind::Loaded {
@@ -169,8 +224,9 @@ pub mod noop {
 				v.visit_expr(code);
 				ns::visit_thin_vec(items, |item| v.visit_item(item));
 			}
-			ItemKind::Verb(Verb { items, method: _ }) => {
+			ItemKind::Verb(Verb { items, method }) => {
 				ns::visit_thin_vec(items, |item| v.visit_item(item));
+				v.visit_ident(method);
 			}
 		}
 	}
@@ -213,7 +269,7 @@ pub mod noop {
 // Non-standard
 pub mod ns {
 	use super::MutVisitor;
-	use crate::types::AttrVec;
+	use crate::types::{AttrVec, PathKind};
 	use thin_vec::ThinVec;
 
 	#[inline]
@@ -228,6 +284,14 @@ pub mod ns {
 	{
 		for element in elements {
 			visitor(element);
+		}
+	}
+
+	pub fn visit_path_kind<V: MutVisitor>(v: &mut V, kind: &mut PathKind) {
+		match kind {
+			PathKind::Current => {}
+			PathKind::Simple(path) | PathKind::Variable(path) => v.visit_ident(path),
+			PathKind::Complex(path) => visit_thin_vec(path, |part| visit_path_kind(v, part)),
 		}
 	}
 }

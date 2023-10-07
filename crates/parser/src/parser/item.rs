@@ -52,7 +52,10 @@ impl<'a> Parser<'a> {
 	}
 
 	#[tracing::instrument(level = "DEBUG", skip(self, attrs))]
-	fn parse_scope_content(&mut self, attrs: Option<&mut AttrVec>) -> PResult<ThinVec<P<Item>>> {
+	pub fn parse_scope_content(
+		&mut self,
+		attrs: Option<&mut AttrVec>,
+	) -> PResult<ThinVec<P<Item>>> {
 		if let Some(attrs) = attrs {
 			attrs.extend(self.parse_inner_attrs()?);
 		}

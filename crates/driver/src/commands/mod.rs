@@ -1,5 +1,6 @@
 use std::error::Error;
 
+mod compile;
 mod dev;
 
 #[derive(Debug, clap::Parser)]
@@ -17,12 +18,14 @@ impl Act for Args {
 #[derive(Debug, clap::Subcommand)]
 pub(crate) enum Commands {
 	Dev(dev::Dev),
+	Compile(compile::Compile),
 }
 
 impl Act for Commands {
 	fn act(&mut self) -> Result<(), Box<dyn Error>> {
 		match self {
 			Self::Dev(dev) => dev.act(),
+			Self::Compile(compile) => compile.act(),
 		}
 	}
 }

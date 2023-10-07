@@ -24,7 +24,12 @@ mod span;
 #[path = "symbols.rs"]
 mod symbols_;
 
-use std::rc::Rc;
+use std::{
+	cell::Cell,
+	collections::HashMap,
+	rc::Rc,
+	time::{Duration, Instant},
+};
 
 pub use diagnostics::{Diagnostic, DiagnosticsHandler};
 // pub use macros::{ident, sp, sym};
@@ -43,7 +48,13 @@ pub mod symbols {
 #[derive(Debug, Default)]
 pub struct Session {
 	pub parse: ParseSession,
-	// TODO: add timing api to time ops
+	timer: Timer,
+}
+
+impl Session {
+	pub fn time(&mut self, label: &'static str) -> TimerGuard {
+		self.timer.now(label)
+	}
 }
 
 /// Info about a parsing session.
@@ -61,6 +72,61 @@ impl Default for ParseSession {
 			diagnostic: DiagnosticsHandler::new(source_map.clone()),
 			source_map,
 		}
+	}
+}
+
+#[derive(Debug, Default)]
+struct Timer {
+	registered: HashMap<&'static str, Rc<Cell<Duration>>>,
+}
+
+impl Timer {
+	fn now(&mut self, label: &'static str) -> TimerGuard {
+		if self.registered.get(label).is_none() {
+			let cell = Rc::<Cell<_>>::default();
+			self.registered.insert(label, cell.clone());
+			TimerGuard {
+				start: Instant::now(),
+				cell,
+			}
+		} else {
+			panic!("timer label `{label}` already registered");
+		}
+	}
+
+	fn print(&self) {
+		println!("Timers:");
+		println!("---");
+		for (name, time) in &self.registered {
+			eprintln!("{name}: {}μs", time.get().as_micros());
+		}
+		println!("---");
+	}
+}
+
+// TODO: should be explicit
+impl Drop for Timer {
+	fn drop(&mut self) {
+		self.print();
+	}
+}
+
+pub struct TimerGuard {
+	start: Instant,
+	cell: Rc<Cell<Duration>>,
+}
+
+impl TimerGuard {
+	pub fn run<T>(self, timed: impl FnOnce() -> T) -> T {
+		let result = timed();
+		drop(self);
+		result
+	}
+}
+
+impl Drop for TimerGuard {
+	fn drop(&mut self) {
+		self.cell.set(self.start.elapsed());
 	}
 }
 
