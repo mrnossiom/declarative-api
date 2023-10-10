@@ -44,6 +44,12 @@ pub mod symbols {
 	pub use crate::symbols_::{attrs, kw, remarkable};
 }
 
+/// This is there to avoid having to import `ariadne` in crate that uses IntoDiagnostic macro
+#[doc(hidden)]
+pub mod __private {
+	pub use ariadne;
+}
+
 /// Represents the data associated with a compilation session.
 #[derive(Debug, Default)]
 pub struct Session {

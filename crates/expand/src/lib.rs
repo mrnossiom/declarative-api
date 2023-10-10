@@ -1,46 +1,47 @@
-use ast::{
-	types::{ItemKind, ScopeKind},
-	visitor::{noop, MutVisitor},
-};
-use parser::Parser;
-use session::Session;
-use std::path::Path;
+#![warn(
+	// clippy::missing_docs_in_private_items,
+	clippy::unwrap_used,
+	clippy::nursery,
+	clippy::pedantic,
+	clippy::todo,
+	clippy::dbg_macro,
+	rustdoc::all,
+)]
+#![allow(
+	clippy::redundant_pub_crate,
+	clippy::enum_glob_use,
+	clippy::module_name_repetitions,
+	clippy::missing_errors_doc
+)]
 
-struct ScopeExpander<'a> {
-	session: &'a Session,
-}
+use ast::visitor::MutVisitor;
+use scope::{ModuleData, ScopeExpander};
+use session::{symbols::kw, Ident, Session, Span};
 
-impl<'a> MutVisitor for ScopeExpander<'a> {
-	fn visit_item(&mut self, item: &mut ast::types::P<ast::types::Item>) {
-		let ItemKind::Scope(ScopeKind::Unloaded) = item.kind else {
-			noop::visit_item(self, item);
-			return;
-		};
-
-		let name = format!("{}.dapi", item.ident.symbol.as_str());
-		let path = std::env::current_dir().unwrap().join(Path::new(&name));
-		let source = self.session.parse.source_map.load_file(&path).unwrap();
-
-		let parser = &mut Parser::from_source(&self.session.parse, &source);
-
-		let lo = parser.token.span;
-		let items = parser.parse_scope_content(Some(&mut item.attrs)).unwrap();
-		let span = lo.to(parser.prev_token.span);
-
-		let ItemKind::Scope(kind) = &mut item.kind else {
-			unreachable!("we checked that the item was an unloaded scope")
-		};
-
-		*kind = ScopeKind::Loaded {
-			items,
-			inline: false,
-			span,
-		};
-
-		noop::visit_item(self, item);
-	}
-}
+mod errors;
+mod scope;
 
 pub fn expand_ast(session: &Session, api: &mut ast::types::Api) {
-	ScopeExpander { session }.visit_root(api)
+	let file_path = session
+		.parse
+		.source_map
+		.lookup_source_file(api.span.high())
+		.name
+		.clone()
+		.into_real()
+		.unwrap();
+
+	let dir_path = file_path
+		.parent()
+		.expect("path should not be empty")
+		.to_owned();
+
+	let mod_data = ModuleData {
+		// TODO: change to real root api name
+		mod_path: vec![Ident::new(kw::PathRoot, Span::DUMMY)],
+		file_path_stack: vec![file_path],
+		dir_path,
+	};
+
+	ScopeExpander::new(session, mod_data).visit_root(api);
 }

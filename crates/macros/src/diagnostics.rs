@@ -158,7 +158,7 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 
 	s.underscore_const(true);
 	Ok(s.gen_impl(quote! {
-		use ::ariadne::{Color, Config, Fmt, Label, Report, ReportKind, LabelAttach};
+		use ::session::__private::ariadne::{Color, Config, Fmt, Label, Report, ReportKind, LabelAttach};
 		use ::session::{with_source_map, Diagnostic, Span};
 
 		#[automatically_derived]

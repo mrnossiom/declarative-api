@@ -1,0 +1,6 @@
+scope one {
+	scope two {
+		scope three {
+		}
+	}
+}

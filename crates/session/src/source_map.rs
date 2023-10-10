@@ -289,6 +289,13 @@ impl FileName {
 		source.hash(&mut hasher);
 		Self::Anon(hasher.finish())
 	}
+
+	pub fn into_real(self) -> Option<PathBuf> {
+		match self {
+			Self::Real(path) => Some(path),
+			Self::Anon(_) => None,
+		}
+	}
 }
 
 impl fmt::Display for FileName {

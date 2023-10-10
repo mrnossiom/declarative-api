@@ -17,19 +17,17 @@ impl Act for Compile {
 			.time("load_file")
 			.run(|| session.parse.source_map.load_file(&self.file))?;
 
-		let mut api = session
-			.time("parse")
-			.run(|| {
-				add_source_map_context(session.parse.source_map.clone(), || {
-					Parser::from_source(&session.parse, &file).parse_root()
-				})
-			})
-			.map_err(|err| session.parse.diagnostic.emit_diagnostic(&err))
-			.unwrap();
+		add_source_map_context(session.parse.source_map.clone(), || {
+			let mut api = session
+				.time("parse")
+				.run(|| Parser::from_source(&session.parse, &file).parse_root())
+				.map_err(|err| session.parse.diagnostic.emit_diagnostic(&err))
+				.unwrap();
 
-		session
-			.time("expand")
-			.run(|| expand_ast(&session, &mut api));
+			session
+				.time("expand")
+				.run(|| expand_ast(&session, &mut api));
+		});
 
 		Ok(())
 	}
