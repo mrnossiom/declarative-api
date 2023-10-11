@@ -44,7 +44,7 @@ pub mod symbols {
 	pub use crate::symbols_::{attrs, kw, remarkable};
 }
 
-/// This is there to avoid having to import `ariadne` in crate that uses IntoDiagnostic macro
+/// This is there to avoid having to add `ariadne` in crates that uses `IntoDiagnostic` macro
 #[doc(hidden)]
 pub mod __private {
 	pub use ariadne;
@@ -101,12 +101,13 @@ impl Timer {
 	}
 
 	fn print(&self) {
-		println!("Timers:");
-		println!("---");
-		for (name, time) in &self.registered {
-			eprintln!("{name}: {}μs", time.get().as_micros());
+		if !self.registered.is_empty() {
+			println!("--- Timers:");
+			for (name, time) in &self.registered {
+				eprintln!("{name}: {}μs", time.get().as_micros());
+			}
+			println!("---");
 		}
-		println!("---");
 	}
 }
 
@@ -124,9 +125,8 @@ pub struct TimerGuard {
 
 impl TimerGuard {
 	pub fn run<T>(self, timed: impl FnOnce() -> T) -> T {
-		let result = timed();
-		drop(self);
-		result
+		let _timer = self;
+		timed()
 	}
 }
 

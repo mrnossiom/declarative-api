@@ -1,20 +1,23 @@
-use crate::errors::ExtScopeLoadingError;
+use crate::errors::scope::{
+	CyclicImport, LoadingError, MultipleCandidates, NoCandidate, ParsingError,
+};
 use ast::{
-	types::{ItemKind, ScopeKind},
+	types::{AttrVec, Item, ItemKind, ScopeKind, P},
 	visitor::{noop, MutVisitor},
 };
 use parser::Parser;
-use session::{Ident, Session};
+use session::{Diagnostic, Ident, Session, Span};
 use std::{
+	fmt::Write,
 	mem,
 	path::{self, PathBuf},
 };
-use thin_vec::thin_vec;
+use thin_vec::ThinVec;
 
 #[derive(Debug)]
 pub struct ScopeExpander<'a> {
 	session: &'a Session,
-	mod_data: ModuleData,
+	scope: ModuleData,
 }
 
 #[derive(Debug)]
@@ -36,7 +39,112 @@ impl ModuleData {
 
 impl<'a> ScopeExpander<'a> {
 	pub const fn new(session: &'a Session, mod_data: ModuleData) -> Self {
-		ScopeExpander { session, mod_data }
+		ScopeExpander {
+			session,
+			scope: mod_data,
+		}
+	}
+}
+
+type ExtScopeReturn = (ThinVec<P<Item>>, Span, Option<PathBuf>, PathBuf);
+
+impl<'a> ScopeExpander<'a> {
+	fn load_external_scope(
+		&self,
+		ident: Ident,
+		scope: Span,
+		attrs: &mut AttrVec,
+	) -> Result<ExtScopeReturn, Diagnostic> {
+		// IDEA: behave differently when in a `<ident>.dapi` and not a `scope.dapi` file? adding a prefix like `{{parent}}/<ident>/...`
+
+		// `<ident>.dapi`
+		let sibling_path = format!("{}.dapi", ident.symbol);
+		let sibling_path = self.scope.dir_path.join(sibling_path);
+		// `<ident>/scope.dapi`
+		let child_path = format!("{}{}scope.dapi", ident.symbol, path::MAIN_SEPARATOR);
+		let child_path = self.scope.dir_path.join(child_path);
+
+		let file_path = match (sibling_path.exists(), child_path.exists()) {
+			(true, false) => sibling_path,
+			(false, true) => child_path,
+			(true, true) => {
+				// Both files exist, so we can't load the scope
+				return Err(MultipleCandidates {
+					import_name: ident,
+					import: scope,
+					child_candidate: child_path.to_string_lossy().into_owned(),
+					sibling_candidate: sibling_path.to_string_lossy().into_owned(),
+				}
+				.into());
+			}
+			(false, false) => {
+				// Neither file exists, so we can't load the scope
+				return Err(NoCandidate {
+					import_name: ident,
+					import: scope,
+					child_candidate: child_path.to_string_lossy().into_owned(),
+					sibling_candidate: sibling_path.to_string_lossy().into_owned(),
+				}
+				.into());
+			}
+		};
+
+		// Ensure file paths are acyclic.
+		if let Some(pos) = self
+			.scope
+			.file_path_stack
+			.iter()
+			.position(|p| p == &file_path)
+		{
+			return Err(CyclicImport {
+				import_name: ident,
+				import: scope,
+				import_stack: self.scope.file_path_stack[pos..].to_vec().iter().fold(
+					String::new(),
+					|mut s, p| {
+						write!(s, "{}", p.display()).unwrap();
+						s
+					},
+				),
+			}
+			.into());
+		}
+
+		let source = self
+			.session
+			.parse
+			.source_map
+			.load_file(&file_path)
+			.map_err(|io| {
+				LoadingError {
+					import_name: ident,
+					import: scope,
+					io,
+				}
+				.into()
+			})?;
+
+		let mut parser = Parser::from_source(&self.session.parse, &source);
+
+		let lo = parser.token.span;
+		let items = match parser.parse_scope_content(Some(attrs)) {
+			Ok(items) => items,
+			Err(err) => {
+				self.session.parse.diagnostic.emit_diagnostic(&err);
+
+				return Err(ParsingError {
+					import_name: ident,
+					import: scope,
+					parsing_err: err,
+				}
+				.into());
+			}
+		};
+		let span = lo.to(parser.prev_token.span);
+
+		let dir = self.scope.dir_path.join(ident.symbol.as_str());
+
+		Ok((items, span, Some(file_path), dir))
 	}
 }
 
@@ -47,87 +155,38 @@ impl<'a> MutVisitor for ScopeExpander<'a> {
 			return;
 		};
 
-		// TODO: this could be reworked by taking these out as functions that return an error
-		// this would be even prettier if we would support enums in diagnostics
-		// like a big chungus mod error enum with variants like `FileNotFound`, `FileNotDapiExt`, `ManyCandidates`,`IoError` or `ParsingError`
 		let (file_path, dir_path) = match kind {
 			ScopeKind::Loaded { .. } => {
-				let dir = self.mod_data.dir_path.join(item.ident.symbol.as_str());
-
-				(None, dir)
+				(None, self.scope.dir_path.join(item.ident.symbol.as_str()))
 			}
-
 			ScopeKind::Unloaded => {
-				// IDEA: behave differently when in a `<ident>.dapi`` and not a `scope.dapi` file? adding a prefix like `{{parent}}/<ident>/...`
-
-				// `<ident>.dapi`
-				let sibling_path = format!("{}.dapi", item.ident.symbol);
-				let sibling_path = self.mod_data.dir_path.join(sibling_path);
-				// `<ident>/scope.dapi`
-				let child_path = format!("{}{}scope.dapi", item.ident.symbol, path::MAIN_SEPARATOR);
-				let child_path = self.mod_data.dir_path.join(child_path);
-
-				let file_path = match (sibling_path.exists(), child_path.exists()) {
-					(true, false) => sibling_path,
-					(false, true) => child_path,
-					(true, true) => {
-						// Both files exist, so we can't load the scope
-						todo!("emit error")
-					}
-					(false, false) => {
-						// Neither file exists, so we can't load the scope
-						todo!("emit error")
-					}
-				};
-
-				let source = match self.session.parse.source_map.load_file(&file_path) {
-					Ok(source) => source,
-					Err(io_error) => {
-						self.session.parse.diagnostic.emit(ExtScopeLoadingError {
-							import: item.span,
-							name: item.ident,
-							io_error,
-						});
-						return;
-					}
-				};
-
-				let mut parser = Parser::from_source(&self.session.parse, &source);
-
-				let lo = parser.token.span;
-				let items = match parser.parse_scope_content(Some(&mut item.attrs)) {
-					Ok(items) => items,
-					Err(err) => {
-						self.session.parse.diagnostic.emit_diagnostic(&err);
-
-						// Return empty items instead of leaving the scope in an unloaded state
-						thin_vec![]
-					}
-				};
-				let span = lo.to(parser.prev_token.span);
+				let (items, span, file_path, dir_path) = self
+					.load_external_scope(item.ident, item.span, &mut item.attrs)
+					.map_err(|diag| self.session.parse.diagnostic.emit_diagnostic(&diag))
+					.unwrap_or_default();
 
 				// Mutate the AST to add the newly loaded scope
+				// In case an error was emitted, we still want to return a loaded dummy scope
 				item.kind = ItemKind::Scope(ScopeKind::Loaded {
 					items,
 					inline: false,
 					span,
 				});
 
-				let dir = self.mod_data.dir_path.join(item.ident.symbol.as_str());
-
-				(Some(file_path), dir)
+				(file_path, dir_path)
 			}
 		};
 
-		let mut mod_data = self.mod_data.with_dir_path(dir_path);
+		let mut mod_data = self.scope.with_dir_path(dir_path);
 		mod_data.mod_path.push(item.ident);
 		if let Some(path) = file_path {
 			mod_data.file_path_stack.push(path);
 		}
-		let original_mod_data = mem::replace(&mut self.mod_data, mod_data);
+
+		let original_mod_data = mem::replace(&mut self.scope, mod_data);
 
 		noop::visit_item(self, item);
 
-		self.mod_data = original_mod_data;
+		self.scope = original_mod_data;
 	}
 }

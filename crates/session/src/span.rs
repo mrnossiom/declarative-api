@@ -10,6 +10,12 @@ pub struct Span {
 	high: BytePos,
 }
 
+impl Default for Span {
+	fn default() -> Self {
+		Self::DUMMY
+	}
+}
+
 impl Span {
 	pub const DUMMY: Self = Self {
 		low: BytePos(u32::MAX),

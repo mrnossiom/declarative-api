@@ -126,9 +126,9 @@ impl Ident {
 impl fmt::Display for Ident {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		if f.alternate() {
-			write!(f, "an ident {} {}", self.symbol, self.span)
-		} else {
 			write!(f, "an ident {}", self.symbol)
+		} else {
+			self.symbol.fmt(f)
 		}
 	}
 }

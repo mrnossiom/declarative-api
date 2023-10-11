@@ -1,5 +1,6 @@
 use crate::{SourceMap, Span};
 use ariadne::{Report, ReportKind};
+use core::fmt;
 use parking_lot::Mutex;
 #[cfg(debug_assertions)]
 use std::panic::Location;
@@ -76,6 +77,12 @@ pub struct Diagnostic {
 	#[cfg(debug_assertions)]
 	loc: &'static Location<'static>,
 	report: Box<Report<'static, Span>>,
+}
+
+impl fmt::Display for Diagnostic {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", self.report.msg.clone().unwrap_or_default())
+	}
 }
 
 impl Diagnostic {

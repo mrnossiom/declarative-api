@@ -20,7 +20,7 @@ impl fmt::Display for Token {
 		if f.alternate() {
 			write!(f, "{} ({})", self.kind, self.span)
 		} else {
-			write!(f, "{}", self.kind)
+			self.kind.fmt(f)
 		}
 	}
 }
