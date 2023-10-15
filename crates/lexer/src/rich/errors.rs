@@ -1,6 +1,3 @@
-// TODO
-#![allow(unused_variables)]
-
 use macros::IntoDiagnostic;
 use session::Span;
 

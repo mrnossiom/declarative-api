@@ -79,17 +79,14 @@ impl<'a> Parser<'a> {
 	}
 
 	pub(super) fn make_normal_attr(
+		path: Ident,
 		delim: Delimiter,
 		tokens: ThinVec<Token>,
 		style: AttrStyle,
 		span: Span,
 	) -> Attribute {
 		let normal = NormalAttr {
-			// TODO: hum, hum
-			path: Path {
-				segments: thin_vec![],
-				span: Span::DUMMY,
-			},
+			path,
 			delim,
 			tokens,
 		};

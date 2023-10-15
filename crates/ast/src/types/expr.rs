@@ -19,7 +19,7 @@ pub enum ExprKind {
 	Literal(LiteralKind, Symbol),
 	/// A path (`path::to::model::Type`).
 	Path(Path),
-	// TODO: implement, not sure
+	// TODO: discuss whether this is a bad idea, not sure to implement it
 	/// A template for status codes (e.g., `~2xx`).
 	Template(()),
 

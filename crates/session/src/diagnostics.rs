@@ -33,6 +33,15 @@ impl DiagnosticsHandler {
 	pub fn emit(&self, diag: impl Into<Diagnostic>) {
 		self.emit_diagnostic(&diag.into());
 	}
+
+	pub fn print_statistics(&self) {
+		let this = self.inner.lock();
+
+		println!(
+			"{} errors, {} warnings and {} advices were issued",
+			this.error_count, this.warn_count, this.advice_count
+		);
+	}
 }
 
 #[derive(Debug)]
@@ -59,16 +68,6 @@ impl InnerHandler {
 
 		#[cfg(debug_assertions)]
 		eprintln!("error was emitted here: {}", diag.loc);
-	}
-}
-
-// TODO: should be explicit
-impl Drop for InnerHandler {
-	fn drop(&mut self) {
-		println!(
-			"{} errors, {} warnings and {} advices were issued",
-			self.error_count, self.warn_count, self.advice_count
-		);
 	}
 }
 

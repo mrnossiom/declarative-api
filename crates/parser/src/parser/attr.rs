@@ -86,6 +86,7 @@ impl<'a> Parser<'a> {
 		};
 
 		let ident = self.parse_ident()?;
+
 		if self.eat(&TokenKind::Colon) {
 			// Parse `@key: <value>`
 			let expr = self.parse_expr()?;
@@ -98,9 +99,19 @@ impl<'a> Parser<'a> {
 			))
 		} else if self.token.is_open_delim() {
 			// Parse `@key(<tokens>)`
+
+			// TODO: change parsing from an ident to a path to allow more complex
+			// resolution of attributes that can process tokens from foreign apis
+
 			let (delim, tokens) = self.parse_delimited()?;
 
-			Ok(Self::make_normal_attr(delim, tokens, style, self.span(lo)))
+			Ok(Self::make_normal_attr(
+				ident,
+				delim,
+				tokens,
+				style,
+				self.span(lo),
+			))
 		} else {
 			// Parse `@key`
 			Ok(Self::make_meta_attr(ident, None, style, self.span(lo)))

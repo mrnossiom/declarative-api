@@ -68,7 +68,7 @@ impl<'a> Parser<'a> {
 		let lo = self.token.span;
 
 		if !self.eat_keyword(kw::Meta) {
-			// TODO: react accordingly
+			todo!("react accordingly")
 		}
 
 		let fields = self.expect_braced(Self::parse_property_defs)?;
@@ -110,7 +110,7 @@ impl<'a> Parser<'a> {
 			(None, ItemKind::Path(path))
 		} else if self.check_keyword(kw::Meta) {
 			// `meta { <properties> }`
-			// TODO: change or emit warn about misplaced metadata
+			// TODO: change or emit warn about misplaced metadata, should go in passes
 			let metadata = self.parse_metadata()?.kind.clone();
 			(None, metadata)
 		} else if self.check_keyword(kw::Headers) {
@@ -134,7 +134,6 @@ impl<'a> Parser<'a> {
 			let (ident, item) = self.parse_enum()?;
 			(Some(ident), ItemKind::Enum(item))
 		} else if self.check_keyword(kw::Auth) {
-			// TODO: define `auth` syntax
 			// `auth <ident> { <auth_fields> }`
 			let (ident, item) = self.parse_auth()?;
 			(Some(ident), ItemKind::Auth(item))
@@ -151,14 +150,12 @@ impl<'a> Parser<'a> {
 			let params = self.parse_params()?;
 			(None, ItemKind::Params(params))
 		} else {
-			// TODO: this ignores when we parsed attributes but then drop them
-			// this make unattached attributes unsound
+			if attrs.is_empty() {
+				return Ok(None);
+			}
 
-			return Ok(None);
+			todo!("error if attributes are parsed but there is not item to attach them")
 		};
-
-		// TODO
-		// attrs.extend(self.parse_inline_attrs()?);
 
 		Ok(Some(Self::make_item(attrs, kind, ident, self.span(lo))))
 	}
@@ -270,7 +267,7 @@ impl<'a> Parser<'a> {
 		} else {
 			// `auth BasicAuth { <field_defs> }`
 
-			// TODO
+			// TODO: define `auth` syntax and parse it
 			let _fields = self.expect_braced(Self::parse_field_defs)?;
 
 			Auth::Define {}

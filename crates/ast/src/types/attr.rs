@@ -1,4 +1,4 @@
-use super::{Expr, Path};
+use super::Expr;
 use crate::types::P;
 use lexer::rich::{Delimiter, Token};
 use session::{Ident, Span, Symbol};
@@ -75,16 +75,11 @@ impl AttrId {
 	pub fn make_one() -> Self {
 		Self(ATTR_NEXT_ID.fetch_add(1, Ordering::Relaxed))
 	}
-
-	// TODO: this is only used in tests
-	pub fn reset() {
-		ATTR_NEXT_ID.store(0, Ordering::Relaxed);
-	}
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NormalAttr {
-	pub path: Path,
+	pub path: Ident,
 	pub delim: Delimiter,
 	pub tokens: ThinVec<Token>,
 }

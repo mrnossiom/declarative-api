@@ -55,8 +55,8 @@ impl<'a> Cursor<'a> {
 			'<' => Lt,
 			'>' => Gt,
 
-			// TODO: remove from enum, is contained by ident
-			// '-' => Minus,
+			// TODO: `-`s can be contained by idents, consider this in diagnostics
+			'-' => Minus,
 			'&' => And,
 			'|' => Or,
 			'+' => Plus,

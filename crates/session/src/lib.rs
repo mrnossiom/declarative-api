@@ -63,6 +63,13 @@ impl Session {
 	}
 }
 
+impl Drop for Session {
+	fn drop(&mut self) {
+		self.timer.print();
+		self.parse.diagnostic.print_statistics();
+	}
+}
+
 /// Info about a parsing session.
 #[derive(Debug)]
 pub struct ParseSession {
@@ -108,13 +115,6 @@ impl Timer {
 			}
 			println!("---");
 		}
-	}
-}
-
-// TODO: should be explicit
-impl Drop for Timer {
-	fn drop(&mut self) {
-		self.print();
 	}
 }
 

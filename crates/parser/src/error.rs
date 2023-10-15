@@ -40,3 +40,11 @@ pub struct InvalidVerb {
 	#[label("this is supposed to be a valid verb")]
 	pub found: Ident,
 }
+
+#[derive(Debug, IntoDiagnostic)]
+#[severity(Error)]
+#[message("we expected a type")]
+pub struct ExpectedType {
+	#[label("expected a type here")]
+	pub span: Span,
+}

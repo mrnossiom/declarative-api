@@ -241,8 +241,8 @@ impl StructMeta {
 				.expect("a single str literal enclosed in parenthesis")
 				.parse_args_with(<Ident as Parse>::parse)?;
 
-			// TODO: check is it is a valid severity
-			// TODO: support custom severities e.g. `severity("some custom String")`
+			// TODO: check if it is a valid severity
+			// IDEA: support custom severities e.g. `severity("some custom String")`
 
 			Self::Severity(meta, ident)
 		} else if meta.path().is_ident(attrs::MESSAGE) {

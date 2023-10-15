@@ -1,7 +1,6 @@
-use crate::{error::UnexpectedToken, PResult, Parser};
+use crate::{error::ExpectedType, PResult, Parser};
 use ast::types::{Ty, TyKind, P};
 use lexer::rich::{Delimiter, TokenKind};
-use session::sym;
 use thin_vec::thin_vec;
 use tracing::instrument;
 
@@ -19,12 +18,7 @@ impl<'a> Parser<'a> {
 		} else if let Some(ident) = self.eat_ident() {
 			Self::make_ty_kind_single(ident, self.token.span)
 		} else {
-			// TODO: maybe recover?
-			return Err(UnexpectedToken {
-				parsed: self.token.clone(),
-				expected: TokenKind::Ident(sym!("Type")),
-			}
-			.into());
+			return Err(ExpectedType { span: lo }.into());
 		};
 
 		Ok(Self::make_ty(kind, self.span(lo)))

@@ -32,9 +32,6 @@ impl<'a> Enricher<'a> {
 	}
 
 	/// Fetches the next token from the underlying poor lexer and add information
-	///
-	/// # Panics
-	/// TODO: invalid characters or ident are not implemented yet
 	#[instrument(level = "DEBUG", skip(self))]
 	pub fn next_token(&mut self) -> (Token, bool) {
 		let mut has_whitespace_before = false;

@@ -181,7 +181,6 @@ impl<'a> Cache<FileIdx> for SourceMapCacheHack<'a> {
 	}
 }
 
-// TODO: move elsewhere
 #[derive(Debug, Default)]
 struct OffsetOverflowError;
 
@@ -241,7 +240,6 @@ impl SourceFile {
 pub struct SourceFileId(u64);
 
 impl SourceFileId {
-	// TODO: string should be filename
 	#[must_use]
 	pub fn new(path: &FileName) -> Self {
 		let mut hasher = DefaultHasher::new();

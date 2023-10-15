@@ -175,9 +175,10 @@ impl SymbolInterner {
 
 		let id = this.arena.alloc_str(sym);
 
-		// TODO: check safety
-		// SAFETY: ?
-		let id = unsafe { &*(id as *mut str).cast_const() };
+		// SAFETY: this works as long as the intern is long-lived
+		// the interner is initialized in a thread local and gets
+		// dropped when the program exits
+		let id: &'static str = unsafe { &*(id as *mut str).cast_const() };
 
 		this.names.insert(id, name);
 		this.strings.push(id);

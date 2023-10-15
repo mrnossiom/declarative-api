@@ -55,9 +55,11 @@ impl Span {
 	/// # Panics
 	/// When used in a context where a source map is not available, this function will panic.
 	#[must_use]
+	#[track_caller]
 	pub fn file_idx(&self) -> FileIdx {
-		with_source_map(|sm| sm.lookup_source_file_index(self.low))
-			.expect("to be in a source map context")
+		with_source_map(|sm| sm.lookup_source_file_index(self.low)).expect(
+			"when retrieving the file index of a span, I need to be in a source map context",
+		)
 	}
 }
 
@@ -98,7 +100,7 @@ impl ariadne::Span for Span {
 	fn source(&self) -> &Self::SourceId {
 		let idx = self.file_idx();
 
-		// TODO: change this
+		// TODO: ugly, change this
 		Box::leak(Box::new(idx))
 	}
 

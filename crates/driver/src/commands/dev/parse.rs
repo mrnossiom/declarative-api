@@ -17,11 +17,8 @@ impl Act for Parse {
 	fn act(&mut self) -> Result<(), Box<dyn Error>> {
 		let session = Session::default();
 
-		// TODO: move this to tests, is used to see when we don't resolve correctly the char positions
-		let _anon = session
-			.parse
-			.source_map
-			.load_anon((0..100).map(|int| int.to_string()).collect());
+		// TODO: create a new test case to check that we resolve correctly the char
+		// positions instead of adding a dummy padding file at the beginning of the source map
 
 		let file = session.parse.source_map.load_file(&self.file)?;
 

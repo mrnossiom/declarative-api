@@ -41,7 +41,7 @@ pub trait MutVisitor: Sized {
 
 	// For the next functions we don't use a `_` prefix because of trait impl autocomplete
 	fn visit_tokens(&mut self, tokens: &mut ThinVec<Token>) {
-		// TODO
+		// Nothing to explore further
 		let _ = tokens;
 	}
 	fn visit_id(&mut self, id: &mut NodeId) {
@@ -250,7 +250,7 @@ pub mod noop {
 					delim: _,
 				} = attr;
 
-				v.visit_path(path);
+				v.visit_ident(path);
 				v.visit_tokens(tokens);
 			}
 			AttrKind::Meta(attr) => {

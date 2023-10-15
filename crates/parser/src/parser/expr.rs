@@ -82,8 +82,9 @@ impl<'a> Parser<'a> {
 		};
 		let value = self.parse_expr()?;
 
-		// TODO: parse inline attrs
-		attrs.extend(ThinVec::new());
+		if let Some(attrs_) = self.parse_inline_attrs()? {
+			attrs.extend(attrs_);
+		}
 
 		Ok(Some(Self::make_property_def(
 			attrs,
