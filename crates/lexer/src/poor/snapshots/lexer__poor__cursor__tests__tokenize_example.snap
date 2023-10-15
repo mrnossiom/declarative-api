@@ -1,0 +1,1044 @@
+---
+source: crates/lexer/src/poor/cursor.rs
+expression: vec
+---
+[
+    Token {
+        kind: LineComment(
+            Some(
+                Inner,
+            ),
+        ),
+        length: 65,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: LineComment(
+            Some(
+                Inner,
+            ),
+        ),
+        length: 36,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: LineComment(
+            Some(
+                Inner,
+            ),
+        ),
+        length: 35,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 12,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Ident,
+        length: 11,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 25,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Ident,
+        length: 7,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 7,
+    },
+    Token {
+        kind: Whitespace,
+        length: 3,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBracket,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 36,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 44,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 40,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: CloseBracket,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Ident,
+        length: 5,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 7,
+    },
+    Token {
+        kind: Semi,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Ident,
+        length: 5,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 9,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 9,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 3,
+    },
+    Token {
+        kind: Ident,
+        length: 7,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 4,
+    },
+    Token {
+        kind: LineComment(
+            Some(
+                Outer,
+            ),
+        ),
+        length: 11,
+    },
+    Token {
+        kind: Whitespace,
+        length: 4,
+    },
+    Token {
+        kind: LineComment(
+            Some(
+                Outer,
+            ),
+        ),
+        length: 20,
+    },
+    Token {
+        kind: Whitespace,
+        length: 4,
+    },
+    Token {
+        kind: LineComment(
+            Some(
+                Outer,
+            ),
+        ),
+        length: 35,
+    },
+    Token {
+        kind: Whitespace,
+        length: 4,
+    },
+    Token {
+        kind: Ident,
+        length: 13,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 11,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 37,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Or,
+        length: 1,
+    },
+    Token {
+        kind: At,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 6,
+    },
+    Token {
+        kind: Colon,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 9,
+    },
+    Token {
+        kind: Or,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 4,
+    },
+    Token {
+        kind: LineComment(
+            None,
+        ),
+        length: 77,
+    },
+    Token {
+        kind: Whitespace,
+        length: 5,
+    },
+    Token {
+        kind: Ident,
+        length: 7,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 6,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 23,
+    },
+    Token {
+        kind: Whitespace,
+        length: 3,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 4,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 7,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 4,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 7,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 5,
+    },
+    Token {
+        kind: Ident,
+        length: 5,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 6,
+    },
+    Token {
+        kind: Ident,
+        length: 7,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 3,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 46,
+    },
+    Token {
+        kind: Whitespace,
+        length: 5,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 6,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 3,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 6,
+    },
+    Token {
+        kind: Ident,
+        length: 5,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 7,
+    },
+    Token {
+        kind: LineComment(
+            Some(
+                Outer,
+            ),
+        ),
+        length: 69,
+    },
+    Token {
+        kind: Whitespace,
+        length: 7,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 6,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 12,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Or,
+        length: 1,
+    },
+    Token {
+        kind: At,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 6,
+    },
+    Token {
+        kind: Colon,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 6,
+    },
+    Token {
+        kind: Or,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 6,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 7,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Number,
+        ),
+        length: 3,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 7,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 2,
+    },
+    Token {
+        kind: Whitespace,
+        length: 7,
+    },
+    Token {
+        kind: LineComment(
+            None,
+        ),
+        length: 9,
+    },
+    Token {
+        kind: Whitespace,
+        length: 6,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 5,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 4,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 5,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 5,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 5,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 3,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 6,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Number,
+        ),
+        length: 3,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 7,
+    },
+    Token {
+        kind: LineComment(
+            None,
+        ),
+        length: 8,
+    },
+    Token {
+        kind: Whitespace,
+        length: 7,
+    },
+    Token {
+        kind: LineComment(
+            None,
+        ),
+        length: 9,
+    },
+    Token {
+        kind: Whitespace,
+        length: 7,
+    },
+    Token {
+        kind: LineComment(
+            None,
+        ),
+        length: 3,
+    },
+    Token {
+        kind: Whitespace,
+        length: 6,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 7,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Number,
+        ),
+        length: 3,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 7,
+    },
+    Token {
+        kind: LineComment(
+            None,
+        ),
+        length: 9,
+    },
+    Token {
+        kind: Whitespace,
+        length: 6,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 5,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 4,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 3,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 3,
+    },
+    Token {
+        kind: Ident,
+        length: 5,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 7,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 3,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 6,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 24,
+    },
+    Token {
+        kind: Whitespace,
+        length: 3,
+    },
+    Token {
+        kind: Ident,
+        length: 5,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 6,
+    },
+    Token {
+        kind: Whitespace,
+        length: 3,
+    },
+    Token {
+        kind: Ident,
+        length: 8,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 6,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 3,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 5,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: CloseBrace,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+]

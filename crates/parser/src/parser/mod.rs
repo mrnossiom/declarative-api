@@ -239,31 +239,43 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-	use crate::Parser;
-	use lexer::rich::{Delimiter, TokenKind};
-	use session::{sym, Diagnostic, ParseSession};
 
-	#[test]
-	fn parse_delimited() -> Result<(), Diagnostic> {
-		use TokenKind::*;
-
-		// Like in `@key(bar, baz)`
-		let src = "(bar, baz)";
-
-		let session = ParseSession::default();
-		let sf = session.source_map.load_anon(src.into());
-		let mut p = Parser::from_source(&session, &sf);
-
-		let (kind, tokens) = p.parse_delimited()?;
-
-		assert_eq!(kind, Delimiter::Parenthesis);
-
-		assert_eq!(tokens.len(), 3);
-
-		assert_eq!(tokens[0].kind, Ident(sym!("bar")));
-		assert_eq!(tokens[1].kind, Comma);
-		assert_eq!(tokens[2].kind, Ident(sym!("baz")));
-
-		Ok(())
+	#[macro_export]
+	macro_rules! parser {
+		($name:ident; $src:literal) => {
+			let src = $src;
+			$crate::parser!($name; src)
+		};
+		($name:ident; $src:ident) => {
+			let session = session::ParseSession::default();
+			let sf = session.source_map.load_anon($src.into());
+			let mut $name = $crate::Parser::from_source(&session, &sf);
+		};
 	}
+
+	#[macro_export]
+	macro_rules! assert_tokenize {
+		($method:ident, $src:literal) => {
+			paste::paste! {
+				#[test]
+				fn [<parse_ $method>]() -> Result<(), session::Diagnostic> {
+					$crate::parser!(p; $src);
+					insta::assert_debug_snapshot!(p.$method()?);
+					Ok(())
+				}
+			}
+		};
+		($variant:literal, $method:ident, $src:literal) => {
+			paste::paste! {
+				#[test]
+				fn [<parse_ $method _ $variant>]() -> Result<(), session::Diagnostic> {
+					$crate::parser!(p; $src);
+					insta::assert_debug_snapshot!(p.$method()?);
+					Ok(())
+				}
+			}
+		};
+	}
+
+	assert_tokenize!(parse_delimited, "(bar, baz)");
 }

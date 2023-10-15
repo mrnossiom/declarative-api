@@ -138,94 +138,18 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-	use crate::Parser;
-	use ast::types::{AttrId, AttrStyle, ExprKind, NodeId, Path, PathSegment, TyKind};
-	use lexer::rich::LiteralKind;
-	use pretty_assertions::assert_eq;
-	use session::{ident, sp, sym, Diagnostic, ParseSession};
-	use thin_vec::thin_vec;
+	use crate::assert_tokenize;
 
-	#[test]
-	fn parse_field_defs() -> Result<(), Diagnostic> {
-		let src = r#"
-## # Safety
-## This is a comment
-## This is a second line of comment
-# // TODO:                                                      this attr is not counted for Authorization but for X-Model
-#                                                               find a way to style this and hos to differentiate them
-Authorization long_string "The API Key of the User of the User" @prefix: "Api-Key"
-# ^ ident     ^ type      ^ sugar for description attr          ^ prefix attr
+	assert_tokenize!(
+		parse_field_defs,
+		r#"
+			## # Safety
+			## This is a comment
+			## This is a second line of comment
+			Authorization long_string "The API Key of the User of the User" |@prefix: "Api-Key"|
+			# ^ ident     ^ type      ^ sugar for description attr          ^ prefix attr
 
-X-Model string "The Model of the User"
-"#;
-
-		let session = ParseSession::default();
-		let source = session.source_map.load_anon(src.into());
-		let mut p = Parser::from_source(&session, &source);
-
-		let fields = p.parse_field_defs()?;
-
-		AttrId::reset();
-
-		assert_eq!(fields.len(), 2);
-
-		assert_eq!(
-			Parser::make_field_def(
-				thin_vec![
-					Parser::make_doc_attr(sym!(" # Safety"), AttrStyle::Outer, sp!(1, 12)),
-					Parser::make_doc_attr(
-						sym!(" This is a comment"),
-						AttrStyle::Outer,
-						sp!(13, 33)
-					),
-					Parser::make_doc_attr(
-						sym!(" This is a second line of comment"),
-						AttrStyle::Outer,
-						sp!(34, 69)
-					),
-					Parser::make_meta_attr(
-						ident!("description", 96, 133),
-						Some(Parser::make_expr(
-							thin_vec![],
-							ExprKind::Literal(
-								LiteralKind::Str,
-								sym!("The API Key of the User of the User")
-							),
-							sp!(96, 133)
-						)),
-						AttrStyle::Outer,
-						sp!(96, 133)
-					),
-				],
-				ident!("Authorization", 70, 83),
-				Parser::make_ty(
-					TyKind::Path(Path {
-						segments: thin_vec![PathSegment {
-							ident: ident!("long_string", 84, 95),
-							id: NodeId::DUMMY
-						}],
-						span: sp!(96, 133),
-					}),
-					sp!(84, 95)
-				),
-				sp!(1, 133)
-			),
-			fields[0]
-		);
-
-		assert_eq!(
-			Parser::make_field_def(
-				thin_vec![],
-				ident!("X-Model", 232, 239),
-				Parser::make_ty(
-					Parser::make_ty_kind_single(ident!("string", 240, 246), sp!(247, 270)),
-					sp!(240, 246)
-				),
-				sp!(134, 270)
-			),
-			fields[1]
-		);
-
-		Ok(())
-	}
+			X-Model string "The Model of the User"
+		"#
+	);
 }

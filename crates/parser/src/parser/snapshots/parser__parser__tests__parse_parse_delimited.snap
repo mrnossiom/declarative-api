@@ -1,0 +1,46 @@
+---
+source: crates/parser/src/parser/mod.rs
+expression: p.parse_delimited()?
+---
+(
+    Parenthesis,
+    [
+        Token {
+            kind: Ident(
+                Symbol(29, "bar"),
+            ),
+            span: Span {
+                start: BytePos(
+                    1,
+                ),
+                end: BytePos(
+                    4,
+                ),
+            },
+        },
+        Token {
+            kind: Comma,
+            span: Span {
+                start: BytePos(
+                    4,
+                ),
+                end: BytePos(
+                    5,
+                ),
+            },
+        },
+        Token {
+            kind: Ident(
+                Symbol(30, "baz"),
+            ),
+            span: Span {
+                start: BytePos(
+                    6,
+                ),
+                end: BytePos(
+                    9,
+                ),
+            },
+        },
+    ],
+)

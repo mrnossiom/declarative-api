@@ -296,61 +296,10 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-	use crate::Parser;
-	use ast::types::PathKind::{self, *};
-	use session::{ident, Diagnostic, ParseSession};
-	use thin_vec::thin_vec;
+	use crate::assert_tokenize;
 
-	fn expect_path_item(source: &str, expected: &PathKind) -> Result<(), Diagnostic> {
-		let session = ParseSession::default();
-		let source = session.source_map.load_anon(source.into());
-		let mut p = Parser::from_source(&session, &source);
-
-		let kind = p.parse_path_item_kind()?;
-
-		assert_eq!(&kind, expected);
-
-		Ok(())
-	}
-
-	#[test]
-	fn parse_path_items_simple() -> Result<(), Diagnostic> {
-		expect_path_item("var", &Simple(ident!("var", 0, 3)))?;
-
-		Ok(())
-	}
-
-	#[test]
-	fn parse_path_items_variable() -> Result<(), Diagnostic> {
-		expect_path_item("{var}", &Variable(ident!("var", 1, 4)))?;
-		Ok(())
-	}
-
-	#[test]
-	fn parse_path_items_complex_mixed() -> Result<(), Diagnostic> {
-		expect_path_item(
-			"var1/{var2}",
-			&Complex(thin_vec![
-				Simple(ident!("var1", 0, 4)),
-				Variable(ident!("var2", 6, 10))
-			]),
-		)?;
-
-		Ok(())
-	}
-
-	#[test]
-	fn parse_path_items_complex_long() -> Result<(), Diagnostic> {
-		expect_path_item(
-			"var1/var2/var3/var4",
-			&Complex(thin_vec![
-				Simple(ident!("var1", 0, 4)),
-				Simple(ident!("var2", 5, 9)),
-				Simple(ident!("var3", 10, 14)),
-				Simple(ident!("var4", 15, 19)),
-			]),
-		)?;
-
-		Ok(())
-	}
+	assert_tokenize!("simple", parse_path_item_kind, "var");
+	assert_tokenize!("variable", parse_path_item_kind, "{var}");
+	assert_tokenize!("complex", parse_path_item_kind, "var1/{var2}");
+	assert_tokenize!("long_complex", parse_path_item_kind, "var1/{var2}/{var3}");
 }

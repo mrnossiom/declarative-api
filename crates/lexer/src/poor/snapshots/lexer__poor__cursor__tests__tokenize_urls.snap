@@ -1,0 +1,62 @@
+---
+source: crates/lexer/src/poor/cursor.rs
+expression: vec
+---
+[
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: OpenBracket,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 36,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 44,
+    },
+    Token {
+        kind: Whitespace,
+        length: 2,
+    },
+    Token {
+        kind: Literal(
+            Str {
+                terminated: true,
+            },
+        ),
+        length: 40,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: CloseBracket,
+        length: 1,
+    },
+]

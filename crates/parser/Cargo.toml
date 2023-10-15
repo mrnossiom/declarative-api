@@ -15,4 +15,5 @@ thin-vec = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
-pretty_assertions = "1.4.0"
+insta = { workspace = true }
+paste = { workspace = true }

@@ -1,0 +1,26 @@
+---
+source: crates/lexer/src/poor/cursor.rs
+expression: vec
+---
+[
+    Token {
+        kind: At,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 6,
+    },
+    Token {
+        kind: Colon,
+        length: 1,
+    },
+    Token {
+        kind: Whitespace,
+        length: 1,
+    },
+    Token {
+        kind: Ident,
+        length: 4,
+    },
+]

@@ -1,0 +1,324 @@
+---
+source: crates/parser/src/parser/expr.rs
+expression: p.parse_field_defs()?
+---
+[
+    FieldDef {
+        attrs: [
+            Attribute {
+                kind: DocComment(
+                    Symbol(29, " # Safety"),
+                ),
+                style: Outer,
+                id: AttrId(
+                    0,
+                ),
+                span: Span {
+                    start: BytePos(
+                        4,
+                    ),
+                    end: BytePos(
+                        15,
+                    ),
+                },
+            },
+            Attribute {
+                kind: DocComment(
+                    Symbol(30, " This is a comment"),
+                ),
+                style: Outer,
+                id: AttrId(
+                    1,
+                ),
+                span: Span {
+                    start: BytePos(
+                        19,
+                    ),
+                    end: BytePos(
+                        39,
+                    ),
+                },
+            },
+            Attribute {
+                kind: DocComment(
+                    Symbol(31, " This is a second line of comment"),
+                ),
+                style: Outer,
+                id: AttrId(
+                    2,
+                ),
+                span: Span {
+                    start: BytePos(
+                        43,
+                    ),
+                    end: BytePos(
+                        78,
+                    ),
+                },
+            },
+            Attribute {
+                kind: Meta(
+                    MetaAttr {
+                        ident: Ident {
+                            symbol: Symbol(17, "description"),
+                            span: Span {
+                                start: BytePos(
+                                    108,
+                                ),
+                                end: BytePos(
+                                    145,
+                                ),
+                            },
+                        },
+                        expr: Some(
+                            Expr {
+                                attrs: [],
+                                kind: Literal(
+                                    Str,
+                                    Symbol(34, "The API Key of the User of the User"),
+                                ),
+                                id: NodeId(DUMMY),
+                                span: Span {
+                                    start: BytePos(
+                                        108,
+                                    ),
+                                    end: BytePos(
+                                        145,
+                                    ),
+                                },
+                            },
+                        ),
+                    },
+                ),
+                style: Inline,
+                id: AttrId(
+                    3,
+                ),
+                span: Span {
+                    start: BytePos(
+                        108,
+                    ),
+                    end: BytePos(
+                        145,
+                    ),
+                },
+            },
+            Attribute {
+                kind: Meta(
+                    MetaAttr {
+                        ident: Ident {
+                            symbol: Symbol(35, "prefix"),
+                            span: Span {
+                                start: BytePos(
+                                    148,
+                                ),
+                                end: BytePos(
+                                    154,
+                                ),
+                            },
+                        },
+                        expr: Some(
+                            Expr {
+                                attrs: [],
+                                kind: Literal(
+                                    Str,
+                                    Symbol(36, "Api-Key"),
+                                ),
+                                id: NodeId(DUMMY),
+                                span: Span {
+                                    start: BytePos(
+                                        156,
+                                    ),
+                                    end: BytePos(
+                                        165,
+                                    ),
+                                },
+                            },
+                        ),
+                    },
+                ),
+                style: Inline,
+                id: AttrId(
+                    4,
+                ),
+                span: Span {
+                    start: BytePos(
+                        147,
+                    ),
+                    end: BytePos(
+                        165,
+                    ),
+                },
+            },
+        ],
+        ident: Ident {
+            symbol: Symbol(32, "Authorization"),
+            span: Span {
+                start: BytePos(
+                    82,
+                ),
+                end: BytePos(
+                    95,
+                ),
+            },
+        },
+        ty: Ty {
+            kind: Path(
+                Path {
+                    segments: [
+                        PathSegment {
+                            ident: Ident {
+                                symbol: Symbol(33, "long_string"),
+                                span: Span {
+                                    start: BytePos(
+                                        96,
+                                    ),
+                                    end: BytePos(
+                                        107,
+                                    ),
+                                },
+                            },
+                            id: NodeId(DUMMY),
+                        },
+                    ],
+                    span: Span {
+                        start: BytePos(
+                            108,
+                        ),
+                        end: BytePos(
+                            145,
+                        ),
+                    },
+                },
+            ),
+            id: NodeId(DUMMY),
+            span: Span {
+                start: BytePos(
+                    96,
+                ),
+                end: BytePos(
+                    107,
+                ),
+            },
+        },
+        id: NodeId(DUMMY),
+        span: Span {
+            start: BytePos(
+                4,
+            ),
+            end: BytePos(
+                166,
+            ),
+        },
+    },
+    FieldDef {
+        attrs: [
+            Attribute {
+                kind: Meta(
+                    MetaAttr {
+                        ident: Ident {
+                            symbol: Symbol(17, "description"),
+                            span: Span {
+                                start: BytePos(
+                                    267,
+                                ),
+                                end: BytePos(
+                                    290,
+                                ),
+                            },
+                        },
+                        expr: Some(
+                            Expr {
+                                attrs: [],
+                                kind: Literal(
+                                    Str,
+                                    Symbol(39, "The Model of the User"),
+                                ),
+                                id: NodeId(DUMMY),
+                                span: Span {
+                                    start: BytePos(
+                                        267,
+                                    ),
+                                    end: BytePos(
+                                        290,
+                                    ),
+                                },
+                            },
+                        ),
+                    },
+                ),
+                style: Inline,
+                id: AttrId(
+                    5,
+                ),
+                span: Span {
+                    start: BytePos(
+                        267,
+                    ),
+                    end: BytePos(
+                        290,
+                    ),
+                },
+            },
+        ],
+        ident: Ident {
+            symbol: Symbol(37, "X-Model"),
+            span: Span {
+                start: BytePos(
+                    252,
+                ),
+                end: BytePos(
+                    259,
+                ),
+            },
+        },
+        ty: Ty {
+            kind: Path(
+                Path {
+                    segments: [
+                        PathSegment {
+                            ident: Ident {
+                                symbol: Symbol(38, "string"),
+                                span: Span {
+                                    start: BytePos(
+                                        260,
+                                    ),
+                                    end: BytePos(
+                                        266,
+                                    ),
+                                },
+                            },
+                            id: NodeId(DUMMY),
+                        },
+                    ],
+                    span: Span {
+                        start: BytePos(
+                            267,
+                        ),
+                        end: BytePos(
+                            290,
+                        ),
+                    },
+                },
+            ),
+            id: NodeId(DUMMY),
+            span: Span {
+                start: BytePos(
+                    260,
+                ),
+                end: BytePos(
+                    266,
+                ),
+            },
+        },
+        id: NodeId(DUMMY),
+        span: Span {
+            start: BytePos(
+                252,
+            ),
+            end: BytePos(
+                290,
+            ),
+        },
+    },
+]

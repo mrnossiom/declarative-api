@@ -1,0 +1,47 @@
+---
+source: crates/parser/src/parser/item.rs
+expression: p.parse_path_item_kind()?
+---
+Complex(
+    [
+        Simple(
+            Ident {
+                symbol: Symbol(29, "var1"),
+                span: Span {
+                    start: BytePos(
+                        0,
+                    ),
+                    end: BytePos(
+                        4,
+                    ),
+                },
+            },
+        ),
+        Variable(
+            Ident {
+                symbol: Symbol(30, "var2"),
+                span: Span {
+                    start: BytePos(
+                        6,
+                    ),
+                    end: BytePos(
+                        10,
+                    ),
+                },
+            },
+        ),
+        Variable(
+            Ident {
+                symbol: Symbol(31, "var3"),
+                span: Span {
+                    start: BytePos(
+                        13,
+                    ),
+                    end: BytePos(
+                        17,
+                    ),
+                },
+            },
+        ),
+    ],
+)

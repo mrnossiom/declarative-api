@@ -1,0 +1,17 @@
+---
+source: crates/parser/src/parser/item.rs
+expression: p.parse_path_item_kind()?
+---
+Variable(
+    Ident {
+        symbol: Symbol(29, "var"),
+        span: Span {
+            start: BytePos(
+                1,
+            ),
+            end: BytePos(
+                4,
+            ),
+        },
+    },
+)

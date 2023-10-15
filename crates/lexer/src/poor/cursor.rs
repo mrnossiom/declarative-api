@@ -126,59 +126,23 @@ impl<'a> IntoIterator for Cursor<'a> {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use crate::{
-		poor::LiteralKind,
-		tests::{ATTR, EXAMPLE, URLS},
-	};
+	use crate::tests::{ATTR, EXAMPLE, URLS};
 
-	macro_rules! tokens {
-		($expr:ident, $(($ty:expr, $len:literal)),+) => {
-			let mut tokens = Cursor::from_source($expr).into_iter();
-
-			$(
-				assert_eq!(tokens.next(), Some(Token::new($ty, $len)));
-			)+
-			assert_eq!(tokens.next(), None);
+	macro_rules! assert_tokenize {
+		($variant:literal, $src:ident) => {
+			paste::paste! {
+				#[test]
+				fn [<tokenize_ $variant>]() {
+					let vec = super::Cursor::from_source($src)
+						.into_iter()
+						.collect::<Vec<_>>();
+					insta::assert_debug_snapshot!(vec);
+				}
+			}
 		};
 	}
 
-	#[test]
-	fn can_tokenize_example_file() {
-		let _poor_tokens = Cursor::from_source(EXAMPLE).into_iter().collect::<Vec<_>>();
-	}
-
-	#[test]
-	fn parse_attr() {
-		use crate::poor::TokenKind::*;
-
-		tokens![
-			ATTR,
-			(At, 1),
-			(Ident, 6),
-			(Colon, 1),
-			(Whitespace, 1),
-			(Ident, 4)
-		];
-	}
-
-	#[test]
-	fn parse_array_like() {
-		use crate::poor::TokenKind::*;
-
-		tokens![
-			URLS,
-			(Ident, 4),
-			(Whitespace, 1),
-			(OpenBracket, 1),
-			(Whitespace, 2),
-			(Literal(LiteralKind::Str { terminated: true }), 36),
-			(Whitespace, 2),
-			(Literal(LiteralKind::Str { terminated: true }), 44),
-			(Whitespace, 2),
-			(Literal(LiteralKind::Str { terminated: true }), 40),
-			(Whitespace, 1),
-			(CloseBracket, 1)
-		];
-	}
+	assert_tokenize!("example", EXAMPLE);
+	assert_tokenize!("attribute", ATTR);
+	assert_tokenize!("urls", URLS);
 }
