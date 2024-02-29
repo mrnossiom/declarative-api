@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 ast = { workspace = true }
-ast-lowering = { workspace = true }
 expand = { workspace = true }
 lexer = { workspace = true }
 parser = { workspace = true }
