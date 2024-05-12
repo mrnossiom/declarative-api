@@ -1,6 +1,16 @@
 # Declarative API
 
-## Generation process
+<p align="center"><strong>
+A wannabe full toolchain for an OpenAPI replacement including a compiler with pluggable generators as output
+</strong></p>
+
+<p align="center">
+  <a href="https://wakatime.com/badge/github/mrnossiom/declarative-api">
+    <img alt="Time spent" src="https://wakatime.com/badge/github/mrnossiom/declarative-api.svg" />
+  </a>
+</p>
+
+# Generation process
 
 Files are processed this way:
 
@@ -12,7 +22,7 @@ Files are processed this way:
 6. (TODO) Multiples passes are done on the HIR to check validity, correctness and completeness
 7. (TODO) Generators can output multiple format (`Markdown`, `Interactive page`, `OpenAPI`, `TypeScript`, `Rust`, etc.) from this HIR
 
-## Development
+# Development
 
 You test manually certain components of this project with the `driver` cli.
 
@@ -30,3 +40,8 @@ RUST_LOG=[<crate-name>=]<level>
 RUST_LOG=parser=tracer
 RUST_LOG=error,lexer=debug
 ```
+
+---
+
+Work is licensed under [`CECILL-2.1`](https://choosealicense.com/licenses/cecill-2.1/), a French OSS license that allows modification and distribution of the software while requiring the same license for derived works.
+
