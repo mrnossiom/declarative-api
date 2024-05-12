@@ -3,21 +3,6 @@
 //! It offers multiple abstractions to run the compiler process and the end-generator.
 //! A CLI is provided for development purposes but also for the end-user.
 
-#![warn(
-	// clippy::missing_docs_in_private_items,
-	clippy::unwrap_used,
-	clippy::nursery,
-	clippy::pedantic,
-	clippy::todo,
-	clippy::dbg_macro,
-	rustdoc::all,
-)]
-#![allow(
-	clippy::redundant_pub_crate,
-	clippy::enum_glob_use,
-	clippy::module_name_repetitions
-)]
-
 use crate::commands::Args;
 use clap::Parser;
 use commands::Act;

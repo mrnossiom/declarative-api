@@ -2,21 +2,6 @@
 //!
 //! Directly parses input sources in a stream of tokens for the parser.
 
-#![warn(
-	// clippy::missing_docs_in_private_items,
-	clippy::unwrap_used,
-	clippy::nursery,
-	clippy::pedantic,
-	clippy::todo,
-	clippy::dbg_macro,
-	rustdoc::all,
-)]
-#![allow(
-	clippy::redundant_pub_crate,
-	clippy::enum_glob_use,
-	clippy::module_name_repetitions
-)]
-
 pub mod poor;
 pub mod rich;
 

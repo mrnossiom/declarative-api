@@ -1,19 +1,3 @@
-#![warn(
-	// clippy::missing_docs_in_private_items,
-	clippy::unwrap_used,
-	clippy::nursery,
-	clippy::pedantic,
-	clippy::todo,
-	clippy::dbg_macro,
-	rustdoc::all,
-)]
-#![allow(
-	clippy::redundant_pub_crate,
-	clippy::enum_glob_use,
-	clippy::module_name_repetitions,
-	clippy::missing_errors_doc
-)]
-
 use ast::visitor::MutVisitor;
 use scope::{ModuleData, ScopeExpander};
 use session::{symbols::kw, Ident, Session, Span};
