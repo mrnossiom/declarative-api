@@ -80,15 +80,15 @@ struct Timer {
 
 impl Timer {
 	fn now(&mut self, label: &'static str) -> TimerGuard {
-		if self.registered.get(label).is_none() {
+		if self.registered.contains_key(label) {
+			panic!("timer label `{label}` already registered");
+		} else {
 			let cell = Rc::<Cell<_>>::default();
 			self.registered.insert(label, cell.clone());
 			TimerGuard {
 				start: Instant::now(),
 				cell,
 			}
-		} else {
-			panic!("timer label `{label}` already registered");
 		}
 	}
 

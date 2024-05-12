@@ -65,7 +65,7 @@ pub enum TokenKind {
 	/// Like the above, but containing invalid unicode codepoints.
 	InvalidIdent,
 
-	/// See [LiteralKind] for more details.
+	/// See [`LiteralKind`] for more details.
 	Literal(LiteralKind, Symbol),
 
 	// One-char tokens:
@@ -170,9 +170,9 @@ pub enum LiteralKind {
 	/// AST only, represent  `true` or `false`
 	Bool,
 
-	/// ""abc"", ""abc"
+	/// `"abc"`, `"abc`
 	Str,
-	/// "12_u8", "0o100", "0b120i99", "1f32".
+	/// `12_u8`, `0o100`, `0b120i99`, `1f32`.
 	Number,
 }
 

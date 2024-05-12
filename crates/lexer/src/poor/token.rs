@@ -39,7 +39,7 @@ pub enum TokenKind {
 	/// Like the above, but containing invalid unicode codepoints.
 	InvalidIdent,
 
-	/// See [LiteralKind] for more details.
+	/// See [`LiteralKind`] for more details.
 	Literal(LiteralKind),
 
 	// One-char tokens:
@@ -186,8 +186,8 @@ impl fmt::Display for TokenKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LiteralKind {
-	/// "12_u8", "0o100", "0b120i99", "1f32".
+	/// `12_u8`, `0o100`, `0b120i99`, `1f32`.
 	Number,
-	/// ""abc"", ""abc"
+	/// `"abc"`, `"abc`
 	Str { terminated: bool },
 }

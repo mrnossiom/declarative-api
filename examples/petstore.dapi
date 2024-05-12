@@ -38,7 +38,7 @@ scope pet {
 		name string
 		## The optional string following the type is sugar for @desc("...")
 		photoUrls [string] "Photos to be displayed on the selling page carousel"
-		## Maybe inline?
+		# Maybe inline?
 		tags [Tags]
 		status Status
 	}

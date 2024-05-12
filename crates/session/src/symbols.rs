@@ -4,7 +4,7 @@ use parking_lot::Mutex;
 use std::{
 	collections::HashMap,
 	fmt::{self, Display},
-	mem,
+	mem, ptr,
 };
 use tracing::instrument;
 use typed_arena::Arena;
@@ -178,7 +178,7 @@ impl SymbolInterner {
 		// SAFETY: this works as long as the intern is long-lived
 		// the interner is initialized in a thread local and gets
 		// dropped when the program exits
-		let id: &'static str = unsafe { &*(id as *mut str).cast_const() };
+		let id: &'static str = unsafe { &*ptr::from_mut::<str>(id).cast_const() };
 
 		this.names.insert(id, name);
 		this.strings.push(id);
