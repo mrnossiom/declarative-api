@@ -1,6 +1,6 @@
 use crate::commands::Act;
-use parser::Parser;
-use session::{add_source_map_context, Session};
+use dapic_parser::Parser;
+use dapic_session::{add_source_map_context, Session};
 use std::{
 	collections::hash_map::RandomState,
 	error::Error,

@@ -1,12 +1,12 @@
 lints.workspace = true
 
 [package]
-name = "ast"
+name = "dapic_ast"
 version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-session = { workspace = true }
-lexer = { workspace = true }
+dapic_session = { workspace = true }
+dapic_lexer = { workspace = true }
 
 thin-vec = { workspace = true }

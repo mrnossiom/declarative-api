@@ -1,14 +1,14 @@
 lints.workspace = true
 
 [package]
-name = "session"
+name = "dapic_session"
 version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-macros = { workspace = true }
-tracing = { workspace = true }
+dapic_macros = { workspace = true }
 
+tracing = { workspace = true }
 ariadne = { workspace = true }
 parking_lot = { workspace = true }
 

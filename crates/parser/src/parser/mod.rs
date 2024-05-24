@@ -2,8 +2,8 @@ use crate::{
 	error::{UnexpectedToken, UnexpectedTokenInsteadOfKeyword},
 	PResult,
 };
-use lexer::rich::{Delimiter, Enricher, Token, TokenKind};
-use session::{DiagnosticsHandler, Ident, ParseSession, SourceFile, Symbol};
+use dapic_lexer::rich::{Delimiter, Enricher, Token, TokenKind};
+use dapic_session::{DiagnosticsHandler, Ident, ParseSession, SourceFile, Symbol};
 use std::mem;
 use thin_vec::ThinVec;
 use tracing::instrument;
@@ -247,7 +247,7 @@ mod tests {
 			$crate::parser!($name; src)
 		};
 		($name:ident; $src:ident) => {
-			let session = session::ParseSession::default();
+			let session = dapic_session::ParseSession::default();
 			let sf = session.source_map.load_anon($src.into());
 			let mut $name = $crate::Parser::from_source(&session, &sf);
 		};
@@ -258,7 +258,7 @@ mod tests {
 		($method:ident, $src:literal) => {
 			paste::paste! {
 				#[test]
-				fn [<parse_ $method>]() -> Result<(), session::Diagnostic> {
+				fn [<parse_ $method>]() -> Result<(), dapic_session::Diagnostic> {
 					$crate::parser!(p; $src);
 					insta::assert_debug_snapshot!(p.$method()?);
 					Ok(())
@@ -268,7 +268,7 @@ mod tests {
 		($variant:literal, $method:ident, $src:literal) => {
 			paste::paste! {
 				#[test]
-				fn [<parse_ $method _ $variant>]() -> Result<(), session::Diagnostic> {
+				fn [<parse_ $method _ $variant>]() -> Result<(), dapic_session::Diagnostic> {
 					$crate::parser!(p; $src);
 					insta::assert_debug_snapshot!(p.$method()?);
 					Ok(())

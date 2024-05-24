@@ -1,10 +1,10 @@
 use crate::{error::InvalidVerb, PResult, Parser};
-use ast::types::{
+use dapic_ast::types::{
 	Api, AttrVec, Auth, Body, Enum, Headers, Item, ItemKind, Metadata, Model, NodeId, Params,
 	PathItem, PathKind, Query, ScopeKind, StatusCode, Verb, P,
 };
-use lexer::rich::{Delimiter, OpKind, TokenKind};
-use session::{
+use dapic_lexer::rich::{Delimiter, OpKind, TokenKind};
+use dapic_session::{
 	symbols::{kw, remarkable},
 	Ident,
 };

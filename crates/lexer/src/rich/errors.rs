@@ -1,5 +1,5 @@
-use macros::IntoDiagnostic;
-use session::Span;
+use dapic_macros::IntoDiagnostic;
+use dapic_session::Span;
 
 #[derive(Debug, IntoDiagnostic)]
 #[message("we found an invalid identifier")]

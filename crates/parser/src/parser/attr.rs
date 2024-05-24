@@ -1,6 +1,6 @@
 use crate::{error::WrongAttrStyle, PResult, Parser};
-use ast::types::{AttrStyle, AttrVec, Attribute};
-use lexer::rich::{self, OpKind, TokenKind};
+use dapic_ast::types::{AttrStyle, AttrVec, Attribute};
+use dapic_lexer::rich::{self, OpKind, TokenKind};
 use tracing::{debug_span, instrument};
 
 impl<'a> Parser<'a> {

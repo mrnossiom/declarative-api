@@ -1,7 +1,7 @@
 use crate::{error::UnexpectedToken, PResult, Parser};
-use ast::types::{AttrStyle, Expr, ExprKind, FieldDef, NodeId, PropertyDef, P};
-use lexer::rich::{Delimiter, LiteralKind, TokenKind};
-use session::{
+use dapic_ast::types::{AttrStyle, Expr, ExprKind, FieldDef, NodeId, PropertyDef, P};
+use dapic_lexer::rich::{Delimiter, LiteralKind, TokenKind};
+use dapic_session::{
 	sym,
 	symbols::{attrs, kw},
 	Ident,

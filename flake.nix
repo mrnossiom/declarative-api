@@ -53,6 +53,7 @@
               act
 
               cargo-expand
+              cargo-insta
             ];
             buildInputs = with pkgs; [ ];
 

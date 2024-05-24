@@ -1,6 +1,6 @@
 use crate::types::{AttrVec, FieldDef, NodeId, P};
-use lexer::rich::LiteralKind;
-use session::{Ident, Span, Symbol};
+use dapic_lexer::rich::LiteralKind;
+use dapic_session::{Ident, Span, Symbol};
 use thin_vec::ThinVec;
 
 /// An expression.

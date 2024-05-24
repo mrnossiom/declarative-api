@@ -1,5 +1,5 @@
+use dapic_session::{Ident, Span, Symbol};
 use derive_more::AsRef;
-use session::{Ident, Span, Symbol};
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq, AsRef)]

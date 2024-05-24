@@ -1,7 +1,7 @@
 lints.workspace = true
 
 [package]
-name = "passes"
+name = "dapic_passes"
 version = "0.0.0"
 edition = "2021"
 

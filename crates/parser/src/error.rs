@@ -1,7 +1,7 @@
-use ast::types::AttrStyle;
-use lexer::rich::{Token, TokenKind};
-use macros::IntoDiagnostic;
-use session::{Diagnostic, Ident, Span, Symbol};
+use dapic_ast::types::AttrStyle;
+use dapic_lexer::rich::{Token, TokenKind};
+use dapic_macros::IntoDiagnostic;
+use dapic_session::{Diagnostic, Ident, Span, Symbol};
 
 pub type PResult<T> = Result<T, Diagnostic>;
 

@@ -1,5 +1,5 @@
 use crate::types::{AttrVec, NodeId, PropertyDef, Ty, P};
-use session::{Ident, Span};
+use dapic_session::{Ident, Span};
 use thin_vec::ThinVec;
 
 use super::Expr;

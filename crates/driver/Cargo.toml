@@ -1,16 +1,20 @@
 lints.workspace = true
 
 [package]
-name = "driver"
+name = "dapic_driver"
 version = "0.0.0"
 edition = "2021"
 
+[[bin]]
+name = "dapic"
+path = "src/main.rs"
+
 [dependencies]
-ast = { workspace = true }
-expand = { workspace = true }
-lexer = { workspace = true }
-parser = { workspace = true }
-session = { workspace = true }
+dapic_ast = { workspace = true }
+dapic_expand = { workspace = true }
+dapic_lexer = { workspace = true }
+dapic_parser = { workspace = true }
+dapic_session = { workspace = true }
 
 ariadne = { workspace = true }
 tracing = { workspace = true }

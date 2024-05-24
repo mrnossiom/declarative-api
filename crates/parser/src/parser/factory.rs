@@ -1,10 +1,10 @@
 use crate::Parser;
-use ast::types::{
+use dapic_ast::types::{
 	AttrId, AttrKind, AttrStyle, AttrVec, Attribute, Expr, ExprKind, FieldDef, Item, ItemKind,
 	MetaAttr, NodeId, NormalAttr, Path, PathSegment, PropertyDef, Ty, TyKind, P,
 };
-use lexer::rich::{Delimiter, Token};
-use session::{Ident, Span, Symbol};
+use dapic_lexer::rich::{Delimiter, Token};
+use dapic_session::{Ident, Span, Symbol};
 use thin_vec::{thin_vec, ThinVec};
 
 impl<'a> Parser<'a> {

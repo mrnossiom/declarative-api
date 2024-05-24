@@ -1,7 +1,7 @@
 lints.workspace = true
 
 [package]
-name = "macros"
+name = "dapic_macros"
 version = "0.0.0"
 edition = "2021"
 

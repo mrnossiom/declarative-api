@@ -1,11 +1,11 @@
-use ast::visitor::MutVisitor;
+use dapic_ast::visitor::MutVisitor;
+use dapic_session::{symbols::kw, Ident, Session, Span};
 use scope::{ModuleData, ScopeExpander};
-use session::{symbols::kw, Ident, Session, Span};
 
 mod errors;
 mod scope;
 
-pub fn expand_ast(session: &Session, api: &mut ast::types::Api) {
+pub fn expand_ast(session: &Session, api: &mut dapic_ast::types::Api) {
 	let file_path = session
 		.parse
 		.source_map

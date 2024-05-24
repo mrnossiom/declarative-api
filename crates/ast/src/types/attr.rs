@@ -1,7 +1,7 @@
 use super::Expr;
 use crate::types::P;
-use lexer::rich::{Delimiter, Token};
-use session::{Ident, Span, Symbol};
+use dapic_lexer::rich::{Delimiter, Token};
+use dapic_session::{Ident, Span, Symbol};
 use std::{
 	fmt,
 	sync::atomic::{AtomicU32, Ordering},

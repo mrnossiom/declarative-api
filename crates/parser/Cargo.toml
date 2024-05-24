@@ -1,15 +1,15 @@
 lints.workspace = true
 
 [package]
-name = "parser"
+name = "dapic_parser"
 version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-lexer = { workspace = true }
-ast = { workspace = true }
-session = { workspace = true }
-macros = { workspace = true }
+dapic_lexer = { workspace = true }
+dapic_ast = { workspace = true }
+dapic_session = { workspace = true }
+dapic_macros = { workspace = true }
 
 thin-vec = { workspace = true }
 tracing = { workspace = true }

@@ -1,6 +1,6 @@
-use ast::types::*;
-use lexer::rich::LiteralKind;
-use session::{ident, sym, Ident, Span};
+use dapic_ast::types::*;
+use dapic_lexer::rich::LiteralKind;
+use dapic_session::{ident, sym, Ident, Span};
 use thin_vec::thin_vec;
 
 #[allow(clippy::too_many_lines)]

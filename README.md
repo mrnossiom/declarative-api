@@ -10,6 +10,10 @@ A wannabe full toolchain for an OpenAPI replacement including a compiler with pl
   </a>
 </p>
 
+# Features
+
+- Could be integrated with [oxidecomputer/progenitor](https://github.com/oxidecomputer/progenitor) which generated Rust clients based on an OpenAPI spec.
+
 # Generation process
 
 Files are processed this way:

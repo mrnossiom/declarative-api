@@ -1,6 +1,6 @@
 pub(super) mod scope {
-	use macros::IntoDiagnostic;
-	use session::{Diagnostic, Ident, Span};
+	use dapic_macros::IntoDiagnostic;
+	use dapic_session::{Diagnostic, Ident, Span};
 
 	#[derive(Debug, IntoDiagnostic)]
 	#[message("found two candidate to import, but can only choose one between `{sibling_candidate}` and `{child_candidate}`")]

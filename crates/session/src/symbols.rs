@@ -1,5 +1,5 @@
 use crate::span::Span;
-use macros::symbols;
+use dapic_macros::symbols;
 use parking_lot::Mutex;
 use std::{
 	collections::HashMap,

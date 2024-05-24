@@ -1,15 +1,15 @@
 lints.workspace = true
 
 [package]
-name = "lexer"
+name = "dapic_lexer"
 version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-session = { workspace = true }
-macros = { workspace = true }
-tracing = { workspace = true }
+dapic_session = { workspace = true }
+dapic_macros = { workspace = true }
 
+tracing = { workspace = true }
 parking_lot = { workspace = true }
 
 unic-emoji-char = "0.9.0"

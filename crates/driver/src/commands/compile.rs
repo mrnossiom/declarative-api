@@ -1,7 +1,7 @@
 use crate::commands::Act;
-use expand::expand_ast;
-use parser::Parser;
-use session::{add_source_map_context, Session};
+use dapic_expand::expand_ast;
+use dapic_parser::Parser;
+use dapic_session::{add_source_map_context, Session};
 use std::{error::Error, path::PathBuf};
 
 #[derive(Debug, clap::Parser)]

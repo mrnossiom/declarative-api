@@ -1,6 +1,6 @@
 use crate::{error::ExpectedType, PResult, Parser};
-use ast::types::{Ty, TyKind, P};
-use lexer::rich::{Delimiter, TokenKind};
+use dapic_ast::types::{Ty, TyKind, P};
+use dapic_lexer::rich::{Delimiter, TokenKind};
 use thin_vec::thin_vec;
 use tracing::instrument;
 

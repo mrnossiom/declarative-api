@@ -1,4 +1,4 @@
-use session::Span;
+use dapic_session::Span;
 use thin_vec::ThinVec;
 
 mod attr;

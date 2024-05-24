@@ -1,6 +1,6 @@
 use crate::types::{Api, Attribute, Expr, FieldDef, Item, NodeId, Path, PropertyDef, Ty, P};
-use lexer::rich::Token;
-use session::{Ident, Span};
+use dapic_lexer::rich::Token;
+use dapic_session::{Ident, Span};
 use thin_vec::ThinVec;
 
 pub trait MutVisitor: Sized {
@@ -62,7 +62,7 @@ pub mod noop {
 		ItemKind, MetaAttr, Metadata, Model, NormalAttr, Params, Path, PathItem, PathSegment,
 		PropertyDef, Query, ScopeKind, StatusCode, Ty, TyKind, Verb,
 	};
-	use session::Ident;
+	use dapic_session::Ident;
 
 	pub fn visit_root<V: MutVisitor>(
 		v: &mut V,

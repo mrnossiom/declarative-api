@@ -1,12 +1,12 @@
 use crate::errors::scope::{
 	CyclicImport, LoadingError, MultipleCandidates, NoCandidate, ParsingError,
 };
-use ast::{
+use dapic_ast::{
 	types::{AttrVec, Item, ItemKind, ScopeKind, P},
 	visitor::{noop, MutVisitor},
 };
-use parser::Parser;
-use session::{Diagnostic, Ident, Session, Span};
+use dapic_parser::Parser;
+use dapic_session::{Diagnostic, Ident, Session, Span};
 use std::{
 	fmt::Write,
 	mem,
@@ -149,7 +149,7 @@ impl<'a> ScopeExpander<'a> {
 }
 
 impl<'a> MutVisitor for ScopeExpander<'a> {
-	fn visit_item(&mut self, item: &mut ast::types::P<ast::types::Item>) {
+	fn visit_item(&mut self, item: &mut dapic_ast::types::P<dapic_ast::types::Item>) {
 		let ItemKind::Scope(kind) = &mut item.kind else {
 			noop::visit_item(self, item);
 			return;

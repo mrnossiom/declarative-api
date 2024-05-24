@@ -1,6 +1,6 @@
 use crate::commands::Act;
-use lexer::{poor::Cursor, rich::Enricher};
-use session::Session;
+use dapic_lexer::{poor::Cursor, rich::Enricher};
+use dapic_session::Session;
 use std::{error::Error, path::PathBuf};
 
 #[derive(Debug, clap::Parser)]

@@ -3,12 +3,12 @@ members = ["crates/*"]
 resolver = "2"
 
 [workspace.dependencies]
-ast = { path = "crates/ast" }
-expand = { path = "crates/expand" }
-lexer = { path = "crates/lexer" }
-macros = { path = "crates/macros" }
-parser = { path = "crates/parser" }
-session = { path = "crates/session" }
+dapic_ast = { path = "crates/ast" }
+dapic_expand = { path = "crates/expand" }
+dapic_lexer = { path = "crates/lexer" }
+dapic_macros = { path = "crates/macros" }
+dapic_parser = { path = "crates/parser" }
+dapic_session = { path = "crates/session" }
 
 ariadne = "0.3.0"
 parking_lot = "0.12.1"

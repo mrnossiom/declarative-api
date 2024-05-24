@@ -1,14 +1,14 @@
 lints.workspace = true
 
 [package]
-name = "expand"
+name = "dapic_expand"
 version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-ast = { workspace = true }
-macros = { workspace = true }
-parser = { workspace = true }
-session = { workspace = true }
+dapic_ast = { workspace = true }
+dapic_macros = { workspace = true }
+dapic_parser = { workspace = true }
+dapic_session = { workspace = true }
 
 thin-vec = { workspace = true }
