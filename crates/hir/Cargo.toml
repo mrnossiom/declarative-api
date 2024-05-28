@@ -1,0 +1,12 @@
+lints.workspace = true
+
+[package]
+name = "dapic_hir"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+dapic_ast = { workspace = true }
+dapic_session = { workspace = true }
+
+thin-vec = { workspace = true }

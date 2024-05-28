@@ -1,11 +1,12 @@
-use dapic_ast::visitor::MutVisitor;
+use crate::scope::{ScopeData, ScopeExpander};
+use dapic_ast::{types::Ast, visitor::MutVisitor};
 use dapic_session::{symbols::kw, Ident, Session, Span};
-use scope::{ModuleData, ScopeExpander};
 
 mod errors;
 mod scope;
 
-pub fn expand_ast(session: &Session, api: &mut dapic_ast::types::Api) {
+pub fn expand_ast(session: &Session, api: &mut Ast) {
+	// TODO: handle anon files
 	let file_path = session
 		.parse
 		.source_map
@@ -20,12 +21,12 @@ pub fn expand_ast(session: &Session, api: &mut dapic_ast::types::Api) {
 		.expect("path should not be empty")
 		.to_owned();
 
-	let mod_data = ModuleData {
+	let scope = ScopeData {
 		// TODO: change to real root api name
 		mod_path: vec![Ident::new(kw::PathRoot, Span::DUMMY)],
 		file_path_stack: vec![file_path],
 		dir_path,
 	};
 
-	ScopeExpander::new(session, mod_data).visit_root(api);
+	ScopeExpander { session, scope }.visit_root(api);
 }

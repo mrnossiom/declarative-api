@@ -16,6 +16,13 @@ impl Default for Span {
 	}
 }
 
+#[macro_export]
+macro_rules! sp {
+	($start:literal, $end:literal) => {
+		$crate::Span::from_bounds($crate::BytePos($start), $crate::BytePos($end))
+	};
+}
+
 impl Span {
 	pub const DUMMY: Self = Self {
 		low: BytePos(u32::MAX),

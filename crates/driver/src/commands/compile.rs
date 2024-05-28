@@ -14,19 +14,27 @@ impl Act for Compile {
 		let mut session = Session::default();
 
 		let file = session
-			.time("load_file")
+			.time("srcmap_load_file")
 			.run(|| session.parse.source_map.load_file(&self.file))?;
 
 		add_source_map_context(session.parse.source_map.clone(), || {
-			let mut api = session
-				.time("parse")
+			let Ok(mut ast) = session
+				.time("ast_parse")
 				.run(|| Parser::from_source(&session.parse, &file).parse_root())
-				.map_err(|err| session.parse.diagnostic.emit_diagnostic(&err))
-				.unwrap();
+				.map_err(|err| session.parse.diagnostic.emit_fatal_diagnostic(&err))
+			else {
+				unreachable!("above pattern is Result<Ast, !>, which means only valid pat is Ok(_)")
+			};
 
 			session
-				.time("expand")
-				.run(|| expand_ast(&session, &mut api));
+				.time("ast_expansion")
+				.run(|| expand_ast(&session, &mut ast));
+
+			let hir = session
+				.time("hir_creation")
+				.run(|| dapic_hir::compile_hir(&ast));
+
+			session.time("ast_drop").run(|| drop(ast));
 		});
 
 		Ok(())

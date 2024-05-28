@@ -3,6 +3,7 @@
 //! e.g. session context with diagnostics and source map
 
 mod diagnostics;
+mod id;
 mod macros;
 mod source_map;
 mod span;
@@ -11,13 +12,12 @@ mod symbols_;
 
 use std::{
 	cell::Cell,
-	collections::HashMap,
 	rc::Rc,
 	time::{Duration, Instant},
 };
 
 pub use diagnostics::{Diagnostic, DiagnosticsHandler};
-// pub use macros::{ident, sp, sym};
+pub use id::{Idx, IndexVec};
 pub use source_map::{
 	add_source_map_context, with_source_map, BytePos, SourceFile, SourceFileHash, SourceFileId,
 	SourceMap,
@@ -75,20 +75,16 @@ impl Default for ParseSession {
 
 #[derive(Debug, Default)]
 struct Timer {
-	registered: HashMap<&'static str, Rc<Cell<Duration>>>,
+	registered: Vec<(&'static str, Rc<Cell<Duration>>)>,
 }
 
 impl Timer {
 	fn now(&mut self, label: &'static str) -> TimerGuard {
-		if self.registered.contains_key(label) {
-			panic!("timer label `{label}` already registered");
-		} else {
-			let cell = Rc::<Cell<_>>::default();
-			self.registered.insert(label, cell.clone());
-			TimerGuard {
-				start: Instant::now(),
-				cell,
-			}
+		let cell = Rc::<Cell<_>>::default();
+		self.registered.push((label, cell.clone()));
+		TimerGuard {
+			start: Instant::now(),
+			cell,
 		}
 	}
 
@@ -119,31 +115,4 @@ impl Drop for TimerGuard {
 	fn drop(&mut self) {
 		self.cell.set(self.start.elapsed());
 	}
-}
-
-// --- Macros ---
-// Needs to be top level to be used in other crates
-
-#[macro_export]
-macro_rules! sym {
-	($sym:literal) => {
-		$crate::Symbol::intern($sym)
-	};
-}
-
-#[macro_export]
-macro_rules! ident {
-	($name:literal, $start:literal, $end:literal) => {
-		ident!($name, $crate::sp!($start, $end))
-	};
-	($name:literal, $span:expr) => {
-		$crate::Ident::new($crate::Symbol::intern($name), $span)
-	};
-}
-
-#[macro_export]
-macro_rules! sp {
-	($start:literal, $end:literal) => {
-		$crate::Span::from_bounds($crate::BytePos($start), $crate::BytePos($end))
-	};
 }

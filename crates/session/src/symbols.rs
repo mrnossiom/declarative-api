@@ -71,6 +71,13 @@ impl fmt::Debug for Symbol {
 	}
 }
 
+#[macro_export]
+macro_rules! sym {
+	($sym:literal) => {
+		$crate::Symbol::intern($sym)
+	};
+}
+
 impl Symbol {
 	#[must_use]
 	const fn new(id: u32) -> Self {
@@ -121,6 +128,16 @@ impl Ident {
 	pub const fn new(symbol: Symbol, span: Span) -> Self {
 		Self { symbol, span }
 	}
+}
+
+#[macro_export]
+macro_rules! ident {
+	($name:literal, $start:literal, $end:literal) => {
+		ident!($name, $crate::sp!($start, $end))
+	};
+	($name:literal, $span:expr) => {
+		$crate::Ident::new($crate::Symbol::intern($name), $span)
+	};
 }
 
 impl fmt::Display for Ident {

@@ -11,7 +11,8 @@ use syn::{
 
 enum SymbolGroupElement {
 	Symbol(Symbol),
-	Minus(Token![-]),
+	/// Corresponds to [`syn::token::Minus`]
+	Minus,
 }
 
 struct Symbol {
@@ -63,9 +64,9 @@ impl Parse for Input {
 					break;
 				}
 
-				if let Ok(minus) = content.parse::<Token![-]>() {
-					// This is use to break ordering of symbols.
-					symbols.push(SymbolGroupElement::Minus(minus));
+				if content.parse::<Token![-]>().is_ok() {
+					// This is used to break ordering of symbols.
+					symbols.push(SymbolGroupElement::Minus);
 				};
 
 				// First parse a symbol `Sym: "pat"`
@@ -163,7 +164,7 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
 		for symbol in &symbols {
 			let symbol = match symbol {
 				SymbolGroupElement::Symbol(symbol) => symbol,
-				SymbolGroupElement::Minus(_) => {
+				SymbolGroupElement::Minus => {
 					*prev_key.borrow_mut() = None;
 					continue;
 				}

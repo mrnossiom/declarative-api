@@ -5,6 +5,7 @@ resolver = "2"
 [workspace.dependencies]
 dapic_ast = { path = "crates/ast" }
 dapic_expand = { path = "crates/expand" }
+dapic_hir = { path = "crates/hir" }
 dapic_lexer = { path = "crates/lexer" }
 dapic_macros = { path = "crates/macros" }
 dapic_parser = { path = "crates/parser" }

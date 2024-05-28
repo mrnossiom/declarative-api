@@ -77,7 +77,9 @@ expression: p.parse_field_defs()?
                                     Str,
                                     Symbol(34, "The API Key of the User of the User"),
                                 ),
-                                id: NodeId(DUMMY),
+                                id: NodeId(
+                                    18446744073709551615,
+                                ),
                                 span: Span {
                                     start: BytePos(
                                         108,
@@ -124,7 +126,9 @@ expression: p.parse_field_defs()?
                                     Str,
                                     Symbol(36, "Api-Key"),
                                 ),
-                                id: NodeId(DUMMY),
+                                id: NodeId(
+                                    18446744073709551615,
+                                ),
                                 span: Span {
                                     start: BytePos(
                                         156,
@@ -178,7 +182,9 @@ expression: p.parse_field_defs()?
                                     ),
                                 },
                             },
-                            id: NodeId(DUMMY),
+                            id: NodeId(
+                                18446744073709551615,
+                            ),
                         },
                     ],
                     span: Span {
@@ -191,7 +197,9 @@ expression: p.parse_field_defs()?
                     },
                 },
             ),
-            id: NodeId(DUMMY),
+            id: NodeId(
+                18446744073709551615,
+            ),
             span: Span {
                 start: BytePos(
                     96,
@@ -201,7 +209,9 @@ expression: p.parse_field_defs()?
                 ),
             },
         },
-        id: NodeId(DUMMY),
+        id: NodeId(
+            18446744073709551615,
+        ),
         span: Span {
             start: BytePos(
                 4,
@@ -234,7 +244,9 @@ expression: p.parse_field_defs()?
                                     Str,
                                     Symbol(39, "The Model of the User"),
                                 ),
-                                id: NodeId(DUMMY),
+                                id: NodeId(
+                                    18446744073709551615,
+                                ),
                                 span: Span {
                                     start: BytePos(
                                         267,
@@ -288,7 +300,9 @@ expression: p.parse_field_defs()?
                                     ),
                                 },
                             },
-                            id: NodeId(DUMMY),
+                            id: NodeId(
+                                18446744073709551615,
+                            ),
                         },
                     ],
                     span: Span {
@@ -301,7 +315,9 @@ expression: p.parse_field_defs()?
                     },
                 },
             ),
-            id: NodeId(DUMMY),
+            id: NodeId(
+                18446744073709551615,
+            ),
             span: Span {
                 start: BytePos(
                     260,
@@ -311,7 +327,9 @@ expression: p.parse_field_defs()?
                 ),
             },
         },
-        id: NodeId(DUMMY),
+        id: NodeId(
+            18446744073709551615,
+        ),
         span: Span {
             start: BytePos(
                 252,

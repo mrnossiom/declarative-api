@@ -1,10 +1,10 @@
-use crate::types::{Api, Attribute, Expr, FieldDef, Item, NodeId, Path, PropertyDef, Ty, P};
+use crate::types::{Ast, Attribute, Expr, FieldDef, Item, NodeId, Path, PropertyDef, Ty, P};
 use dapic_lexer::rich::Token;
 use dapic_session::{Ident, Span};
 use thin_vec::ThinVec;
 
 pub trait MutVisitor: Sized {
-	fn visit_root(&mut self, api: &mut Api) {
+	fn visit_root(&mut self, api: &mut Ast) {
 		noop::visit_root(self, api);
 	}
 
@@ -58,7 +58,7 @@ pub trait MutVisitor: Sized {
 pub mod noop {
 	use super::{ns, MutVisitor};
 	use crate::types::{
-		Api, AttrKind, Attribute, Auth, Body, Enum, Expr, ExprKind, FieldDef, Headers, Item,
+		Ast, AttrKind, Attribute, Auth, Body, Enum, Expr, ExprKind, FieldDef, Headers, Item,
 		ItemKind, MetaAttr, Metadata, Model, NormalAttr, Params, Path, PathItem, PathSegment,
 		PropertyDef, Query, ScopeKind, StatusCode, Ty, TyKind, Verb,
 	};
@@ -66,12 +66,12 @@ pub mod noop {
 
 	pub fn visit_root<V: MutVisitor>(
 		v: &mut V,
-		Api {
+		Ast {
 			attrs,
 			items,
 			id,
 			span,
-		}: &mut Api,
+		}: &mut Ast,
 	) {
 		v.visit_id(id);
 		ns::visit_attrs(v, attrs);

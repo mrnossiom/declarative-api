@@ -16,32 +16,23 @@ use thin_vec::ThinVec;
 
 #[derive(Debug)]
 pub struct ScopeExpander<'a> {
-	session: &'a Session,
-	scope: ModuleData,
+	pub(crate) session: &'a Session,
+	pub(crate) scope: ScopeData,
 }
 
 #[derive(Debug)]
-pub struct ModuleData {
+pub struct ScopeData {
 	pub mod_path: Vec<Ident>,
 	pub file_path_stack: Vec<PathBuf>,
 	pub dir_path: PathBuf,
 }
 
-impl ModuleData {
+impl ScopeData {
 	pub(crate) fn with_dir_path(&self, dir_path: PathBuf) -> Self {
 		Self {
 			mod_path: self.mod_path.clone(),
 			file_path_stack: self.file_path_stack.clone(),
 			dir_path,
-		}
-	}
-}
-
-impl<'a> ScopeExpander<'a> {
-	pub const fn new(session: &'a Session, mod_data: ModuleData) -> Self {
-		ScopeExpander {
-			session,
-			scope: mod_data,
 		}
 	}
 }

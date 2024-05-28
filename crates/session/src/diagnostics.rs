@@ -4,7 +4,7 @@ use core::fmt;
 use parking_lot::Mutex;
 #[cfg(debug_assertions)]
 use std::panic::Location;
-use std::rc::Rc;
+use std::{process, rc::Rc};
 
 #[derive(Debug)]
 pub struct DiagnosticsHandler {
@@ -27,6 +27,12 @@ impl DiagnosticsHandler {
 
 	pub fn emit_diagnostic(&self, diag: &Diagnostic) {
 		self.inner.lock().emit_diagnostic(diag);
+	}
+
+	pub fn emit_fatal_diagnostic(&self, diag: &Diagnostic) -> ! {
+		self.inner.lock().emit_diagnostic(diag);
+		// TODO: print fatal warning
+		process::exit(1)
 	}
 
 	#[track_caller]

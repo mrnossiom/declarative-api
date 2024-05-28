@@ -49,7 +49,7 @@ impl SourceMap {
 	/// # Errors
 	/// Returns an error if the file cannot be read.
 	pub fn load_file(&self, path: &Path) -> io::Result<Rc<SourceFile>> {
-		let filename = FileName::new_real(path.to_owned());
+		let filename = Filename::new_real(path.to_owned());
 		let source = fs::read_to_string(path)?;
 
 		Ok(self.new_source_file(filename, source))
@@ -57,20 +57,20 @@ impl SourceMap {
 
 	#[must_use]
 	pub fn load_anon(&self, source: String) -> Rc<SourceFile> {
-		let filename = FileName::new_anon(&source);
+		let filename = Filename::new_anon(&source);
 
 		self.new_source_file(filename, source)
 	}
 
 	#[must_use]
-	fn new_source_file(&self, filename: FileName, source: String) -> Rc<SourceFile> {
+	fn new_source_file(&self, filename: Filename, source: String) -> Rc<SourceFile> {
 		self.try_new_source_file(filename, source)
 			.expect("SourceMap can only contain up to 4GiB of sources, this limit seems to have been exceeded")
 	}
 
 	fn try_new_source_file(
 		&self,
-		filename: FileName,
+		filename: Filename,
 		source: String,
 	) -> Result<Rc<SourceFile>, OffsetOverflowError> {
 		let file_id = SourceFileId::new(&filename);
@@ -197,7 +197,7 @@ pub struct SourceFile {
 	/// The name of the file that the source came from. Source that doesn't
 	/// originate from files has names between angle brackets by convention
 	/// (e.g., `<anon>`).
-	pub name: FileName,
+	pub name: Filename,
 	/// The complete source code.
 	pub source: Rc<String>,
 	/// The source code's hash.
@@ -214,7 +214,7 @@ pub struct SourceFile {
 }
 
 impl SourceFile {
-	fn new(name: FileName, source: String, start_pos: BytePos) -> Self {
+	fn new(name: Filename, source: String, start_pos: BytePos) -> Self {
 		let source_hash = SourceFileHash::new(&source);
 		let end_pos = start_pos
 			+ BytePos(u32::try_from(source.len()).expect("source must be less than 4 GiB"));
@@ -241,7 +241,7 @@ pub struct SourceFileId(u64);
 
 impl SourceFileId {
 	#[must_use]
-	pub fn new(path: &FileName) -> Self {
+	pub fn new(path: &Filename) -> Self {
 		let mut hasher = DefaultHasher::new();
 		path.hash(&mut hasher);
 		Self(hasher.finish())
@@ -270,14 +270,14 @@ impl fmt::Display for SourceFileHash {
 }
 
 #[derive(Debug, Clone, Hash)]
-pub enum FileName {
+pub enum Filename {
 	/// Real file path
 	Real(PathBuf),
 	/// Anonymous source for tests or internal use, stores a hash
 	Anon(u64),
 }
 
-impl FileName {
+impl Filename {
 	const fn new_real(path: PathBuf) -> Self {
 		Self::Real(path)
 	}
@@ -296,7 +296,7 @@ impl FileName {
 	}
 }
 
-impl fmt::Display for FileName {
+impl fmt::Display for Filename {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match &self {
 			Self::Real(path) => write!(f, "{}", path.display()),
