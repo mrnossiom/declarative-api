@@ -1,4 +1,4 @@
-use super::Act;
+use crate::commands::Act;
 use std::error::Error;
 
 mod expand;

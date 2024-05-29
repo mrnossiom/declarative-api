@@ -14,10 +14,10 @@ pub(crate) struct Lex {
 impl Act for Lex {
 	fn act(&mut self) -> Result<(), Box<dyn Error>> {
 		let session = Session::default();
-		let file = session.parse.source_map.load_file(&self.file)?;
+		let file = session.source_map.load_file(&self.file)?;
 
 		if self.rich {
-			Enricher::from_source(&session.parse, &file)
+			Enricher::from_source(&session.parse_sess(), &file)
 				.into_iter()
 				.inspect(|item| println!("{item}"))
 				.count();

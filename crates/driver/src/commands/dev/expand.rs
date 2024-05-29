@@ -1,7 +1,7 @@
 use crate::commands::Act;
 use dapic_expand::expand_ast;
 use dapic_parser::Parser;
-use dapic_session::{add_source_map_context, Session};
+use dapic_session::Session;
 use std::{
 	collections::hash_map::RandomState,
 	error::Error,
@@ -16,10 +16,10 @@ pub(crate) struct Expand {
 
 impl Act for Expand {
 	fn act(&mut self) -> Result<(), Box<dyn Error>> {
-		let session = Session::default();
-		let file = session.parse.source_map.load_file(&self.file)?;
-		let root = add_source_map_context(session.parse.source_map.clone(), || {
-			Parser::from_source(&session.parse, &file).parse_root()
+		let mut session = Session::default();
+		let file = session.source_map.load_file(&self.file)?;
+		let root = session.enter_source_map_ctx(|session| {
+			Parser::from_source(&session.parse_sess(), &file).parse_root()
 		});
 
 		let filename = format!(
@@ -36,10 +36,7 @@ impl Act for Expand {
 
 				root
 			}
-			Err(err) => {
-				session.parse.diagnostic.emit_diagnostic(&err);
-				panic!()
-			}
+			Err(err) => session.diagnostics.emit_fatal_diagnostic(&err),
 		};
 
 		expand_ast(&session, &mut root);

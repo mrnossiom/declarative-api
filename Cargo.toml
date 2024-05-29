@@ -11,7 +11,7 @@ dapic_macros = { path = "crates/macros" }
 dapic_parser = { path = "crates/parser" }
 dapic_session = { path = "crates/session" }
 
-ariadne = "0.3.0"
+ariadne = "0.4.0"
 parking_lot = "0.12.1"
 thin-vec = "0.2.12"
 tracing = "0.1.37"

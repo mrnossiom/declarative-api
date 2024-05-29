@@ -2,6 +2,13 @@
 //!
 //! Among others: session context, diagnostics, source map, etc.
 
+use crate::source_map::SOURCE_MAP;
+use std::{
+	cell::Cell,
+	rc::Rc,
+	time::{Duration, Instant},
+};
+
 mod diagnostics;
 mod id;
 mod macros;
@@ -10,20 +17,13 @@ mod span;
 #[path = "symbols.rs"]
 mod symbols_;
 
-use std::{
-	cell::Cell,
-	rc::Rc,
-	time::{Duration, Instant},
+pub use crate::{
+	diagnostics::{Diagnostic, DiagnosticsHandler},
+	id::{Idx, IndexVec},
+	source_map::{with_source_map, BytePos, SourceFile, SourceFileHash, SourceFileId, SourceMap},
+	span::Span,
+	symbols_::{Ident, Symbol},
 };
-
-pub use diagnostics::{Diagnostic, DiagnosticsHandler};
-pub use id::{Idx, IndexVec};
-pub use source_map::{
-	add_source_map_context, with_source_map, BytePos, SourceFile, SourceFileHash, SourceFileId,
-	SourceMap,
-};
-pub use span::Span;
-pub use symbols_::{Ident, Symbol};
 
 pub mod symbols {
 	pub use crate::symbols_::{attrs, kw, remarkable};
@@ -36,41 +36,49 @@ pub mod __private {
 }
 
 /// Represents the data associated with a compilation session.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Session {
-	pub parse: ParseSession,
+	pub diagnostics: DiagnosticsHandler,
+	pub source_map: Rc<SourceMap>,
 	timer: Timer,
 }
 
+impl Default for Session {
+	fn default() -> Self {
+		let source_map = Rc::<SourceMap>::default();
+
+		Self {
+			diagnostics: DiagnosticsHandler::new(source_map.clone()),
+			source_map,
+			timer: Timer::default(),
+		}
+	}
+}
+
 impl Session {
+	/// Provide [`SourceMap`] context through [`with_source_map`]
+	pub fn enter_source_map_ctx<T>(&mut self, f: impl FnOnce(&mut Self) -> T) -> T {
+		SOURCE_MAP.with(|sm| *sm.borrow_mut() = Some(self.source_map.clone()));
+		let value = f(self);
+		SOURCE_MAP.with(|sm| sm.borrow_mut().take());
+		value
+	}
+
+	pub const fn parse_sess(&self) -> ParseSession<'_> {
+		ParseSession {
+			diag: &self.diagnostics,
+		}
+	}
+
 	pub fn time(&mut self, label: &'static str) -> TimerGuard {
 		self.timer.now(label)
 	}
 }
 
-impl Drop for Session {
-	fn drop(&mut self) {
-		self.timer.print();
-		self.parse.diagnostic.print_statistics();
-	}
-}
-
 /// Info about a parsing session.
 #[derive(Debug)]
-pub struct ParseSession {
-	pub diagnostic: DiagnosticsHandler,
-	pub source_map: Rc<SourceMap>,
-}
-
-impl Default for ParseSession {
-	fn default() -> Self {
-		let source_map = Rc::<SourceMap>::default();
-
-		Self {
-			diagnostic: DiagnosticsHandler::new(source_map.clone()),
-			source_map,
-		}
-	}
+pub struct ParseSession<'a> {
+	pub diag: &'a DiagnosticsHandler,
 }
 
 #[derive(Debug, Default)]
@@ -96,6 +104,12 @@ impl Timer {
 			}
 			println!("---");
 		}
+	}
+}
+
+impl Drop for Timer {
+	fn drop(&mut self) {
+		self.print();
 	}
 }
 

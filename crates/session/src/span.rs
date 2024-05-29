@@ -112,10 +112,10 @@ impl ariadne::Span for Span {
 	}
 
 	fn start(&self) -> usize {
-		self.low().to_char_pos().to_usize()
+		self.low().to_usize()
 	}
 
 	fn end(&self) -> usize {
-		self.high().to_char_pos().to_usize()
+		self.high().to_usize()
 	}
 }

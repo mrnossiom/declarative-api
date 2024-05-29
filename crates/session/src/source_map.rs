@@ -18,7 +18,7 @@ pub use self::{
 };
 
 thread_local! {
-	static SOURCE_MAP: RefCell<Option<Rc<SourceMap>>> = RefCell::<Option<Rc<SourceMap>>>::default();
+	pub(crate) static SOURCE_MAP: RefCell<Option<Rc<SourceMap>>> = RefCell::<Option<Rc<SourceMap>>>::default();
 }
 
 #[inline]
@@ -27,13 +27,6 @@ where
 	F: FnOnce(&Rc<SourceMap>) -> R,
 {
 	SOURCE_MAP.with(|sm| sm.borrow().as_ref().map(f))
-}
-
-pub fn add_source_map_context<T>(source_map: Rc<SourceMap>, f: impl FnOnce() -> T) -> T {
-	SOURCE_MAP.with(|sm| *sm.borrow_mut() = Some(source_map));
-	let value = f();
-	SOURCE_MAP.with(|sm| sm.borrow_mut().take());
-	value
 }
 
 #[derive(Debug, Default)]
@@ -80,8 +73,8 @@ impl SourceMap {
 		} else {
 			let start_pos = self.allocate_space(source.len())?;
 
-			let diagnostic_source = ariadne::Source::from(&source);
 			let source_file = Rc::new(SourceFile::new(filename, source, start_pos));
+			let diagnostic_source = ariadne::Source::from(source_file.source.as_ref().clone());
 
 			// Check we haven't altered in any way the file
 			debug_assert_eq!(SourceFileId::from_source_file(&source_file), file_id);
@@ -165,6 +158,8 @@ impl SourceMap {
 struct SourceMapCacheHack<'a>(&'a SourceMap);
 
 impl<'a> Cache<FileIdx> for SourceMapCacheHack<'a> {
+	type Storage = String;
+
 	fn fetch(&mut self, id: &FileIdx) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
 		let source_file = &self.0.files.read().diagnostic_sources[id];
 
@@ -365,8 +360,6 @@ mod pos {
 		ops::{Add, Sub},
 	};
 
-	use crate::with_source_map;
-
 	/// Implements binary operators "&T op U", "T op &U", "&T op &U"
 	/// based on "T op U" where T and U are expected to be `Copy`able
 	macro_rules! forward_ref_bin_op {
@@ -480,28 +473,30 @@ mod pos {
 
 		/// A character offset.
 		///
-		/// Because of multibyte UTF-8 characters, a byte offset
-		/// is not equivalent to a character offset. The [`SourceMap`](crate::SourceMap) will convert [`BytePos`]
-		/// values to `CharPos` values as necessary.
+		/// Because of multibyte UTF-8 characters, a byte offset is not
+		/// equivalent to a character offset. The [`SourceMap`](crate::SourceMap)
+		/// will convert [`BytePos`] values to `CharPos` values as necessary.
 		///
-		/// It's a `usize` because it's easier to use with string slices
+		// currently unused as ariadne also supports byte offsets
+		// It's a `usize` because it's easier to use with string slices
 		pub struct CharPos(pub usize);
 	}
 
 	impl BytePos {
-		/// Returns the
+		/// Translates to a [`CharPos`]
 		///
 		/// # Panics
 		/// When used in a context where a source map is not available, this function will panic.
 		#[must_use]
-		pub fn to_char_pos(self) -> CharPos {
+		pub fn _to_char_pos(self) -> CharPos {
 			self.try_to_char_pos()
-				.expect("to be in a source map context")
+				.expect("this can only be called in a source context")
 		}
 
+		/// Translates to a [`CharPos`] if a [`SourceMap`] context is available
 		#[must_use]
 		pub fn try_to_char_pos(self) -> Option<CharPos> {
-			with_source_map(|sm| sm.lookup_byte_pos(self))
+			crate::with_source_map(|sm| sm.lookup_byte_pos(self))
 		}
 	}
 }

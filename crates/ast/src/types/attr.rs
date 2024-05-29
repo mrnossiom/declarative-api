@@ -1,5 +1,4 @@
-use super::Expr;
-use crate::types::P;
+use crate::types::{Expr, P};
 use dapic_lexer::rich::{Delimiter, Token};
 use dapic_session::{Ident, Span, Symbol};
 use std::{

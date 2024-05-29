@@ -6,8 +6,8 @@ use thin_vec::ThinVec;
 // TODO: macro to keep clean and sync?
 
 pub trait Visitor: Sized {
-	fn visit_root(&mut self, api: &Ast) {
-		noop::visit_root(self, api);
+	fn visit_root(&mut self, ast: &Ast) {
+		noop::visit_root(self, ast);
 	}
 
 	fn visit_attribute(&mut self, api: &Attribute) {

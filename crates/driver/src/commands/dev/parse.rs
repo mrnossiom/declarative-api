@@ -1,6 +1,6 @@
 use crate::commands::Act;
 use dapic_parser::Parser;
-use dapic_session::{add_source_map_context, Session};
+use dapic_session::Session;
 use std::{
 	collections::hash_map::RandomState,
 	error::Error,
@@ -15,15 +15,15 @@ pub(crate) struct Parse {
 
 impl Act for Parse {
 	fn act(&mut self) -> Result<(), Box<dyn Error>> {
-		let session = Session::default();
+		let mut session = Session::default();
 
 		// TODO: create a new test case to check that we resolve correctly the char
 		// positions instead of adding a dummy padding file at the beginning of the source map
 
-		let file = session.parse.source_map.load_file(&self.file)?;
+		let file = session.source_map.load_file(&self.file)?;
 
-		let root = add_source_map_context(session.parse.source_map.clone(), || {
-			Parser::from_source(&session.parse, &file).parse_root()
+		let root = session.enter_source_map_ctx(|session| {
+			Parser::from_source(&session.parse_sess(), &file).parse_root()
 		});
 
 		match root {
@@ -37,7 +37,7 @@ impl Act for Parse {
 				std::fs::write(&name, format!("{root:#?}"))?;
 				eprintln!("AST written to `{name}`");
 			}
-			Err(err) => session.parse.diagnostic.emit_diagnostic(&err),
+			Err(err) => session.diagnostics.emit_diagnostic(&err),
 		}
 
 		Ok(())

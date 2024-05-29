@@ -3,7 +3,7 @@ use crate::{
 	PResult,
 };
 use dapic_lexer::rich::{Delimiter, Enricher, Token, TokenKind};
-use dapic_session::{DiagnosticsHandler, Ident, ParseSession, SourceFile, Symbol};
+use dapic_session::{Ident, ParseSession, SourceFile, Symbol};
 use std::mem;
 use thin_vec::ThinVec;
 use tracing::instrument;
@@ -27,7 +27,8 @@ pub enum Spacing {
 }
 
 pub struct Parser<'a> {
-	pub session: &'a ParseSession,
+	pub session: &'a ParseSession<'a>,
+
 	/// The current token.
 	pub token: Token,
 	/// The spacing for the current token
@@ -41,13 +42,13 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
 	#[must_use]
-	pub fn from_source(session: &'a ParseSession, source: &'a SourceFile) -> Self {
+	pub fn from_source(session: &'a ParseSession<'a>, source: &'a SourceFile) -> Self {
 		let tokens = Enricher::from_source(session, source);
 		Self::from_tokens(session, tokens)
 	}
 
 	#[must_use]
-	pub fn from_tokens(session: &'a ParseSession, cursor: Enricher<'a>) -> Self {
+	pub fn from_tokens(session: &'a ParseSession<'a>, cursor: Enricher<'a>) -> Self {
 		let mut parser = Self {
 			session,
 			token: Token::DUMMY,
@@ -60,11 +61,6 @@ impl<'a> Parser<'a> {
 		parser.bump();
 
 		parser
-	}
-
-	#[must_use]
-	const fn diag(&self) -> &DiagnosticsHandler {
-		&self.session.diagnostic
 	}
 
 	/// Expects and consumes the token `t`. Signals an error if the next token is not `t`.
@@ -239,7 +235,6 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-
 	#[macro_export]
 	macro_rules! parser {
 		($name:ident; $src:literal) => {
@@ -247,9 +242,10 @@ mod tests {
 			$crate::parser!($name; src)
 		};
 		($name:ident; $src:ident) => {
-			let session = dapic_session::ParseSession::default();
+			let session = dapic_session::Session::default();
 			let sf = session.source_map.load_anon($src.into());
-			let mut $name = $crate::Parser::from_source(&session, &sf);
+			let psess = session.parse_sess();
+			let mut $name = $crate::Parser::from_source(&psess, &sf);
 		};
 	}
 

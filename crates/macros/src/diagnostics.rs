@@ -137,7 +137,8 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 	// Unpack every field
 	let fields_unpacked = unpack_fields_renamed(&fields);
 
-	let mut struct_name_derived_rng = {
+	// To ensure consistency between runs, rng seed is struct name
+	let mut struct_name_seeded_rng = {
 		let mut hash = DefaultHasher::default();
 		hash.write(s.ast().ident.to_string().as_bytes());
 		Rng::with_seed(hash.finish())
@@ -151,14 +152,14 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 
 			// We remove colors that aren't interesting (black, white, etc. and their shades)
 			// See <https://www.ditig.com/256-colors-cheat-sheet>
-			let color_id = struct_name_derived_rng.u8(9..=230);
+			let color_id = struct_name_seeded_rng.u8(9..=230);
 			quote!(let #ident = #renamed.to_string().fg(Color::Fixed(#color_id));)
 		})
 		.collect::<TokenStream>();
 
 	s.underscore_const(true);
 	Ok(s.gen_impl(quote! {
-		use ::dapic_session::__private::ariadne::{Color, Config, Fmt, Label, Report, ReportKind, LabelAttach};
+		use ::dapic_session::__private::ariadne::{Color, Config, Fmt, Label, Report, ReportKind, LabelAttach, IndexType};
 		use ::dapic_session::{with_source_map, Diagnostic, Span};
 
 		#[automatically_derived]
@@ -168,11 +169,12 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 				#fields_unpacked
 				#color_bindings
 
-				let report = Report::build(ReportKind::#severity, #main_span.file_idx(), #main_span.low().to_char_pos().to_usize())
+				let config = Config::default().with_label_attach(LabelAttach::Middle).with_index_type(IndexType::Byte);
+				let report = Report::build(ReportKind::#severity, #main_span.file_idx(), #main_span.low().to_usize())
 					.with_code(#error_code)
 					.with_message(format!(#message))
 					#(.with_label(#labels))*
-					.with_config(Config::default().with_label_attach(LabelAttach::Middle))
+					.with_config(config)
 					.finish();
 
 				Diagnostic::new(report)

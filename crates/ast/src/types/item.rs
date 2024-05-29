@@ -1,8 +1,6 @@
-use crate::types::{AttrVec, NodeId, PropertyDef, Ty, P};
+use crate::types::{AttrVec, Expr, NodeId, PropertyDef, Ty, P};
 use dapic_session::{Ident, Span};
 use thin_vec::ThinVec;
-
-use super::Expr;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Item {

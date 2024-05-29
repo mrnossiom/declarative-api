@@ -40,13 +40,39 @@ impl DiagnosticsHandler {
 		self.emit_diagnostic(&diag.into());
 	}
 
-	pub fn print_statistics(&self) {
+	/// Prints diagnostics statistics and exits if multiple errors were reported.
+	#[allow(clippy::significant_drop_tightening)]
+	pub fn check_degraded_and_exit(&self) {
 		let this = self.inner.lock();
 
-		println!(
-			"{} errors, {} warnings and {} advices were issued",
-			this.error_count, this.warn_count, this.advice_count
+		if this.degraded() {
+			println!(
+				"{} errors, {} warnings and {} advices were issued",
+				this.error_count, this.warn_count, this.advice_count
+			);
+
+			process::exit(1);
+		}
+	}
+
+	/// Prints stats on the number of non-fatal errors issued.
+	///
+	/// # Panics
+	/// Must not be called in a degraded state
+	pub fn print_final_stats(&self) {
+		let this = self.inner.lock();
+
+		assert!(
+			!this.degraded(),
+			"check degraded before printing final stats"
 		);
+
+		if this.warn_count != 0 || this.advice_count != 0 {
+			println!(
+				"{} warnings and {} advices were issued",
+				this.warn_count, this.advice_count
+			);
+		}
 	}
 }
 
@@ -74,6 +100,10 @@ impl InnerHandler {
 
 		#[cfg(debug_assertions)]
 		eprintln!("error was emitted here: {}", diag.loc);
+	}
+
+	const fn degraded(&self) -> bool {
+		self.error_count != 0
 	}
 }
 

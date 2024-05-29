@@ -1,12 +1,16 @@
 use dapic_session::{Ident, Span, Symbol};
-use derive_more::AsRef;
 use std::fmt;
 
-#[derive(Clone, Debug, PartialEq, Eq, AsRef)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Token {
 	pub kind: TokenKind,
-	#[as_ref]
 	pub span: Span,
+}
+
+impl AsRef<Span> for Token {
+	fn as_ref(&self) -> &Span {
+		&self.span
+	}
 }
 
 impl From<Token> for Span {

@@ -4,8 +4,8 @@ use dapic_session::{Ident, Span};
 use thin_vec::ThinVec;
 
 pub trait MutVisitor: Sized {
-	fn visit_root(&mut self, api: &mut Ast) {
-		noop::visit_root(self, api);
+	fn visit_root(&mut self, ast: &mut Ast) {
+		noop::visit_root(self, ast);
 	}
 
 	fn visit_attribute(&mut self, api: &mut Attribute) {

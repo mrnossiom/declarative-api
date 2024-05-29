@@ -233,7 +233,7 @@ impl<'a> Parser<'a> {
 
 			use remarkable::{Connect, Delete, Get, Head, Options, Post, Put, Trace};
 			if ![Connect, Delete, Get, Head, Options, Post, Put, Trace].contains(&method.symbol) {
-				return Err(InvalidVerb { found: method }.into());
+				self.session.diag.emit(InvalidVerb { found: method });
 			}
 		}
 

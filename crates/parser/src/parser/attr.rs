@@ -52,7 +52,7 @@ impl<'a> Parser<'a> {
 			if let Some(mut attr) = attr {
 				if attr.style != style {
 					// Emit and recover
-					self.diag().emit(WrongAttrStyle {
+					self.session.diag.emit(WrongAttrStyle {
 						attr: attr.span,
 						style,
 						parsed_style: attr.style,

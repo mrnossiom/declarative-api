@@ -1,7 +1,6 @@
-use super::errors;
 use crate::{
 	poor,
-	rich::{Delimiter, DocStyle, LiteralKind, OpKind, Token, TokenKind},
+	rich::{errors, Delimiter, DocStyle, LiteralKind, OpKind, Token, TokenKind},
 };
 use dapic_session::{BytePos, ParseSession, SourceFile, Span, Symbol};
 use tracing::instrument;
@@ -9,10 +8,10 @@ use tracing::instrument;
 /// Transforms [`poor::Token`]s that are only relevant when reading the source file at the
 /// same time into [`rich::Token`](crate::rich::Token)s that are self-explanatory. The latter doesn't include
 /// tokens that don't add information to the generator such as whitespace or comments.
-pub struct Enricher<'a> {
-	session: &'a ParseSession,
-	source: &'a str,
-	cursor: poor::Cursor<'a>,
+pub struct Enricher<'gctx> {
+	session: &'gctx ParseSession<'gctx>,
+	source: &'gctx str,
+	cursor: poor::Cursor<'gctx>,
 	start_pos: BytePos,
 	pos: BytePos,
 }
@@ -21,7 +20,7 @@ impl<'a> Enricher<'a> {
 	/// Creates a new [`Enricher`] for the given source, creating in the way
 	/// the underlying [`poor::Cursor`] to get tokens to enrich.
 	#[must_use]
-	pub fn from_source(session: &'a ParseSession, source: &'a SourceFile) -> Self {
+	pub fn from_source(session: &'a ParseSession<'a>, source: &'a SourceFile) -> Self {
 		Self {
 			session,
 			source: &source.source,
@@ -78,7 +77,7 @@ impl<'a> Enricher<'a> {
 				}
 
 				poor::TokenKind::InvalidIdent => {
-					self.session.diagnostic.emit(errors::InvalidIdent { span });
+					self.session.diag.emit(errors::InvalidIdent { span });
 
 					// TODO: enhance recovery by emitting a wrong identifier or helping the user to change it
 
@@ -87,7 +86,7 @@ impl<'a> Enricher<'a> {
 				}
 
 				poor::TokenKind::Unknown => {
-					self.session.diagnostic.emit(errors::Unknown { span });
+					self.session.diag.emit(errors::Unknown { span });
 
 					has_whitespace_before = true;
 					continue;
@@ -207,13 +206,14 @@ impl<'a> IntoIterator for Enricher<'a> {
 mod tests {
 	use super::*;
 	use crate::tests::{ATTR, EXAMPLE, URLS};
-	use dapic_session::{sym, symbols::attrs};
+	use dapic_session::{sym, symbols::attrs, Session};
 
 	macro_rules! tokens {
 		($expr:ident, $(($ty:expr, [$lo:literal, $hi:literal])),+) => {
-			let p_sess = ParseSession::default();
-			let source = p_sess.source_map.load_anon($expr.into());
-			let mut tokens = Enricher::from_source(&p_sess, &source).into_iter();
+			let sess = Session::default();
+			let source = sess.source_map.load_anon($expr.into());
+			let psess = sess.parse_sess();
+			let mut tokens = Enricher::from_source(&psess, &source).into_iter();
 
 			$(
 				assert_eq!(
@@ -227,12 +227,20 @@ mod tests {
 
 	#[test]
 	fn can_enrich_example_file() {
-		let parse_sess = ParseSession::default();
-		let source = parse_sess.source_map.load_anon(EXAMPLE.into());
+		let sess = Session::default();
+		let source = sess.source_map.load_anon(EXAMPLE.into());
 
-		let rich_tokens = Enricher::from_source(&parse_sess, &source)
-			.into_iter()
-			.collect::<Vec<_>>();
+		let rich_tokens = Enricher::from_source(
+			&{
+				let this = &sess;
+				ParseSession {
+					diag: &this.diagnostics,
+				}
+			},
+			&source,
+		)
+		.into_iter()
+		.collect::<Vec<_>>();
 
 		println!("{rich_tokens:#?}");
 	}
