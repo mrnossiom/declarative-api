@@ -295,8 +295,8 @@ impl<'a> Parser<'a> {
 mod tests {
 	use crate::assert_tokenize;
 
-	assert_tokenize!("simple", parse_path_item_kind, "var");
-	assert_tokenize!("variable", parse_path_item_kind, "{var}");
-	assert_tokenize!("complex", parse_path_item_kind, "var1/{var2}");
-	assert_tokenize!("long_complex", parse_path_item_kind, "var1/{var2}/{var3}");
+	assert_tokenize!(parse_path_item_kind, "simple", "var");
+	assert_tokenize!(parse_path_item_kind, "variable", "{var}");
+	assert_tokenize!(parse_path_item_kind, "complex", "var1/{var2}");
+	assert_tokenize!(parse_path_item_kind, "long_complex", "var1/{var2}/{var3}");
 }

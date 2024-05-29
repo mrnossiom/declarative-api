@@ -44,7 +44,7 @@ macro_rules! new_index_ty {
         	}
 
         	fn inc(self) -> Self {
-        		Self(self.0 + 1)
+        		Self(self.0.checked_add(1).expect(concat!("Ran out of ", stringify!($name))))
         	}
         }
     };

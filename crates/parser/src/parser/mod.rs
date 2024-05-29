@@ -256,19 +256,17 @@ mod tests {
 	#[macro_export]
 	macro_rules! assert_tokenize {
 		($method:ident, $src:literal) => {
-			paste::paste! {
-				#[test]
-				fn [<parse_ $method>]() -> Result<(), dapic_session::Diagnostic> {
-					$crate::parser!(p; $src);
-					insta::assert_debug_snapshot!(p.$method()?);
-					Ok(())
-				}
+			#[test]
+			fn $method() -> Result<(), dapic_session::Diagnostic> {
+				$crate::parser!(p; $src);
+				insta::assert_debug_snapshot!(p.$method()?);
+				Ok(())
 			}
 		};
-		($variant:literal, $method:ident, $src:literal) => {
+		($method:ident, $variant:literal, $src:literal) => {
 			paste::paste! {
 				#[test]
-				fn [<parse_ $method _ $variant>]() -> Result<(), dapic_session::Diagnostic> {
+				fn [<$method _ $variant>]() -> Result<(), dapic_session::Diagnostic> {
 					$crate::parser!(p; $src);
 					insta::assert_debug_snapshot!(p.$method()?);
 					Ok(())
