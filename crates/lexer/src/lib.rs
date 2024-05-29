@@ -1,6 +1,6 @@
-//! Declarative API Lexer
+//! Declarative API lexer
 //!
-//! Directly parses input sources in a stream of tokens for the parser.
+//! Entrypoint is [`poor::Cursor::from_source`]. Transform source test to a stream of tokens for the parser.
 
 pub mod poor;
 pub mod rich;

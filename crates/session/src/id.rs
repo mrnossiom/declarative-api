@@ -4,6 +4,9 @@ pub trait Idx: Copy + 'static + Eq + PartialEq + Debug + Hash {
 	fn new(idx: usize) -> Self;
 
 	fn index(self) -> usize;
+
+	#[must_use]
+	fn inc(self) -> Self;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -38,6 +41,10 @@ macro_rules! new_index_ty {
 
         	fn index(self) -> usize {
         		self.0
+        	}
+
+        	fn inc(self) -> Self {
+        		Self(self.0 + 1)
         	}
         }
     };

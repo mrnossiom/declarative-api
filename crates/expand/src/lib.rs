@@ -1,8 +1,17 @@
-use crate::scope::{ScopeData, ScopeExpander};
-use dapic_ast::{types::Ast, visitor::MutVisitor};
+//! Declarative API `AST` expansion
+//!
+//! Multiple passes are done on the `AST`:
+//! - [`ScopeExpander`] visits `scope` items and loads external ones by loading
+//!   accoding files.
+//! - [`NodeExpander`] renumbers every `AST` item node so each get a unique one.
+
+use crate::scope::ScopeData;
+pub use crate::{node::NodeExpander, scope::ScopeExpander};
+use dapic_ast::{types::Ast, visit_mut::MutVisitor};
 use dapic_session::{symbols::kw, Ident, Session, Span};
 
 mod errors;
+mod node;
 mod scope;
 
 pub fn expand_ast(session: &Session, api: &mut Ast) {
@@ -28,5 +37,8 @@ pub fn expand_ast(session: &Session, api: &mut Ast) {
 		dir_path,
 	};
 
+	// First load all external scopes
 	ScopeExpander { session, scope }.visit_root(api);
+	// Renumber every node to replace dummy ones
+	NodeExpander::default().visit_root(api);
 }

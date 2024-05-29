@@ -1,7 +1,7 @@
-//! Declarative API Parser
+//! Declarative API parser
 //!
-//! The main part is [`Parser`]. It takes a stream of rich lexer
-//! [`Tokens`](lexer::rich::Token) and parses them into a tree of AST nodes.
+//! Entrypoint is [`Parser::from_source`]. Takes a stream of rich lexer
+//! [`Token`](dapic_lexer::rich::Token)s and construct an abstract syntax tree.
 
 mod error;
 mod parser;

@@ -39,17 +39,15 @@ pub trait MutVisitor: Sized {
 		noop::visit_property_def(self, property);
 	}
 
+	// Nothing to explore further
 	// For the next functions we don't use a `_` prefix because of trait impl autocomplete
 	fn visit_tokens(&mut self, tokens: &mut ThinVec<Token>) {
-		// Nothing to explore further
 		let _ = tokens;
 	}
 	fn visit_id(&mut self, id: &mut NodeId) {
-		// Nothing to explore further
 		let _ = id;
 	}
 	fn visit_span(&mut self, span: &mut Span) {
-		// Nothing to explore further
 		let _ = span;
 	}
 }

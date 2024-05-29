@@ -1,6 +1,6 @@
-//! Data associated with a compilation session
+//! Declarative API data associated with a compilation session
 //!
-//! e.g. session context with diagnostics and source map
+//! Among others: session context, diagnostics, source map, etc.
 
 mod diagnostics;
 mod id;

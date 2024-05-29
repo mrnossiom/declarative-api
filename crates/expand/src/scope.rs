@@ -3,7 +3,7 @@ use crate::errors::scope::{
 };
 use dapic_ast::{
 	types::{AttrVec, Item, ItemKind, ScopeKind, P},
-	visitor::{noop, MutVisitor},
+	visit_mut::{noop, MutVisitor},
 };
 use dapic_parser::Parser;
 use dapic_session::{Diagnostic, Ident, Session, Span};
@@ -140,7 +140,7 @@ impl<'a> ScopeExpander<'a> {
 }
 
 impl<'a> MutVisitor for ScopeExpander<'a> {
-	fn visit_item(&mut self, item: &mut dapic_ast::types::P<dapic_ast::types::Item>) {
+	fn visit_item(&mut self, item: &mut P<Item>) {
 		let ItemKind::Scope(kind) = &mut item.kind else {
 			noop::visit_item(self, item);
 			return;

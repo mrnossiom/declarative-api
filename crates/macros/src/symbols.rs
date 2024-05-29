@@ -11,7 +11,7 @@ use syn::{
 
 enum SymbolGroupElement {
 	Symbol(Symbol),
-	/// Corresponds to [`syn::token::Minus`]
+	/// Corresponds to [`syn::token::Minus`](struct@syn::token::Minus)
 	Minus,
 }
 

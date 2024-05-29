@@ -151,7 +151,7 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 
 			// We remove colors that aren't interesting (black, white, etc. and their shades)
 			// See <https://www.ditig.com/256-colors-cheat-sheet>
-			let color_id = struct_name_derived_rng.u8(9..231);
+			let color_id = struct_name_derived_rng.u8(9..=230);
 			quote!(let #ident = #renamed.to_string().fg(Color::Fixed(#color_id));)
 		})
 		.collect::<TokenStream>();

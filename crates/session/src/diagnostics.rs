@@ -79,9 +79,9 @@ impl InnerHandler {
 
 #[derive(Debug)]
 pub struct Diagnostic {
+	report: Box<Report<'static, Span>>,
 	#[cfg(debug_assertions)]
 	loc: &'static Location<'static>,
-	report: Box<Report<'static, Span>>,
 }
 
 impl fmt::Display for Diagnostic {
@@ -95,9 +95,9 @@ impl Diagnostic {
 	#[must_use]
 	pub fn new(report: Report<'static, Span>) -> Self {
 		Self {
+			report: Box::new(report),
 			#[cfg(debug_assertions)]
 			loc: Location::caller(),
-			report: Box::new(report),
 		}
 	}
 }

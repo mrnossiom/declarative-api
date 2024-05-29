@@ -1,7 +1,7 @@
-//! Declarative API entry point.
+//! Declarative API entrypoint
 //!
-//! It offers multiple abstractions to run the compiler process and the end-generator.
-//! A CLI is provided for development purposes but also for the end-user.
+//! Provide the `dapic` CLI that allows both end-users and developpers to
+//! interact with the compiler.
 
 use crate::commands::Args;
 use clap::Parser;

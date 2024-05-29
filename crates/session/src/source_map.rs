@@ -13,7 +13,7 @@ use std::{
 
 use self::analyse::{analyze_source_file, MultiByteChar, NonNarrowChar};
 pub use self::{
-	monotonic::{FileIdx, FilesVec},
+	monotonic::FileIdx,
 	pos::{BytePos, CharPos},
 };
 
@@ -29,7 +29,7 @@ where
 	SOURCE_MAP.with(|sm| sm.borrow().as_ref().map(f))
 }
 
-pub fn add_source_map_context<T, F: FnOnce() -> T>(source_map: Rc<SourceMap>, f: F) -> T {
+pub fn add_source_map_context<T>(source_map: Rc<SourceMap>, f: impl FnOnce() -> T) -> T {
 	SOURCE_MAP.with(|sm| *sm.borrow_mut() = Some(source_map));
 	let value = f();
 	SOURCE_MAP.with(|sm| sm.borrow_mut().take());
@@ -409,6 +409,7 @@ mod pos {
 		) => {
 			$(
 				$(#[$attr])*
+				#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 				$vis struct $ident($inner_vis $inner_ty);
 
 				impl $ident {
@@ -475,7 +476,6 @@ mod pos {
 		/// This is kept small because an AST contains a lot of them.
 		/// They also the limit the amount of sources that can be imported (≈ 4GiB).
 		/// Find more information on [`SourceMap::allocate_space`](crate::SourceMap)
-		#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
 		pub struct BytePos(pub u32);
 
 		/// A character offset.
@@ -485,7 +485,6 @@ mod pos {
 		/// values to `CharPos` values as necessary.
 		///
 		/// It's a `usize` because it's easier to use with string slices
-		#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 		pub struct CharPos(pub usize);
 	}
 
