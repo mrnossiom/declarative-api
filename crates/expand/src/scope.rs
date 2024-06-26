@@ -2,7 +2,7 @@ use crate::errors::scope::{
 	CyclicImport, LoadingError, MultipleCandidates, NoCandidate, ParsingError,
 };
 use dapic_ast::{
-	types::{Ast, AttrVec, Item, ItemKind, ScopeKind, P},
+	types::{AttrVec, Item, ItemKind, Root, ScopeKind, P},
 	visit_mut::{noop, MutVisitor},
 };
 use dapic_parser::Parser;
@@ -24,7 +24,7 @@ impl<'a> ScopeExpander<'a> {
 	///
 	/// # Panics
 	/// If entrypoint filepath doesn't have a parent
-	pub fn expand(session: &'a Session, ast: &mut Ast) {
+	pub fn expand(session: &'a Session, ast: &mut Root) {
 		let entrypoint = session.source_map.lookup_source_file(ast.span.high());
 
 		let scope = entrypoint.name.clone().into_real().map(|file| {

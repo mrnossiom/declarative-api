@@ -1,4 +1,4 @@
-use crate::types::{Ast, Attribute, Expr, FieldDef, Item, NodeId, Path, PropertyDef, Ty, P};
+use crate::types::{Attribute, Expr, FieldDef, Item, NodeId, Path, PropertyDef, Root, Ty, P};
 use dapic_lexer::rich::Token;
 use dapic_session::{Ident, Span};
 use thin_vec::ThinVec;
@@ -6,7 +6,7 @@ use thin_vec::ThinVec;
 // TODO: macro to keep clean and sync?
 
 pub trait Visitor: Sized {
-	fn visit_root(&mut self, ast: &Ast) {
+	fn visit_root(&mut self, ast: &Root) {
 		noop::visit_root(self, ast);
 	}
 
@@ -56,20 +56,20 @@ pub trait Visitor: Sized {
 pub mod noop {
 	use super::{ns, Visitor};
 	use crate::types::{
-		Ast, AttrKind, Attribute, Auth, Body, Enum, Expr, ExprKind, FieldDef, Headers, Item,
-		ItemKind, MetaAttr, Metadata, Model, NormalAttr, Params, Path, PathItem, PathSegment,
-		PropertyDef, Query, ScopeKind, StatusCode, Ty, TyKind, Verb,
+		AttrKind, Attribute, Auth, Body, Enum, Expr, ExprKind, FieldDef, Headers, Item, ItemKind,
+		MetaAttr, Metadata, Model, NormalAttr, Params, Path, PathItem, PathSegment, PropertyDef,
+		Query, Root, ScopeKind, StatusCode, Ty, TyKind, Verb,
 	};
 	use dapic_session::Ident;
 
 	pub fn visit_root<V: Visitor>(
 		v: &mut V,
-		Ast {
+		Root {
 			attrs,
 			items,
 			id,
 			span,
-		}: &Ast,
+		}: &Root,
 	) {
 		v.visit_id(id);
 		ns::visit_attrs(v, attrs);

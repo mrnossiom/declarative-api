@@ -1,3 +1,8 @@
+use self::analyse::{analyze_source_file, MultiByteChar, NonNarrowChar};
+pub use self::{
+	monotonic::FileIdx,
+	pos::{BytePos, CharPos},
+};
 use ariadne::{Cache, Source};
 use parking_lot::RwLock;
 use std::{
@@ -11,14 +16,8 @@ use std::{
 	sync::atomic::{AtomicU32, Ordering},
 };
 
-use self::analyse::{analyze_source_file, MultiByteChar, NonNarrowChar};
-pub use self::{
-	monotonic::FileIdx,
-	pos::{BytePos, CharPos},
-};
-
 thread_local! {
-	pub(crate) static SOURCE_MAP: RefCell<Option<Rc<SourceMap>>> = RefCell::<Option<Rc<SourceMap>>>::default();
+	pub(crate) static SOURCE_MAP: RefCell<Option<Rc<SourceMap>>> = RefCell::default();
 }
 
 #[inline]
@@ -493,7 +492,7 @@ mod pos {
 				.expect("this can only be called in a source context")
 		}
 
-		/// Translates to a [`CharPos`] if a [`SourceMap`] context is available
+		/// Translates to a [`CharPos`] if a [`SourceMap`](crate::SourceMap) context is available
 		#[must_use]
 		pub fn try_to_char_pos(self) -> Option<CharPos> {
 			crate::with_source_map(|sm| sm.lookup_byte_pos(self))

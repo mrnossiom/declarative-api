@@ -34,7 +34,7 @@ pub enum ExprKind {
 ///
 /// It's represented as a sequence of identifiers.
 ///
-/// E.g., `path::to::model::Type`.
+/// E.g., `path::to::model::Type` or simply `Type`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Path {
 	/// The segments in the path: the things separated by `::`.

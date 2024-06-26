@@ -18,12 +18,12 @@ A wannabe full toolchain for an OpenAPI replacement including a compiler with pl
 
 Files are processed this way:
 
-1. They are first tokenized into [`lexer::poor::Token`]s that are deeply connected to source
-2. These are next enriched (see [`lexer::rich::Enricher`]) to crate independent [`lexer::rich::Token`]s
-3. The rich lexemes are then parsed into an AST with [`parser::Parser`] (the root node is [`ast::Api`])
-4. (WIP) This AST is expanded by the `expand` create, notably to resolve external files (e.g. sub-scopes)
-5. (WIP) The AST is then expanded to reach a easily machine readable state (AST lowering)
-6. (TODO) Multiples passes are done on the HIR to check validity, correctness and completeness
+1. They are first tokenized into `lexer::poor::Token`s that are deeply connected to source
+2. These are next enriched (see `lexer::rich::Enricher`) to crate independent `lexer::rich::Token`s
+3. The rich lexemes are then parsed into an AST with `parser::Parser` (the root node is `ast::Api`)
+4. This AST is expanded by the `expand` create, notably to resolve external files (e.g. sub-scopes)
+5. (WIP) AST is then lowered to reach an HIR, a easily machine readable state (AST lowering)
+6. (TODO) Passes are done on the HIR to check validity, correctness and completeness
 7. (TODO) Generators can output multiple format (`Markdown`, `Interactive page`, `OpenAPI`, `TypeScript`, `Rust`, etc.) from this HIR
 
 # Development

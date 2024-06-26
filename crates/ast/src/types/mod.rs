@@ -11,7 +11,7 @@ pub use expr::*;
 pub use item::*;
 
 #[derive(Debug, Clone)]
-pub struct Ast {
+pub struct Root {
 	pub attrs: AttrVec,
 	pub items: ThinVec<P<Item>>,
 

@@ -1,7 +1,7 @@
 use crate::{error::InvalidVerb, PResult, Parser};
 use dapic_ast::types::{
-	Ast, AttrVec, Auth, Body, Enum, Headers, Item, ItemKind, Metadata, Model, NodeId, Params,
-	PathItem, PathKind, Query, ScopeKind, StatusCode, Verb, P,
+	AttrVec, Auth, Body, Enum, Headers, Item, ItemKind, Metadata, Model, NodeId, Params, PathItem,
+	PathKind, Query, Root, ScopeKind, StatusCode, Verb, P,
 };
 use dapic_lexer::rich::{Delimiter, OpKind, TokenKind};
 use dapic_session::{
@@ -12,7 +12,7 @@ use thin_vec::{thin_vec, ThinVec};
 
 impl<'a> Parser<'a> {
 	#[tracing::instrument(level = "DEBUG", skip(self))]
-	pub fn parse_root(&mut self) -> PResult<Ast> {
+	pub fn parse_root(&mut self) -> PResult<Root> {
 		let lo = self.token.span;
 
 		let attrs = self.parse_inner_attrs()?;
@@ -21,7 +21,7 @@ impl<'a> Parser<'a> {
 		items.push(self.parse_metadata()?);
 		items.extend(self.parse_scope_content(None)?);
 
-		Ok(Ast {
+		Ok(Root {
 			attrs,
 			items,
 			id: NodeId::ROOT,
