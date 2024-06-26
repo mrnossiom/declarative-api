@@ -10,15 +10,15 @@ name = "dapic"
 path = "src/main.rs"
 
 [dependencies]
-dapic_ast = { workspace = true }
-dapic_expand = { workspace = true }
-dapic_hir = { workspace = true }
-dapic_lexer = { workspace = true }
-dapic_parser = { workspace = true }
-dapic_session = { workspace = true }
+dapic_ast.workspace = true
+dapic_expand.workspace = true
+dapic_hir.workspace = true
+dapic_lexer.workspace = true
+dapic_parser.workspace = true
+dapic_session.workspace = true
 
-ariadne = { workspace = true }
-tracing = { workspace = true }
+ariadne.workspace = true
+tracing.workspace = true
 
 clap = { version = "4.3.21", features = ["derive"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }

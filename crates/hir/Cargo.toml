@@ -6,7 +6,8 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-dapic_ast = { workspace = true }
-dapic_session = { workspace = true }
+dapic_ast.workspace = true
+dapic_session.workspace = true
 
-thin-vec = { workspace = true }
+thin-vec.workspace = true
+bumpalo.workspace = true
