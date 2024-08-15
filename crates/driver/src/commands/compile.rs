@@ -35,10 +35,12 @@ impl Act for Compile {
 
 			session.diagnostics.check_degraded_and_exit();
 
+			// let lctx = session.lctx();
+
 			// Build HIR
-			let _hir = session
-				.time("hir_creation")
-				.run(|| dapic_hir::compile_hir(&ast));
+			// let _hir = session
+			// 	.time("hir_creation")
+			// 	.run(|| dapic_hir::compile_hir(&ast));
 
 			session.diagnostics.check_degraded_and_exit();
 

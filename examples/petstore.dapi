@@ -1,3 +1,5 @@
+# ééééé — Test for multibyte chars
+
 meta {
 	name "Swagger Petstore"
 	# Am I dreaming or is this multiline string?
@@ -47,6 +49,7 @@ scope pet {
 		path . {
 			## Add a new pet to the store
 			# sugar -> @doc(" Add a new pet to the store")
+			@doc
 			verb POST {
 				# Maybe this should be a Media Type (ex-MIME)
 				# body Pet @type: "json"
@@ -75,7 +78,7 @@ scope pet {
 
 		path findByStatus {
 			## Finds Pets by status
-			verb GET {
+			verb GETTTY {
 				query {
 					# `status` param is a required array of `Status`
 					# sugar -> Array<Status>
