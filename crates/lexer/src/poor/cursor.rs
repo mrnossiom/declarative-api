@@ -13,7 +13,7 @@ pub(crate) const EOF_CHAR: char = '\0';
 
 impl<'a> Cursor<'a> {
 	#[must_use]
-	pub fn from_source(source: &'a str) -> Cursor<'a> {
+	pub fn from_source(source: &'a str) -> Self {
 		Cursor {
 			len_remaining: source.len(),
 			chars: source.chars(),
@@ -101,7 +101,7 @@ impl<'a> Cursor<'a> {
 
 pub struct Iter<'a>(Cursor<'a>);
 
-impl<'a> Iterator for Iter<'a> {
+impl Iterator for Iter<'_> {
 	type Item = Token;
 
 	fn next(&mut self) -> Option<Self::Item> {

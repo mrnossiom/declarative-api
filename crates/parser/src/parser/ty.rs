@@ -4,7 +4,7 @@ use dapic_lexer::rich::{Delimiter, TokenKind};
 use thin_vec::thin_vec;
 use tracing::instrument;
 
-impl<'a> Parser<'a> {
+impl Parser<'_> {
 	#[instrument(level = "DEBUG", skip(self))]
 	pub(super) fn parse_ty(&mut self) -> PResult<P<Ty>> {
 		let lo = self.token.span;

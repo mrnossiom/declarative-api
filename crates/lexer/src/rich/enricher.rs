@@ -5,6 +5,8 @@ use crate::{
 use dapic_session::{BytePos, ParseSession, SourceFile, Span, Symbol};
 use tracing::instrument;
 
+/// Turns poor tokens into rich tokens
+///
 /// Transforms [`poor::Token`]s that are only relevant when reading the source file at the
 /// same time into [`rich::Token`](crate::rich::Token)s that are self-explanatory. The latter doesn't include
 /// tokens that don't add information to the generator such as whitespace or comments.
@@ -179,7 +181,7 @@ impl<'a> Enricher<'a> {
 
 pub struct Iter<'a>(Enricher<'a>);
 
-impl<'a> Iterator for Iter<'a> {
+impl Iterator for Iter<'_> {
 	type Item = Token;
 
 	fn next(&mut self) -> Option<Self::Item> {

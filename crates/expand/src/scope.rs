@@ -61,7 +61,7 @@ impl ScopeData {
 
 type ExtScopeReturn = (ThinVec<P<Item>>, Span, Option<PathBuf>, PathBuf);
 
-impl<'a> ScopeExpander<'a> {
+impl ScopeExpander<'_> {
 	fn load_external_scope(
 		&self,
 		ident: Ident,
@@ -161,7 +161,7 @@ impl<'a> ScopeExpander<'a> {
 	}
 }
 
-impl<'a> MutVisitor for ScopeExpander<'a> {
+impl MutVisitor for ScopeExpander<'_> {
 	fn visit_item(&mut self, item: &mut P<Item>) {
 		let ItemKind::Scope(kind) = &mut item.kind else {
 			noop::visit_item(self, item);

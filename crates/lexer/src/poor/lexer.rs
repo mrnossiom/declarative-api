@@ -12,7 +12,7 @@ use crate::{
 use tracing::instrument;
 use unicode_xid::UnicodeXID;
 
-impl<'a> Cursor<'a> {
+impl Cursor<'_> {
 	#[instrument(level = "TRACE", skip(self))]
 	pub(crate) fn next_token(&mut self) -> Token {
 		let Some(first_char) = self.bump() else {

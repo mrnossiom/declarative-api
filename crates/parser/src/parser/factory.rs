@@ -7,7 +7,7 @@ use dapic_lexer::rich::{Delimiter, Token};
 use dapic_session::{Ident, Span, Symbol};
 use thin_vec::{thin_vec, ThinVec};
 
-impl<'a> Parser<'a> {
+impl Parser<'_> {
 	pub(super) fn span(&self, lo: Span) -> Span {
 		lo.to(self.prev_token.span)
 	}

@@ -408,8 +408,8 @@ mod pos {
 				impl $ident {
 					#[must_use]
 					#[inline(always)]
-					pub const fn from_usize(n: usize) -> $ident {
-						$ident(n as $inner_ty)
+					pub fn from_usize(n: usize) -> $ident {
+						$ident(TryFrom::try_from(n).expect("number does not fit in a usize"))
 					}
 
 					#[must_use]
@@ -426,8 +426,8 @@ mod pos {
 
 					#[must_use]
 					#[inline(always)]
-					pub const fn to_u32(self) -> u32 {
-						self.0 as u32
+					pub fn to_u32(self) -> u32 {
+						u32::try_from(self.0).expect("number does not fit in a u32")
 					}
 				}
 
@@ -488,14 +488,14 @@ mod pos {
 		/// # Panics
 		/// When used in a context where a source map is not available, this function will panic.
 		#[must_use]
-		pub fn _to_char_pos(self) -> CharPos {
+		pub(crate) fn to_char_pos(self) -> CharPos {
 			self.try_to_char_pos()
 				.expect("this can only be called in a source context")
 		}
 
 		/// Translates to a [`CharPos`] if a [`SourceMap`](crate::SourceMap) context is available
 		#[must_use]
-		pub fn try_to_char_pos(self) -> Option<CharPos> {
+		pub(crate) fn try_to_char_pos(self) -> Option<CharPos> {
 			crate::with_source_map(|sm| sm.lookup_byte_pos(self))
 		}
 	}

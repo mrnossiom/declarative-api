@@ -181,10 +181,7 @@ impl<'a> Parser<'a> {
 
 	#[instrument(level = "TRACE", skip(self))]
 	fn eat_ident(&mut self) -> Option<Ident> {
-		self.token.ident().map(|ident| {
-			self.bump();
-			ident
-		})
+		self.token.ident().inspect(|_| self.bump())
 	}
 
 	#[instrument(level = "TRACE", skip(self))]

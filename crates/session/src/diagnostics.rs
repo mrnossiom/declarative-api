@@ -12,7 +12,7 @@ pub struct DiagnosticsHandler {
 }
 
 impl DiagnosticsHandler {
-	pub fn new(source_map: Rc<SourceMap>) -> Self {
+	pub const fn new(source_map: Rc<SourceMap>) -> Self {
 		let inner = InnerHandler {
 			source_map,
 			error_count: 0,

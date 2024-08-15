@@ -3,7 +3,7 @@ use dapic_ast::types::{AttrStyle, AttrVec, Attribute};
 use dapic_lexer::rich::{self, OpKind, TokenKind};
 use tracing::{debug_span, instrument};
 
-impl<'a> Parser<'a> {
+impl Parser<'_> {
 	/// Parse `<inner_attrs>`
 	#[instrument(level = "DEBUG", skip(self))]
 	pub(super) fn parse_inner_attrs(&mut self) -> PResult<AttrVec> {

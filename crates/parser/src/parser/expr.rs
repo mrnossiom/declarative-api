@@ -9,7 +9,7 @@ use dapic_session::{
 use thin_vec::{thin_vec, ThinVec};
 use tracing::instrument;
 
-impl<'a> Parser<'a> {
+impl Parser<'_> {
 	#[instrument(level = "DEBUG", skip(self))]
 	pub(super) fn parse_expr(&mut self) -> PResult<P<Expr>> {
 		let lo = self.token.span;
