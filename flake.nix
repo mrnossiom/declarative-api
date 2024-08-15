@@ -1,16 +1,12 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
 
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
-    gitignore = {
-      url = "github:hercules-ci/gitignore.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    gitignore.url = "github:hercules-ci/gitignore.nix";
+    gitignore.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, rust-overlay, gitignore }:
@@ -34,6 +30,7 @@
         default = app;
         app = pkgs.callPackage ./package.nix { inherit gitignore; };
       });
+
       apps = forAllSystems (system: rec {
         default = app;
         app = mkApp (pkgs.getExe self.packages.${system}.app);
@@ -60,7 +57,7 @@
             RUST_SRC_PATH = pkgs.rustPlatform.rustLibSrc;
             LD_LIBRARY_PATH = makeLibraryPath buildInputs;
 
-            RUST_LOG = "";
+            RUST_LOG = "info";
           };
         });
     };

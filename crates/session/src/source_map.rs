@@ -8,6 +8,7 @@ use parking_lot::RwLock;
 use std::{
 	cell::RefCell,
 	collections::{hash_map::DefaultHasher, HashMap},
+	convert::Infallible,
 	fmt, fs,
 	hash::{Hash, Hasher},
 	io, mem,
@@ -156,20 +157,20 @@ impl SourceMap {
 
 struct SourceMapCacheHack<'a>(&'a SourceMap);
 
-impl<'a> Cache<FileIdx> for SourceMapCacheHack<'a> {
+impl Cache<FileIdx> for SourceMapCacheHack<'_> {
 	type Storage = String;
 
-	fn fetch(&mut self, id: &FileIdx) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
+	fn fetch(&mut self, id: &FileIdx) -> Result<&ariadne::Source, impl fmt::Debug> {
 		let source_file = &self.0.files.read().diagnostic_sources[id];
 
 		// TODO: check safety
 		// SAFETY: ?
 		let source_file = unsafe { mem::transmute::<&Source, &Source>(source_file) };
 
-		Ok(source_file)
+		Result::<_, Infallible>::Ok(source_file)
 	}
 
-	fn display<'b>(&self, id: &'b FileIdx) -> Option<Box<dyn fmt::Display + 'b>> {
+	fn display<'b>(&self, id: &'b FileIdx) -> Option<impl fmt::Display + 'b> {
 		let name = self.0.files.read().sources[id].name.clone();
 		Some(Box::new(name))
 	}

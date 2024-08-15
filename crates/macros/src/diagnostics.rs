@@ -170,7 +170,7 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 				#color_bindings
 
 				let config = Config::default().with_label_attach(LabelAttach::Middle).with_index_type(IndexType::Byte);
-				let report = Report::build(ReportKind::#severity, #main_span.file_idx(), #main_span.low().to_usize())
+				let report = Report::build(ReportKind::#severity, #main_span.clone())
 					.with_code(#error_code)
 					.with_message(format!(#message))
 					#(.with_label(#labels))*
