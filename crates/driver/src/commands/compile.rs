@@ -36,7 +36,7 @@ impl Act for Compile {
 			session.diagnostics.check_degraded_and_exit();
 
 			// Build HIR
-			let _hir = session
+			let hir = session
 				.time("hir_creation")
 				.run(|| dapic_hir::compile_hir(&ast));
 
