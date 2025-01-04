@@ -3,7 +3,7 @@ lints.workspace = true
 [package]
 name = "dapic_driver"
 version = "0.0.0"
-edition = "2021"
+edition = "2024"
 
 [[bin]]
 name = "dapic"
@@ -12,6 +12,7 @@ path = "src/main.rs"
 [dependencies]
 dapic_ast.workspace = true
 dapic_expand.workspace = true
+dapic_generator_openapi.workspace = true
 dapic_hir.workspace = true
 dapic_lexer.workspace = true
 dapic_parser.workspace = true

@@ -1,11 +1,11 @@
 use fastrand::Rng;
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote, ToTokens};
+use quote::{ToTokens, format_ident, quote};
 use std::{collections::hash_map::DefaultHasher, hash::Hasher};
 use syn::{
+	Attribute, Field, Fields, FieldsNamed, FieldsUnnamed, Ident, LitStr, Meta, Token, Type,
 	parse::{Parse, ParseStream},
-	parse_quote, Attribute, Field, Fields, FieldsNamed, FieldsUnnamed, Ident, LitStr, Meta, Token,
-	Type,
+	parse_quote,
 };
 use synstructure::Structure;
 
@@ -113,7 +113,10 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 					}
 
 					if label.primary && main_span.replace(label.clone()).is_some() {
-						bail!(label, "this label is defined as primary but there is already another primary label")
+						bail!(
+							label,
+							"this label is defined as primary but there is already another primary label"
+						)
 					}
 
 					labels.push(label);

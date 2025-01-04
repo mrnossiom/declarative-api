@@ -1,6 +1,6 @@
 use crate::{
-	error::{UnexpectedToken, UnexpectedTokenInsteadOfKeyword},
 	PResult,
+	error::{UnexpectedToken, UnexpectedTokenInsteadOfKeyword},
 };
 use dapic_lexer::rich::{Delimiter, Enricher, Token, TokenKind};
 use dapic_session::{Ident, ParseSession, SourceFile, Symbol};

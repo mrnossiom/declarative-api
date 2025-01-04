@@ -1,4 +1,4 @@
-use crate::types::{AttrVec, Expr, NodeId, PropertyDef, Ty, P};
+use crate::types::{AttrVec, Expr, NodeId, P, PropertyDef, Ty};
 use dapic_session::{Ident, Span};
 use thin_vec::ThinVec;
 

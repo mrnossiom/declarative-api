@@ -1,6 +1,6 @@
 use crate::{
 	poor,
-	rich::{errors, Delimiter, DocStyle, LiteralKind, OpKind, Token, TokenKind},
+	rich::{Delimiter, DocStyle, LiteralKind, OpKind, Token, TokenKind, errors},
 };
 use dapic_session::{BytePos, ParseSession, SourceFile, Span, Symbol};
 use tracing::instrument;
@@ -208,7 +208,7 @@ impl<'a> IntoIterator for Enricher<'a> {
 mod tests {
 	use super::*;
 	use crate::tests::{ATTR, EXAMPLE, URLS};
-	use dapic_session::{sym, symbols::attrs, Session};
+	use dapic_session::{Session, sym, symbols::attrs};
 
 	macro_rules! tokens {
 		($expr:ident, $(($ty:expr, [$lo:literal, $hi:literal])),+) => {

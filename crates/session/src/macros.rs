@@ -2,8 +2,8 @@
 
 #[cfg(test)]
 mod tests {
-	use crate::{ident, sp, sym};
 	use crate::{BytePos, Ident, Span, Symbol};
+	use crate::{ident, sp, sym};
 
 	#[test]
 	fn make_sym() {

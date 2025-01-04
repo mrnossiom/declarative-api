@@ -8,7 +8,7 @@ use clap::Parser;
 use commands::Act;
 use std::error::Error;
 use tracing_subscriber::{
-	filter::LevelFilter, fmt::format::FmtSpan, util::SubscriberInitExt, EnvFilter,
+	EnvFilter, filter::LevelFilter, fmt::format::FmtSpan, util::SubscriberInitExt,
 };
 
 mod commands;

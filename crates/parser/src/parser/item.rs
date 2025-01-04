@@ -1,14 +1,14 @@
-use crate::{error::InvalidVerb, PResult, Parser};
+use crate::{PResult, Parser, error::InvalidVerb};
 use dapic_ast::types::{
-	AttrVec, Auth, Body, Enum, Headers, Item, ItemKind, Metadata, Model, NodeId, Params, PathItem,
-	PathKind, Query, Root, ScopeKind, StatusCode, Verb, P,
+	AttrVec, Auth, Body, Enum, Headers, Item, ItemKind, Metadata, Model, NodeId, P, Params,
+	PathItem, PathKind, Query, Root, ScopeKind, StatusCode, Verb,
 };
 use dapic_lexer::rich::{Delimiter, OpKind, TokenKind};
 use dapic_session::{
-	symbols::{kw, remarkable},
 	Ident,
+	symbols::{kw, remarkable},
 };
-use thin_vec::{thin_vec, ThinVec};
+use thin_vec::{ThinVec, thin_vec};
 
 impl Parser<'_> {
 	#[tracing::instrument(level = "DEBUG", skip(self))]

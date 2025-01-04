@@ -1,4 +1,4 @@
-use self::analyse::{analyze_source_file, MultiByteChar, NonNarrowChar};
+use self::analyse::{MultiByteChar, NonNarrowChar, analyze_source_file};
 pub use self::{
 	monotonic::FileIdx,
 	pos::{BytePos, CharPos},
@@ -7,7 +7,7 @@ use ariadne::{Cache, Source};
 use parking_lot::RwLock;
 use std::{
 	cell::RefCell,
-	collections::{hash_map::DefaultHasher, HashMap},
+	collections::{HashMap, hash_map::DefaultHasher},
 	convert::Infallible,
 	fmt, fs,
 	hash::{Hash, Hasher},
@@ -57,8 +57,9 @@ impl SourceMap {
 
 	#[must_use]
 	fn new_source_file(&self, filename: Filename, source: String) -> Rc<SourceFile> {
-		self.try_new_source_file(filename, source)
-			.expect("SourceMap can only contain up to 4GiB of sources, this limit seems to have been exceeded")
+		self.try_new_source_file(filename, source).expect(
+			"SourceMap can only contain up to 4GiB of sources, this limit seems to have been exceeded",
+		)
 	}
 
 	fn try_new_source_file(

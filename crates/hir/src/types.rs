@@ -1,4 +1,4 @@
-use dapic_session::{new_index_ty, Ident, IndexVec, Span};
+use dapic_session::{Ident, IndexVec, Span, new_index_ty};
 
 new_index_ty! {
 	pub struct HirId;
@@ -30,7 +30,7 @@ pub enum TyKind<'tcx> {
 }
 
 pub struct Item {
-	kind: ItemKind,
+	pub kind: ItemKind,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -62,4 +62,11 @@ pub enum ItemKind {
 
 pub struct Root {
 	pub(crate) items: IndexVec<HirId, Item>,
+}
+
+impl Root {
+	#[must_use]
+	pub const fn items(&self) -> &Vec<Item> {
+		self.items.items()
+	}
 }

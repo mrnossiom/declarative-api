@@ -1,4 +1,4 @@
-use crate::types::{Attribute, Expr, FieldDef, Item, NodeId, Path, PropertyDef, Root, Ty, P};
+use crate::types::{Attribute, Expr, FieldDef, Item, NodeId, P, Path, PropertyDef, Root, Ty};
 use dapic_lexer::rich::Token;
 use dapic_session::{Ident, Span};
 use thin_vec::ThinVec;
@@ -54,7 +54,7 @@ pub trait MutVisitor: Sized {
 
 // No-operation
 pub mod noop {
-	use super::{ns, MutVisitor};
+	use super::{MutVisitor, ns};
 	use crate::types::{
 		AttrKind, Attribute, Auth, Body, Enum, Expr, ExprKind, FieldDef, Headers, Item, ItemKind,
 		MetaAttr, Metadata, Model, NormalAttr, Params, Path, PathItem, PathSegment, PropertyDef,

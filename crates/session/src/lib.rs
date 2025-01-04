@@ -20,7 +20,7 @@ mod symbols_;
 pub use crate::{
 	diagnostics::{Diagnostic, DiagnosticsHandler},
 	id::{Idx, IndexVec},
-	source_map::{with_source_map, BytePos, SourceFile, SourceFileHash, SourceFileId, SourceMap},
+	source_map::{BytePos, SourceFile, SourceFileHash, SourceFileId, SourceMap, with_source_map},
 	span::Span,
 	symbols_::{Ident, Symbol},
 };

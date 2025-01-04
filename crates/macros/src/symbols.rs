@@ -4,9 +4,8 @@ use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::{cell::RefCell, collections::HashMap};
 use syn::{
-	braced,
+	Ident, LitStr, Token, braced,
 	parse::{Parse, ParseStream, Result},
-	Ident, LitStr, Token,
 };
 
 enum SymbolGroupElement {

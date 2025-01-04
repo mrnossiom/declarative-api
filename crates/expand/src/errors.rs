@@ -3,7 +3,9 @@ pub(super) mod scope {
 	use dapic_session::{Diagnostic, Ident, Span};
 
 	#[derive(Debug, IntoDiagnostic)]
-	#[message("found two candidate to import, but can only choose one between `{sibling_candidate}` and `{child_candidate}`")]
+	#[message(
+		"found two candidate to import, but can only choose one between `{sibling_candidate}` and `{child_candidate}`"
+	)]
 	pub struct MultipleCandidates {
 		pub import_name: Ident,
 		#[label("multiple candidates found for this scope `{import_name}`")]
@@ -14,7 +16,9 @@ pub(super) mod scope {
 	}
 
 	#[derive(Debug, IntoDiagnostic)]
-	#[message("failed to find a valid candidate for `{import_name}` between `{sibling_candidate}` and `{child_candidate}`")]
+	#[message(
+		"failed to find a valid candidate for `{import_name}` between `{sibling_candidate}` and `{child_candidate}`"
+	)]
 	pub struct NoCandidate {
 		pub import_name: Ident,
 		#[label("no file candidates for `{import_name}`")]
@@ -44,7 +48,9 @@ pub(super) mod scope {
 	}
 
 	#[derive(Debug, IntoDiagnostic)]
-	#[message("module `{import_name}` was already imported creating a cyclic dependency. Stack: {import_stack}")]
+	#[message(
+		"module `{import_name}` was already imported creating a cyclic dependency. Stack: {import_stack}"
+	)]
 	pub struct CyclicImport {
 		pub import_name: Ident,
 		#[label("module `{import_name}`")]

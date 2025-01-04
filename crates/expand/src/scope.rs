@@ -2,11 +2,11 @@ use crate::errors::scope::{
 	CyclicImport, LoadingError, MultipleCandidates, NoCandidate, ParsingError,
 };
 use dapic_ast::{
-	types::{AttrVec, Item, ItemKind, Root, ScopeKind, P},
-	visit_mut::{noop, MutVisitor},
+	types::{AttrVec, Item, ItemKind, P, Root, ScopeKind},
+	visit_mut::{MutVisitor, noop},
 };
 use dapic_parser::Parser;
-use dapic_session::{symbols::kw, Diagnostic, Ident, Session, Span};
+use dapic_session::{Diagnostic, Ident, Session, Span, symbols::kw};
 use std::{
 	fmt::Write,
 	path::{self, PathBuf},

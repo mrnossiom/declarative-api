@@ -1,4 +1,4 @@
-use crate::{error::WrongAttrStyle, PResult, Parser};
+use crate::{PResult, Parser, error::WrongAttrStyle};
 use dapic_ast::types::{AttrStyle, AttrVec, Attribute};
 use dapic_lexer::rich::{self, OpKind, TokenKind};
 use tracing::{debug_span, instrument};

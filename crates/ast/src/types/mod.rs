@@ -1,4 +1,4 @@
-use dapic_session::{new_index_ty, Span};
+use dapic_session::{Span, new_index_ty};
 use thin_vec::ThinVec;
 
 mod attr;

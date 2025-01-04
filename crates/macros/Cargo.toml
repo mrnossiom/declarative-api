@@ -3,7 +3,7 @@ lints.workspace = true
 [package]
 name = "dapic_macros"
 version = "0.0.0"
-edition = "2021"
+edition = "2024"
 
 [lib]
 proc-macro = true

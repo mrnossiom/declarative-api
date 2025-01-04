@@ -24,6 +24,13 @@ impl<I: Idx, T> Default for IndexVec<I, T> {
 	}
 }
 
+impl<I: Idx, T> IndexVec<I, T> {
+	#[must_use]
+	pub const fn items(&self) -> &Vec<T> {
+		&self.inner
+	}
+}
+
 #[macro_export]
 macro_rules! new_index_ty {
     {

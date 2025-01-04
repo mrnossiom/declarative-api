@@ -1,5 +1,6 @@
 use crate::commands::Act;
 use dapic_expand::expand_ast;
+use dapic_generator_openapi::generate_openapi_spec;
 use dapic_parser::Parser;
 use dapic_session::Session;
 use std::{error::Error, path::PathBuf};
@@ -7,6 +8,9 @@ use std::{error::Error, path::PathBuf};
 #[derive(Debug, clap::Parser)]
 pub(crate) struct Compile {
 	file: PathBuf,
+
+	#[clap(long, short)]
+	output: PathBuf,
 }
 
 impl Act for Compile {
@@ -18,12 +22,12 @@ impl Act for Compile {
 			let file = session.source_map.load_file(&self.file)?;
 
 			// Parse initial file AST
-			let Ok(mut ast) = session
+			let mut ast = match session
 				.time("ast_parse")
 				.run(|| Parser::from_source(&session.parse_sess(), &file).parse_root())
-				.map_err(|err| session.diagnostics.emit_fatal_diagnostic(&err))
-			else {
-				unreachable!("above pattern is Result<Ast, !>, which means only valid pat is Ok(_)")
+			{
+				Ok(ast) => ast,
+				Err(err) => session.diagnostics.emit_fatal_diagnostic(&err),
 			};
 
 			session.diagnostics.check_degraded_and_exit();
@@ -44,6 +48,15 @@ impl Act for Compile {
 
 			// AST is not needed anymore
 			session.time("ast_drop").run(|| drop(ast));
+
+			// Generate OpenAPI artefact
+			let spec = session
+				.time("generate_openapi")
+				.run(|| generate_openapi_spec(&hir));
+
+			// Print the output to file
+			let out = dapic_generator_openapi::serde_json::to_string_pretty(&spec).unwrap();
+			std::fs::write(&self.output, out).unwrap();
 
 			Ok::<_, Box<dyn Error>>(())
 		})?;

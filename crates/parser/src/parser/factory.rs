@@ -1,11 +1,11 @@
 use crate::Parser;
 use dapic_ast::types::{
 	AttrId, AttrKind, AttrStyle, AttrVec, Attribute, Expr, ExprKind, FieldDef, Item, ItemKind,
-	MetaAttr, NodeId, NormalAttr, Path, PathSegment, PropertyDef, Ty, TyKind, P,
+	MetaAttr, NodeId, NormalAttr, P, Path, PathSegment, PropertyDef, Ty, TyKind,
 };
 use dapic_lexer::rich::{Delimiter, Token};
 use dapic_session::{Ident, Span, Symbol};
-use thin_vec::{thin_vec, ThinVec};
+use thin_vec::{ThinVec, thin_vec};
 
 impl Parser<'_> {
 	pub(super) fn span(&self, lo: Span) -> Span {

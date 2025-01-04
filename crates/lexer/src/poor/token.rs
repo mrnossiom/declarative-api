@@ -123,7 +123,8 @@ impl TokenKind {
 			self,
 			Self::LineComment(_)
 				| Self::Whitespace
-				| Self::Ident | Self::InvalidIdent
+				| Self::Ident
+				| Self::InvalidIdent
 				| Self::Literal(_)
 				| Self::Unknown
 		)

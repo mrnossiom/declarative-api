@@ -1,12 +1,11 @@
-use crate::{error::UnexpectedToken, PResult, Parser};
-use dapic_ast::types::{AttrStyle, Expr, ExprKind, FieldDef, NodeId, PropertyDef, P};
+use crate::{PResult, Parser, error::UnexpectedToken};
+use dapic_ast::types::{AttrStyle, Expr, ExprKind, FieldDef, NodeId, P, PropertyDef};
 use dapic_lexer::rich::{Delimiter, LiteralKind, TokenKind};
 use dapic_session::{
-	sym,
+	Ident, sym,
 	symbols::{attrs, kw},
-	Ident,
 };
-use thin_vec::{thin_vec, ThinVec};
+use thin_vec::{ThinVec, thin_vec};
 use tracing::instrument;
 
 impl Parser<'_> {

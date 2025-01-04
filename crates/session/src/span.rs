@@ -1,6 +1,6 @@
 use crate::{
-	source_map::{with_source_map, BytePos, FileIdx},
 	SourceFile,
+	source_map::{BytePos, FileIdx, with_source_map},
 };
 use std::{cmp, fmt};
 

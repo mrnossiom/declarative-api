@@ -1,0 +1,13 @@
+lints.workspace = true
+
+[package]
+name = "dapic_generator_openapi"
+version = "0.0.0"
+edition = "2024"
+
+[dependencies]
+dapic_hir.workspace = true
+
+indexmap = "2"
+openapiv3 = "2"
+serde_json = "1"
