@@ -11,6 +11,7 @@ use std::marker::PhantomData;
 
 pub mod types;
 
+#[must_use]
 pub fn compile_hir(crate_: &ast::Root) -> Root {
 	let lcx = LoweringContext::new();
 
@@ -22,7 +23,7 @@ struct LoweringContext<'tcx> {
 	_marker: PhantomData<&'tcx ()>,
 }
 
-impl<'tcx> LoweringContext<'tcx> {
+impl LoweringContext<'_> {
 	fn new() -> Self {
 		Self {
 			arena: Bump::new(),

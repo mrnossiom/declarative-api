@@ -18,11 +18,11 @@ pub enum TyKind<'tcx> {
 	Path(&'tcx Path<'tcx>),
 
 	/// An array of types: `[Type]`
-	Array(&'tcx TyKind<'tcx>),
+	Array(&'tcx Self),
 
 	/// A tuple of types: `(Ty1, Ty2, Ty3)`
 	/// Can also define the unit type: `()`
-	Tuple(&'tcx [TyKind<'tcx>]),
+	Tuple(&'tcx [Self]),
 
 	/// A model defined inlined
 	/// e.g. `{ error string }`

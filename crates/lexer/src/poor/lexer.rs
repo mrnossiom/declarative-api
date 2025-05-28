@@ -135,8 +135,7 @@ impl Cursor<'_> {
 	/// if string is terminated.
 	#[instrument(level = "TRACE", skip(self))]
 	fn double_quoted_string(&mut self) -> bool {
-		#[cfg(debug_assertions)]
-		assert!(self.prev() == '"');
+		debug_assert!(self.prev() == '"');
 
 		while let Some(c) = self.bump() {
 			match c {
@@ -208,7 +207,7 @@ fn is_id_continue(c: char) -> bool {
 /// The passed string is lexically an identifier.
 fn _is_ident(string: &str) -> bool {
 	let mut chars = string.chars();
-	chars.next().map_or(false, |start| {
-		is_id_start(start) && chars.all(is_id_continue)
-	})
+	chars
+		.next()
+		.is_some_and(|start| is_id_start(start) && chars.all(is_id_continue))
 }

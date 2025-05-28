@@ -1,6 +1,6 @@
 //! Declarative API entrypoint
 //!
-//! Provide the `dapic` CLI that allows both end-users and developpers to
+//! Provide the `dapic` CLI that allows both end-users and developers to
 //! interact with the compiler.
 
 use crate::commands::Args;

@@ -47,7 +47,7 @@ impl DiagnosticsHandler {
 
 		if this.degraded() {
 			println!(
-				"{} errors, {} warnings and {} advices were issued",
+				"{} errors, {} warnings and {} advice were issued",
 				this.error_count, this.warn_count, this.advice_count
 			);
 
@@ -69,7 +69,7 @@ impl DiagnosticsHandler {
 
 		if this.warn_count != 0 || this.advice_count != 0 {
 			println!(
-				"{} warnings and {} advices were issued",
+				"{} warnings and {} advice were issued",
 				this.warn_count, this.advice_count
 			);
 		}
@@ -92,11 +92,11 @@ impl InnerHandler {
 			ReportKind::Warning => self.warn_count += 1,
 			ReportKind::Advice => self.advice_count += 1,
 			ReportKind::Custom(_, _) => {}
-		};
+		}
 
 		if let Err(err) = diag.report.eprint(self.source_map.to_cache_hack()) {
 			tracing::error!("failed to print diagnostic: {}", err);
-		};
+		}
 
 		#[cfg(debug_assertions)]
 		eprintln!("error was emitted here: {}", diag.loc);

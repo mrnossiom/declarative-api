@@ -49,7 +49,7 @@ impl Token {
 
 	#[must_use]
 	pub fn is_keyword(&self, kw: Symbol) -> bool {
-		self.ident().map_or(false, |id| id.symbol == kw)
+		self.ident().is_some_and(|id| id.symbol == kw)
 	}
 
 	#[must_use]

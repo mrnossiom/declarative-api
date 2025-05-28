@@ -35,7 +35,7 @@ impl Parser<'_> {
 		} else if let Some(Ident {
 			symbol: sym @ (kw::True | kw::False),
 			..
-		}) = self.token.ident().map(Into::into)
+		}) = self.token.ident()
 		{
 			self.bump();
 			Ok(ExprKind::Literal(LiteralKind::Bool, sym))
