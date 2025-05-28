@@ -66,7 +66,7 @@ impl Parse for Input {
 				if content.parse::<Token![-]>().is_ok() {
 					// This is used to break ordering of symbols.
 					symbols.push(SymbolGroupElement::Minus);
-				};
+				}
 
 				// First parse a symbol `Sym: "pat"`
 				symbols.push(SymbolGroupElement::Symbol(Symbol::parse(&content)?));
@@ -144,14 +144,14 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
 		let prev_key: RefCell<Option<(Span, String)>> = RefCell::default();
 
 		let check_order = |span: Span, str: &str, errors: &mut Errors| {
-			if let Some((prev_span, ref prev_str)) = *prev_key.borrow_mut() {
-				if str < prev_str {
-					errors.error(span, format!("Symbol `{str}` must precede `{prev_str}`"));
-					errors.error(
-						prev_span,
-						format!("location of previous symbol `{prev_str}`"),
-					);
-				}
+			if let Some((prev_span, ref prev_str)) = *prev_key.borrow_mut()
+				&& str < prev_str
+			{
+				errors.error(span, format!("Symbol `{str}` must precede `{prev_str}`"));
+				errors.error(
+					prev_span,
+					format!("location of previous symbol `{prev_str}`"),
+				);
 			}
 
 			*prev_key.borrow_mut() = Some((span, str.to_string()));

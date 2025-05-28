@@ -37,7 +37,7 @@ impl Parser<'_> {
 				match self.parse_ty() {
 					Ok(ty) => tys.push(ty),
 					Err(_) => break,
-				};
+				}
 
 				if !self.eat(&TokenKind::Comma) {
 					break;

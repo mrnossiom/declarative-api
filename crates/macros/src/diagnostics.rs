@@ -71,7 +71,7 @@ pub(crate) fn diagnostics(mut s: Structure) -> syn::Result<TokenStream> {
 				if severity.replace(s).is_some() {
 					bail!(
 						meta,
-						"this attribute replaces value of the previous `message` attribute"
+						"this attribute replaces value of the previous `severity` attribute"
 					)
 				}
 			}
@@ -217,7 +217,7 @@ fn extract_diag_attrs(attrs: &[Attribute]) -> impl Iterator<Item = Meta> + '_ {
 			attr.meta
 				.path()
 				.get_ident()
-				.map_or(false, |ident| attrs::ALL.contains(&&*ident.to_string()))
+				.is_some_and(|ident| attrs::ALL.contains(&&*ident.to_string()))
 		})
 		.map(|attr| attr.meta.clone())
 }

@@ -1,44 +1,20 @@
 {
   "nodes": {
-    "gitignore": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1709087332,
-        "narHash": "sha256-HG2cCnktfHsKV0s4XW83gU3F57gaTljL9KNSuG6bnQs=",
-        "owner": "hercules-ci",
-        "repo": "gitignore.nix",
-        "rev": "637db329424fd7e46cf4185293b9cc8c88c95394",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "gitignore.nix",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1748162331,
-        "narHash": "sha256-rqc2RKYTxP3tbjA+PB3VMRQNnjesrT0pEofXQTrMsS8=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "7c43f080a7f28b2774f3b3f43234ca11661bf334",
-        "type": "github"
+        "lastModified": 1794042290,
+        "narHash": "sha256-VZ8WvA9m3XN36juXyg/GwbDRU2OezOHJlXpJCXkccv0=",
+        "rev": "f4a03c008967841f2a0b3cb7c436fc6fc31671f6",
+        "type": "tarball",
+        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1113206.f4a03c008967/nixexprs.tar.xz?lastModified=1794042290&rev=f4a03c008967841f2a0b3cb7c436fc6fc31671f6"
       },
       "original": {
-        "owner": "NixOS",
-        "ref": "nixos-25.05",
-        "repo": "nixpkgs",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://channels.nixos.org/nixos-unstable/nixexprs.tar.xz"
       }
     },
     "root": {
       "inputs": {
-        "gitignore": "gitignore",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay"
       }
@@ -50,11 +26,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1748313401,
-        "narHash": "sha256-x5UuDKP2Ui/TresAngUo9U4Ss9xfOmN8dAXU8OrkZmA=",
+        "lastModified": 1794388042,
+        "narHash": "sha256-rsskkiDNmuZGK6Xk3JvWUxWENjuX4Jf0hOSFYujGC0s=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "9c8ea175cf9af29edbcff121512e44092a8f37e4",
+        "rev": "0070500a3d72ade21323092e7bdd7125c5268482",
         "type": "github"
       },
       "original": {

@@ -19,7 +19,7 @@ impl fmt::Display for Token {
 
 		if !self.kind.is_single_char() {
 			write!(f, " ({})", self.length)?;
-		};
+		}
 
 		Ok(())
 	}

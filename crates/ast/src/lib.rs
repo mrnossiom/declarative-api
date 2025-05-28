@@ -1,6 +1,6 @@
 //! Declarative API abstract syntax tree
 //!
-//! Essentialy contains AST type definitions. Modules [`visit_mut`] is used for
+//! Essentially contains AST type definitions. Modules [`visit_mut`] is used for
 //! the expansion phase while [`visit`] is used to collect items during `AST`
 //! lowering.
 
